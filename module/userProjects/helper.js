@@ -1543,13 +1543,13 @@ module.exports = class UserProjectsHelper {
 
                 //Fetch user profile information by calling sunbird's user read api.
 
-                let userProfile = await userProfileService.profile(userToken, userId);
-                if ( userProfile.success && 
-                     userProfile.data &&
-                     userProfile.data.response
-                ) {
-                    createProject.userProfile = userProfile.data.response;
-                } 
+                // let userProfile = await userProfileService.profile(userToken, userId);
+                // if ( userProfile.success && 
+                //      userProfile.data &&
+                //      userProfile.data.response
+                // ) {
+                //     createProject.userProfile = userProfile.data.response;
+                // } 
 
                 
 
@@ -1558,66 +1558,66 @@ module.exports = class UserProjectsHelper {
                     createProject = _.merge(createProject, projectData.data);
                 }
 
-                let createNewProgramAndSolution = false;
+                // let createNewProgramAndSolution = false;
 
-                if (data.programId && data.programId !== "") {
-                    createNewProgramAndSolution = false;
-                }
-                else if (data.programName) {
-                    createNewProgramAndSolution = true;
-                }
+                // if (data.programId && data.programId !== "") {
+                //     createNewProgramAndSolution = false;
+                // }
+                // else if (data.programName) {
+                //     createNewProgramAndSolution = true;
+                // }
                 
-                if (data.entityId) {
-                    let entityInformation =
-                        await _entitiesInformation([data.entityId]);
+                // if (data.entityId) {
+                //     let entityInformation =
+                //         await _entitiesInformation([data.entityId]);
 
-                    if (!entityInformation.success) {
-                        return resolve(entityInformation);
-                    }
+                //     if (!entityInformation.success) {
+                //         return resolve(entityInformation);
+                //     }
 
-                    createProject["entityInformation"] = entityInformation.data[0];
-                    createProject.entityId = entityInformation.data[0]._id;
-                }
-                if (createNewProgramAndSolution) {
+                //     createProject["entityInformation"] = entityInformation.data[0];
+                //     createProject.entityId = entityInformation.data[0]._id;
+                // }
+                // if (createNewProgramAndSolution) {
 
-                    let programAndSolutionInformation =
-                        await this.createProgramAndSolution(
-                            data.programId,
-                            data.programName,
-                            createProject.entityId ? [createProject.entityId] : "",
-                            userToken
-                        );
+                //     let programAndSolutionInformation =
+                //         await this.createProgramAndSolution(
+                //             data.programId,
+                //             data.programName,
+                //             createProject.entityId ? [createProject.entityId] : "",
+                //             userToken
+                //         );
 
-                    if (!programAndSolutionInformation.success) {
-                        return resolve(programAndSolutionInformation);
-                    }
-                    createProject =
-                        _.merge(createProject, programAndSolutionInformation.data);
-                } 
+                //     if (!programAndSolutionInformation.success) {
+                //         return resolve(programAndSolutionInformation);
+                //     }
+                //     createProject =
+                //         _.merge(createProject, programAndSolutionInformation.data);
+                // } 
 
-                if (data.programId && data.programId !== "") {
+                // if (data.programId && data.programId !== "") {
 
-                    let queryData = {};
-                    queryData["_id"] = data.programId;
-                    let programDetails = await programsQueries.programsDocument(queryData,
-                            [
-                                "_id",
-                                "name",
-                                "description",
-                                "isAPrivateProgram"
-                            ]
-                    );
-                    if( !programDetails.length > 0 ){
-                        throw {
-                            status: HTTP_STATUS_CODE['bad_request'].status,
-                            message: CONSTANTS.apiResponses.PROGRAM_NOT_FOUND
-                        };
-                    } 
-                    let programInformationData = {};
-                    programInformationData["programInformation"] = programDetails[0];
-                    createProject =
-                        _.merge(createProject, programInformationData);
-                }
+                //     let queryData = {};
+                //     queryData["_id"] = data.programId;
+                //     let programDetails = await programsQueries.programsDocument(queryData,
+                //             [
+                //                 "_id",
+                //                 "name",
+                //                 "description",
+                //                 "isAPrivateProgram"
+                //             ]
+                //     );
+                //     if( !programDetails.length > 0 ){
+                //         throw {
+                //             status: HTTP_STATUS_CODE['bad_request'].status,
+                //             message: CONSTANTS.apiResponses.PROGRAM_NOT_FOUND
+                //         };
+                //     } 
+                //     let programInformationData = {};
+                //     programInformationData["programInformation"] = programDetails[0];
+                //     createProject =
+                //         _.merge(createProject, programInformationData);
+                // }
                 
 
                 if (data.tasks) {
@@ -1690,7 +1690,7 @@ module.exports = class UserProjectsHelper {
                     createProject
                 );
                 
-                await kafkaProducersHelper.pushProjectToKafka(userProject);
+                // await kafkaProducersHelper.pushProjectToKafka(userProject);
 
                 if (!userProject._id) {
                     throw {
@@ -1703,9 +1703,9 @@ module.exports = class UserProjectsHelper {
                     success: true,
                     message: CONSTANTS.apiResponses.PROJECT_CREATED,
                     data: {
-                        programId:
-                        userProject.programInformation && userProject.programInformation._id ?
-                        userProject.programInformation._id : data.programId,
+                        // programId:
+                        // userProject.programInformation && userProject.programInformation._id ?
+                        // userProject.programInformation._id : data.programId,
                         projectId: userProject._id,
                         lastDownloadedAt: userProject.lastDownloadedAt,
                         hasAcceptedTAndC : userProject.hasAcceptedTAndC ? userProject.hasAcceptedTAndC : false
