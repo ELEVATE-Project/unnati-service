@@ -33,14 +33,14 @@ let enviromentVariables = {
     "message" : "Enable/Disable kafka communications",
     "optional" : false
   },
-  "KAFKA_URL" : {
-    "message" : "Required",
-    "optional" : false
-  },
-  "USER_SERVICE_URL" : {
-    "message" : "Required user service base url",
-    "optional" : false
-  },
+  // "KAFKA_URL" : {
+  //   "message" : "Required",
+  //   "optional" : false
+  // },
+  // "USER_SERVICE_URL" : {
+  //   "message" : "Required user service base url",
+  //   "optional" : false
+  // },
   "SERVICE_NAME" : {
     "message" : "current service name",
     "optional" : true,
