@@ -981,40 +981,41 @@ module.exports = class ProjectTemplatesHelper {
                 let solutionsResult = {};
                 let findQuery = {};
                 //get data when link is given
-                if( link ){
+                // not considering link is pased
+                // if( link ){
                     
-                    let queryData = {};
-                    queryData["link"] =link;
+                //     let queryData = {};
+                //     queryData["link"] =link;
 
-                    let solutionDocument = await solutionsQueries.solutionsDocument(queryData,
-                        [
-                            "_id",
-                            "name",
-                            "programId",
-                            "programName",
-                            "projectTemplateId",
-                            "link"
-                        ]
-                    );
+                //     let solutionDocument = await solutionsQueries.solutionsDocument(queryData,
+                //         [
+                //             "_id",
+                //             "name",
+                //             "programId",
+                //             "programName",
+                //             "projectTemplateId",
+                //             "link"
+                //         ]
+                //     );
                     
-                    if( !solutionDocument.length > 0 ) {
-                        throw {
-                            message : CONSTANTS.apiResponses.SOLUTION_NOT_FOUND,
-                            status : HTTP_STATUS_CODE['bad_request'].status
-                        }
-                    }
-                    let solutiondata = solutionDocument;
-                    templateId = solutiondata[0].projectTemplateId;
-                    if( !templateId ){
-                        return resolve({
-                            success : false,
-                            data : solutiondata,
-                            message : CONSTANTS.apiResponses.TEMPLATE_ID_NOT_FOUND_IN_SOLUTION
-                        });   
-                    }
-                    solutionsResult = solutiondata;
-                    templateId=templateId.toString();
-                }
+                //     if( !solutionDocument.length > 0 ) {
+                //         throw {
+                //             message : CONSTANTS.apiResponses.SOLUTION_NOT_FOUND,
+                //             status : HTTP_STATUS_CODE['bad_request'].status
+                //         }
+                //     }
+                //     let solutiondata = solutionDocument;
+                //     templateId = solutiondata[0].projectTemplateId;
+                //     if( !templateId ){
+                //         return resolve({
+                //             success : false,
+                //             data : solutiondata,
+                //             message : CONSTANTS.apiResponses.TEMPLATE_ID_NOT_FOUND_IN_SOLUTION
+                //         });   
+                //     }
+                //     solutionsResult = solutiondata;
+                //     templateId=templateId.toString();
+                // }
                 
                 if( templateId ){
                     let validateTemplateId = UTILS.isValidMongoId(templateId);
@@ -1048,19 +1049,19 @@ module.exports = class ProjectTemplatesHelper {
                         message :CONSTANTS.apiResponses.PROJECT_TEMPLATE_NOT_FOUND
                     }    
                 }
-                if ( templateData[0].certificateTemplateId && templateData[0].certificateTemplateId !== "" ){
-                    let certificateTemplateDetails = await certificateTemplateQueries.certificateTemplateDocument({
-                        _id : templateData[0].certificateTemplateId
-                    },["criteria"]);
+                // if ( templateData[0].certificateTemplateId && templateData[0].certificateTemplateId !== "" ){
+                //     let certificateTemplateDetails = await certificateTemplateQueries.certificateTemplateDocument({
+                //         _id : templateData[0].certificateTemplateId
+                //     },["criteria"]);
 
-                    //certificate template data do not exists.
-                    if ( !certificateTemplateDetails.length > 0 ) {
-                        throw {
-                            message:  CONSTANTS.apiResponses.CERTIFICATE_TEMPLATE_NOT_FOUND
-                        };
-                    }
-                    templateData[0].criteria = certificateTemplateDetails[0].criteria
-                }
+                //     //certificate template data do not exists.
+                //     if ( !certificateTemplateDetails.length > 0 ) {
+                //         throw {
+                //             message:  CONSTANTS.apiResponses.CERTIFICATE_TEMPLATE_NOT_FOUND
+                //         };
+                //     }
+                //     templateData[0].criteria = certificateTemplateDetails[0].criteria
+                // }
 
                 if (templateData[0].tasks && templateData[0].tasks.length > 0) {
                     templateData[0].tasks = 
@@ -1091,17 +1092,17 @@ module.exports = class ProjectTemplatesHelper {
                         templateData[0].projectId = project[0]._id;
                     }
                 }
-                if( !result.data.programInformation ){
-                    result.data.programInformation = {
-                        programId : solutionsResult.programId,
-                        programName : solutionsResult.programName
-                    }
-                }
-                result.data.solutionInformation = {
-                    _id : solutionsResult._id,
-                    name : solutionsResult.name,
-                    link : solutionsResult.link     
-                } 
+                // if( !result.data.programInformation ){
+                //     result.data.programInformation = {
+                //         programId : solutionsResult.programId,
+                //         programName : solutionsResult.programName
+                //     }
+                // }
+                // result.data.solutionInformation = {
+                //     _id : solutionsResult._id,
+                //     name : solutionsResult.name,
+                //     link : solutionsResult.link     
+                // } 
                 return resolve({
                     success : false,
                     data : result.data,
