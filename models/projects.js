@@ -143,32 +143,32 @@ module.exports = {
         },
         remarks : String,
         userProfile : Object,
-        certificate : {
-            templateId : "ObjectId",
-            osid : {
-                type : String,
-                index : true,
-                unique : true
-            },
-            transactionId : {
-                type : String,
-                index : true,
-                unique : true
-            },
-            templateUrl : String,
-            status : String,
-            eligible : Boolean,
-            message : String,
-            issuedOn : Date,
-            criteria : Object,
-            reIssuedAt : Date,
-            transactionIdCreatedAt : Date,
-            originalTransactionInformation :{
-                transactionId : String,
-                osid : String
-            }
+        // certificate : {
+        //     templateId : "ObjectId",
+        //     osid : {
+        //         type : String,
+        //         index : true,
+        //         unique : true
+        //     },
+        //     transactionId : {
+        //         type : String,
+        //         index : true,
+        //         unique : true
+        //     },
+        //     templateUrl : String,
+        //     status : String,
+        //     eligible : Boolean,
+        //     message : String,
+        //     issuedOn : Date,
+        //     criteria : Object,
+        //     reIssuedAt : Date,
+        //     transactionIdCreatedAt : Date,
+        //     originalTransactionInformation :{
+        //         transactionId : String,
+        //         osid : String
+        //     }
             
-        }
+        // }
     },
     compoundIndex: [
         {
