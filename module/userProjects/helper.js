@@ -1046,323 +1046,323 @@ module.exports = class UserProjectsHelper {
     return new Promise(async (resolve, reject) => {
         try {
             
-            let solutionExternalId = "";
+            // let solutionExternalId = "";
             
-            if( templateId !== "" ) {
+            // if( templateId !== "" ) {
                 
-                let templateDocuments = 
-                await projectTemplateQueries.templateDocument({
-                    "externalId" : templateId,
-                    "isReusable" : false,
-                    "solutionId" : { $exists : true }
-                },["solutionId","solutionExternalId"]);
+            //     let templateDocuments = 
+            //     await projectTemplateQueries.templateDocument({
+            //         "externalId" : templateId,
+            //         "isReusable" : false,
+            //         "solutionId" : { $exists : true }
+            //     },["solutionId","solutionExternalId"]);
 
-                if( !templateDocuments.length > 0 ) {
-                    throw {
-                        message : CONSTANTS.apiResponses.PROJECT_TEMPLATE_NOT_FOUND,
-                        status : HTTP_STATUS_CODE['bad_request'].status
-                    }
-                }
+            //     if( !templateDocuments.length > 0 ) {
+            //         throw {
+            //             message : CONSTANTS.apiResponses.PROJECT_TEMPLATE_NOT_FOUND,
+            //             status : HTTP_STATUS_CODE['bad_request'].status
+            //         }
+            //     }
 
-                solutionId = templateDocuments[0].solutionId;
-                solutionExternalId = templateDocuments[0].solutionExternalId;
-            }
+            //     solutionId = templateDocuments[0].solutionId;
+            //     solutionExternalId = templateDocuments[0].solutionExternalId;
+            // }
             
             let userRoleInformation = _.omit(bodyData,["referenceFrom","submissions","hasAcceptedTAndC"]);
             
-            if (projectId === "") {
-                // This will check wether the user user is targeted to solution or not based on his userRoleInformation
-                const targetedSolutionId = await coreService.checkIfSolutionIsTargetedForUserProfile(userToken,userRoleInformation,solutionId)
-                //based on above api will check for projects wether its is private project or public project
-                const projectDetails = await projectQueries.projectDocument({
-                    solutionId: solutionId,
-                    userId: userId,
-                    isAPrivateProgram: targetedSolutionId.data.isATargetedSolution ? false : true
-                }, ["_id"]);
-                if( projectDetails.length > 0 ) {
-                    projectId = projectDetails[0]._id;
-                } else {
+            // if (projectId === "") {
+            //     // This will check wether the user user is targeted to solution or not based on his userRoleInformation
+            //     const targetedSolutionId = await coreService.checkIfSolutionIsTargetedForUserProfile(userToken,userRoleInformation,solutionId)
+            //     //based on above api will check for projects wether its is private project or public project
+            //     const projectDetails = await projectQueries.projectDocument({
+            //         solutionId: solutionId,
+            //         userId: userId,
+            //         isAPrivateProgram: targetedSolutionId.data.isATargetedSolution ? false : true
+            //     }, ["_id"]);
+            //     if( projectDetails.length > 0 ) {
+            //         projectId = projectDetails[0]._id;
+            //     } else {
                 
-                    let solutionDetails = {}
+            //         let solutionDetails = {}
 
-                    if( templateId === "" ) {
+            //         if( templateId === "" ) {
                     
-                        solutionDetails = 
-                        await coreService.solutionDetailsBasedOnRoleAndLocation(
-                            userToken,
-                            bodyData,
-                            solutionId
-                        );
+            //             solutionDetails = 
+            //             await coreService.solutionDetailsBasedOnRoleAndLocation(
+            //                 userToken,
+            //                 bodyData,
+            //                 solutionId
+            //             );
 
-                        if( !solutionDetails.success || (solutionDetails.data.data && !solutionDetails.data.data.length > 0) ) {
-                            throw {
-                                status : HTTP_STATUS_CODE["bad_request"].status,
-                                message : CONSTANTS.apiResponses.SOLUTION_DOES_NOT_EXISTS_IN_SCOPE
-                            }
-                        }
+            //             if( !solutionDetails.success || (solutionDetails.data.data && !solutionDetails.data.data.length > 0) ) {
+            //                 throw {
+            //                     status : HTTP_STATUS_CODE["bad_request"].status,
+            //                     message : CONSTANTS.apiResponses.SOLUTION_DOES_NOT_EXISTS_IN_SCOPE
+            //                 }
+            //             }
 
-                        solutionDetails = solutionDetails.data;
+            //             solutionDetails = solutionDetails.data;
 
-                    } else {
+            //         } else {
                         
-                        solutionDetails =
-                        await surveyService.listSolutions([solutionExternalId]);
-                        if( !solutionDetails.success ) {
-                            throw {
-                                message : CONSTANTS.apiResponses.SOLUTION_NOT_FOUND,
-                                status : HTTP_STATUS_CODE['bad_request'].status
-                            }
-                        }
+            //             solutionDetails =
+            //             await surveyService.listSolutions([solutionExternalId]);
+            //             if( !solutionDetails.success ) {
+            //                 throw {
+            //                     message : CONSTANTS.apiResponses.SOLUTION_NOT_FOUND,
+            //                     status : HTTP_STATUS_CODE['bad_request'].status
+            //                 }
+            //             }
                         
-                        solutionDetails = solutionDetails.data[0];
+            //             solutionDetails = solutionDetails.data[0];
                         
-                    }
-                    // check for requestForPIIConsent data
-                    let queryData = {};
-                    queryData["_id"] = solutionDetails.programId;
-                    let programDetails = await programsQueries.programsDocument(queryData,["requestForPIIConsent"]);
+            //         }
+            //         // check for requestForPIIConsent data
+            //         let queryData = {};
+            //         queryData["_id"] = solutionDetails.programId;
+            //         let programDetails = await programsQueries.programsDocument(queryData,["requestForPIIConsent"]);
                     
-                    // if requestForPIIConsent not there do not call program join
-                    if ( programDetails.length > 0 && programDetails[0].hasOwnProperty('requestForPIIConsent')) {
+            //         // if requestForPIIConsent not there do not call program join
+            //         if ( programDetails.length > 0 && programDetails[0].hasOwnProperty('requestForPIIConsent')) {
                         
-                        // program join API call it will increment the noOfResourcesStarted counter and will make user join program
-                        // before creating any project this api has to called 
-                        let programUsers = await programUsersQueries.programUsersDocument(
-                            {
-                                userId : userId,
-                                programId : solutionDetails.programId
-                            },
-                            [
-                                "_id",
-                                "resourcesStarted"
-                            ]
-                        );
+            //             // program join API call it will increment the noOfResourcesStarted counter and will make user join program
+            //             // before creating any project this api has to called 
+            //             let programUsers = await programUsersQueries.programUsersDocument(
+            //                 {
+            //                     userId : userId,
+            //                     programId : solutionDetails.programId
+            //                 },
+            //                 [
+            //                     "_id",
+            //                     "resourcesStarted"
+            //                 ]
+            //             );
         
-                        if (!programUsers.length > 0 || ( programUsers.length > 0 && programUsers[0].resourcesStarted == false)) {
-                            let programJoinBody = {};
-                            programJoinBody.userRoleInformation = userRoleInformation;
-                            programJoinBody.isResource = true;
-                            programJoinBody.consentShared = true;
-                            let joinProgramData = await coreService.joinProgram (
-                                solutionDetails.programId,
-                                programJoinBody,
-                                userToken
-                            );
-                            if ( !joinProgramData.success ) {
-                                return resolve({ 
-                                    status: HTTP_STATUS_CODE.bad_request.status, 
-                                    message: CONSTANTS.apiResponses.PROGRAM_JOIN_FAILED
-                                });
-                            }
-                        }
-                    }
+            //             if (!programUsers.length > 0 || ( programUsers.length > 0 && programUsers[0].resourcesStarted == false)) {
+            //                 let programJoinBody = {};
+            //                 programJoinBody.userRoleInformation = userRoleInformation;
+            //                 programJoinBody.isResource = true;
+            //                 programJoinBody.consentShared = true;
+            //                 let joinProgramData = await coreService.joinProgram (
+            //                     solutionDetails.programId,
+            //                     programJoinBody,
+            //                     userToken
+            //                 );
+            //                 if ( !joinProgramData.success ) {
+            //                     return resolve({ 
+            //                         status: HTTP_STATUS_CODE.bad_request.status, 
+            //                         message: CONSTANTS.apiResponses.PROGRAM_JOIN_FAILED
+            //                     });
+            //                 }
+            //             }
+            //         }
                     
-                    let projectCreation = 
-                    await this.userAssignedProjectCreation(
-                        solutionDetails.projectTemplateId,
-                        userId,
-                        userToken
-                    );
+            //         let projectCreation = 
+            //         await this.userAssignedProjectCreation(
+            //             solutionDetails.projectTemplateId,
+            //             userId,
+            //             userToken
+            //         );
 
-                    if( !projectCreation.success ) {
-                        return resolve(projectCreation);
-                    }
+            //         if( !projectCreation.success ) {
+            //             return resolve(projectCreation);
+            //         }
     
-                    projectCreation.data["isAPrivateProgram"] = 
-                    solutionDetails.isAPrivateProgram;
+            //         projectCreation.data["isAPrivateProgram"] = 
+            //         solutionDetails.isAPrivateProgram;
     
-                    projectCreation.data.programInformation = {
-                        _id : ObjectId(solutionDetails.programId),
-                        externalId : solutionDetails.programExternalId,
-                        description : 
-                        solutionDetails.programDescription ? solutionDetails.programDescription : "",
-                        name : solutionDetails.programName
-                    }
+            //         projectCreation.data.programInformation = {
+            //             _id : ObjectId(solutionDetails.programId),
+            //             externalId : solutionDetails.programExternalId,
+            //             description : 
+            //             solutionDetails.programDescription ? solutionDetails.programDescription : "",
+            //             name : solutionDetails.programName
+            //         }
     
-                    projectCreation.data.solutionInformation = {
-                        _id : ObjectId(solutionDetails._id),
-                        externalId : solutionDetails.externalId,
-                        description : 
-                        solutionDetails.description ? 
-                        solutionDetails.description : "",
-                        name : solutionDetails.name
-                    };
+            //         projectCreation.data.solutionInformation = {
+            //             _id : ObjectId(solutionDetails._id),
+            //             externalId : solutionDetails.externalId,
+            //             description : 
+            //             solutionDetails.description ? 
+            //             solutionDetails.description : "",
+            //             name : solutionDetails.name
+            //         };
     
-                    projectCreation.data["programId"] = 
-                    projectCreation.data.programInformation._id;
+            //         projectCreation.data["programId"] = 
+            //         projectCreation.data.programInformation._id;
     
-                    projectCreation.data["programExternalId"] = 
-                    projectCreation.data.programInformation.externalId;
+            //         projectCreation.data["programExternalId"] = 
+            //         projectCreation.data.programInformation.externalId;
     
-                    projectCreation.data["solutionId"] = 
-                    projectCreation.data.solutionInformation._id;
+            //         projectCreation.data["solutionId"] = 
+            //         projectCreation.data.solutionInformation._id;
     
-                    projectCreation.data["solutionExternalId"] = 
-                    projectCreation.data.solutionInformation.externalId;
+            //         projectCreation.data["solutionExternalId"] = 
+            //         projectCreation.data.solutionInformation.externalId;
     
-                    projectCreation.data["userRole"] = 
-                    bodyData.role;
+            //         projectCreation.data["userRole"] = 
+            //         bodyData.role;
     
-                    projectCreation.data["appInformation"] = {};
+            //         projectCreation.data["appInformation"] = {};
     
-                    if( appName !== "" ) {
-                        projectCreation.data["appInformation"]["appName"] = appName;
-                    }
+            //         if( appName !== "" ) {
+            //             projectCreation.data["appInformation"]["appName"] = appName;
+            //         }
     
-                    if( appVersion !== "" ) {
-                        projectCreation.data["appInformation"]["appVersion"] = appVersion;
-                    }
+            //         if( appVersion !== "" ) {
+            //             projectCreation.data["appInformation"]["appVersion"] = appVersion;
+            //         }
                     
-                    if ( solutionDetails.certificateTemplateId && solutionDetails.certificateTemplateId !== "" ) {
-                        // <- Add certificate template details to projectCreation data if present ->
-                        const certificateTemplateDetails = await certificateTemplateQueries.certificateTemplateDocument({
-                            _id : solutionDetails.certificateTemplateId
-                        });
+            //         if ( solutionDetails.certificateTemplateId && solutionDetails.certificateTemplateId !== "" ) {
+            //             // <- Add certificate template details to projectCreation data if present ->
+            //             const certificateTemplateDetails = await certificateTemplateQueries.certificateTemplateDocument({
+            //                 _id : solutionDetails.certificateTemplateId
+            //             });
                         
-                        // create certificate object and add data if certificate template is present.
-                        if ( certificateTemplateDetails.length > 0 ) {
-                            projectCreation.data["certificate"] = _.pick(certificateTemplateDetails[0], ['templateUrl', 'status', 'criteria']);
-                            projectCreation.data["certificate"]["templateId"] = solutionDetails.certificateTemplateId;
-                        }
-                    }
+            //             // create certificate object and add data if certificate template is present.
+            //             if ( certificateTemplateDetails.length > 0 ) {
+            //                 projectCreation.data["certificate"] = _.pick(certificateTemplateDetails[0], ['templateUrl', 'status', 'criteria']);
+            //                 projectCreation.data["certificate"]["templateId"] = solutionDetails.certificateTemplateId;
+            //             }
+            //         }
                     
-                    let getUserProfileFromObservation = false;
+            //         let getUserProfileFromObservation = false;
     
-                    if( bodyData && Object.keys(bodyData).length > 0 ) {
+            //         if( bodyData && Object.keys(bodyData).length > 0 ) {
     
-                        if( bodyData.hasAcceptedTAndC ) {
-                            projectCreation.data.hasAcceptedTAndC = bodyData.hasAcceptedTAndC;
-                        }
+            //             if( bodyData.hasAcceptedTAndC ) {
+            //                 projectCreation.data.hasAcceptedTAndC = bodyData.hasAcceptedTAndC;
+            //             }
 
-                        if( bodyData.referenceFrom ) {
-                            projectCreation.data.referenceFrom = bodyData.referenceFrom;
+            //             if( bodyData.referenceFrom ) {
+            //                 projectCreation.data.referenceFrom = bodyData.referenceFrom;
                             
-                            if( bodyData.submissions ) {
-                                if ( bodyData.submissions.observationId && bodyData.submissions.observationId != "" ) {
-                                    getUserProfileFromObservation = true;
-                                }
-                                projectCreation.data.submissions = bodyData.submissions;
-                            }
-                        }
+            //                 if( bodyData.submissions ) {
+            //                     if ( bodyData.submissions.observationId && bodyData.submissions.observationId != "" ) {
+            //                         getUserProfileFromObservation = true;
+            //                     }
+            //                     projectCreation.data.submissions = bodyData.submissions;
+            //                 }
+            //             }
     
-                        if( bodyData.role ) {
-                            projectCreation.data["userRole"] = bodyData.role;
-                        }
+            //             if( bodyData.role ) {
+            //                 projectCreation.data["userRole"] = bodyData.role;
+            //             }
 
-                        if( 
-                            solutionDetails.entityType && bodyData[solutionDetails.entityType] 
-                        ) {
-                            let entityInformation = 
-                            await surveyService.listEntitiesByLocationIds(
-                                userToken,
-                                [bodyData[solutionDetails.entityType]] 
-                            );
+            //             if( 
+            //                 solutionDetails.entityType && bodyData[solutionDetails.entityType] 
+            //             ) {
+            //                 let entityInformation = 
+            //                 await surveyService.listEntitiesByLocationIds(
+            //                     userToken,
+            //                     [bodyData[solutionDetails.entityType]] 
+            //                 );
 
-                            if( !entityInformation.success ) {
-                                throw {
-                                    message : CONSTANTS.apiResponses.ENTITY_NOT_FOUND,
-                                    status : HTTP_STATUS_CODE['bad_request'].status
-                                }
-                            }
+            //                 if( !entityInformation.success ) {
+            //                     throw {
+            //                         message : CONSTANTS.apiResponses.ENTITY_NOT_FOUND,
+            //                         status : HTTP_STATUS_CODE['bad_request'].status
+            //                     }
+            //                 }
 
-                            let entityDetails = await _entitiesMetaInformation(
-                                entityInformation.data
-                            );
+            //                 let entityDetails = await _entitiesMetaInformation(
+            //                     entityInformation.data
+            //                 );
 
-                            if ( entityDetails && entityDetails.length > 0 ) {
-                                projectCreation.data["entityInformation"] = entityDetails[0];
-                            }
+            //                 if ( entityDetails && entityDetails.length > 0 ) {
+            //                     projectCreation.data["entityInformation"] = entityDetails[0];
+            //                 }
         
-                            projectCreation.data.entityId = entityInformation.data[0]._id;
-                        }
+            //                 projectCreation.data.entityId = entityInformation.data[0]._id;
+            //             }
     
-                    }
+            //         }
     
-                    projectCreation.data.status = CONSTANTS.common.STARTED;
-                    projectCreation.data.lastDownloadedAt = new Date();
+            //         projectCreation.data.status = CONSTANTS.common.STARTED;
+            //         projectCreation.data.lastDownloadedAt = new Date();
                     
-                    // fetch userRoleInformation from observation if referenecFrom is observation
-                    let addReportInfoToSolution = false;
-                    if ( getUserProfileFromObservation ){
+            //         // fetch userRoleInformation from observation if referenecFrom is observation
+            //         let addReportInfoToSolution = false;
+            //         if ( getUserProfileFromObservation ){
 
-                        let observationDetails = await surveyService.observationDetails(
-                            userToken,
-                            bodyData.submissions.observationId
-                        );
+            //             let observationDetails = await surveyService.observationDetails(
+            //                 userToken,
+            //                 bodyData.submissions.observationId
+            //             );
 
-                        if( observationDetails.data &&
-                            Object.keys(observationDetails.data).length > 0 && 
-                            observationDetails.data.userRoleInformation &&
-                            Object.keys(observationDetails.data.userRoleInformation).length > 0
-                        ) {
+            //             if( observationDetails.data &&
+            //                 Object.keys(observationDetails.data).length > 0 && 
+            //                 observationDetails.data.userRoleInformation &&
+            //                 Object.keys(observationDetails.data.userRoleInformation).length > 0
+            //             ) {
 
-                            userRoleInformation = observationDetails.data.userRoleInformation;
+            //                 userRoleInformation = observationDetails.data.userRoleInformation;
                             
-                        }
+            //             }
 
-                        if( observationDetails.data &&
-                            Object.keys(observationDetails.data).length > 0 && 
-                            observationDetails.data.userProfile &&
-                            Object.keys(observationDetails.data.userProfile).length > 0
-                        ) {
+            //             if( observationDetails.data &&
+            //                 Object.keys(observationDetails.data).length > 0 && 
+            //                 observationDetails.data.userProfile &&
+            //                 Object.keys(observationDetails.data.userProfile).length > 0
+            //             ) {
 
-                            projectCreation.data.userProfile = observationDetails.data.userProfile;
-                            addReportInfoToSolution = true; 
+            //                 projectCreation.data.userProfile = observationDetails.data.userProfile;
+            //                 addReportInfoToSolution = true; 
                             
-                        } else {
-                            //Fetch user profile information by calling sunbird's user read api.
+            //             } else {
+            //                 //Fetch user profile information by calling sunbird's user read api.
 
-                            let userProfile = await userProfileService.profile(userToken, userId);
-                            if ( userProfile.success && 
-                                 userProfile.data &&
-                                 userProfile.data.response
-                            ) {
-                                    projectCreation.data.userProfile = userProfile.data.response;
-                                    addReportInfoToSolution = true; 
-                            } 
-                        }
+            //                 let userProfile = await userProfileService.profile(userToken, userId);
+            //                 if ( userProfile.success && 
+            //                      userProfile.data &&
+            //                      userProfile.data.response
+            //                 ) {
+            //                         projectCreation.data.userProfile = userProfile.data.response;
+            //                         addReportInfoToSolution = true; 
+            //                 } 
+            //             }
 
-                    } else {
-                        //Fetch user profile information by calling sunbird's user read api.
+            //         } else {
+            //             //Fetch user profile information by calling sunbird's user read api.
 
-                        let userProfileData = await userProfileService.profile(userToken, userId);
-                        if ( userProfileData.success && 
-                             userProfileData.data &&
-                             userProfileData.data.response
-                        ) {
-                                projectCreation.data.userProfile = userProfileData.data.response;
-                                addReportInfoToSolution = true; 
-                        } 
-                    }
+            //             let userProfileData = await userProfileService.profile(userToken, userId);
+            //             if ( userProfileData.success && 
+            //                  userProfileData.data &&
+            //                  userProfileData.data.response
+            //             ) {
+            //                     projectCreation.data.userProfile = userProfileData.data.response;
+            //                     addReportInfoToSolution = true; 
+            //             } 
+            //         }
 
-                    projectCreation.data.userRoleInformation = userRoleInformation;
+            //         projectCreation.data.userRoleInformation = userRoleInformation;
                     
-                    //compare & update userProfile with userRoleInformation
-                    if ( projectCreation.data.userProfile && userRoleInformation && Object.keys(userRoleInformation).length > 0 && Object.keys(projectCreation.data.userProfile).length > 0 ) {
-                        let updatedUserProfile = await _updateUserProfileBasedOnUserRoleInfo(
-                            projectCreation.data.userProfile,
-                            userRoleInformation
-                        );
+            //         //compare & update userProfile with userRoleInformation
+            //         if ( projectCreation.data.userProfile && userRoleInformation && Object.keys(userRoleInformation).length > 0 && Object.keys(projectCreation.data.userProfile).length > 0 ) {
+            //             let updatedUserProfile = await _updateUserProfileBasedOnUserRoleInfo(
+            //                 projectCreation.data.userProfile,
+            //                 userRoleInformation
+            //             );
 
-                        if (updatedUserProfile && updatedUserProfile.success == true && updatedUserProfile.profileMismatchFound == true) {
-                            projectCreation.data.userProfile = updatedUserProfile.data;
-                        }
-                    }
+            //             if (updatedUserProfile && updatedUserProfile.success == true && updatedUserProfile.profileMismatchFound == true) {
+            //                 projectCreation.data.userProfile = updatedUserProfile.data;
+            //             }
+            //         }
     
-                    let project = await projectQueries.createProject(projectCreation.data);
+            //         let project = await projectQueries.createProject(projectCreation.data);
                     
-                    if ( addReportInfoToSolution && project.solutionId ) {
-                        let updateSolution = await solutionsHelper.addReportInformationInSolution(
-                            project.solutionId,
-                            project.userProfile
-                        ); 
-                    }
+            //         if ( addReportInfoToSolution && project.solutionId ) {
+            //             let updateSolution = await solutionsHelper.addReportInformationInSolution(
+            //                 project.solutionId,
+            //                 project.userProfile
+            //             ); 
+            //         }
 
-                    await kafkaProducersHelper.pushProjectToKafka(project);
+            //         await kafkaProducersHelper.pushProjectToKafka(project);
                     
-                    projectId = project._id;
-                }
-            }
+            //         projectId = project._id;
+            //     }
+            // }
 
             let projectDetails = await this.details(
                 projectId, 
