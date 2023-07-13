@@ -14,7 +14,7 @@
 
 const libraryCategoriesHelper = require(MODULES_BASE_PATH + "/library/categories/helper");
 const coreService = require(GENERICS_FILES_PATH + "/services/core");
-const kafkaProducersHelper = require(GENERICS_FILES_PATH + "/kafka/producers");
+// const kafkaProducersHelper = require(GENERICS_FILES_PATH + "/kafka/producers");
 const learningResourcesHelper = require(MODULES_BASE_PATH + "/learningResources/helper");
 const surveyService = require(GENERICS_FILES_PATH + "/services/survey");
 const projectTemplateQueries = require(DB_QUERY_BASE_PATH + "/projectTemplates");
@@ -79,54 +79,54 @@ module.exports = class ProjectTemplatesHelper {
 
                 let categoriesData = {};
 
-                if( categoryIds.length > 0 ) {
+                // if( categoryIds.length > 0 ) {
+                //     // what is category documents
+                //     let categories = 
+                //     await projectCategoriesQueries.categoryDocuments({
+                //         externalId : { $in : categoryIds }
+                //     },["externalId","name"]);
 
-                    let categories = 
-                    await projectCategoriesQueries.categoryDocuments({
-                        externalId : { $in : categoryIds }
-                    },["externalId","name"]);
+                //     if( !categories.length > 0 ) {
+                //         throw {
+                //             status : HTTP_STATUS_CODE['bad_request'].status,
+                //             message : CONSTANTS.apiResponses.LIBRARY_CATEGORIES_NOT_FOUND
+                //         }
+                //     }
 
-                    if( !categories.length > 0 ) {
-                        throw {
-                            status : HTTP_STATUS_CODE['bad_request'].status,
-                            message : CONSTANTS.apiResponses.LIBRARY_CATEGORIES_NOT_FOUND
-                        }
-                    }
+                //     categoriesData = categories.reduce((ac,category)=> ({
+                //         ...ac,
+                //         [category.externalId] : {
+                //             _id : ObjectId(category._id),
+                //             externalId : category.externalId,
+                //             name : category.name
+                //         }
+                //     }),{});
+                // }
 
-                    categoriesData = categories.reduce((ac,category)=> ({
-                        ...ac,
-                        [category.externalId] : {
-                            _id : ObjectId(category._id),
-                            externalId : category.externalId,
-                            name : category.name
-                        }
-                    }),{});
-                }
+                // let recommendedFor = {};
 
-                let recommendedFor = {};
+                // if( roleIds.length > 0 ) {
 
-                if( roleIds.length > 0 ) {
+                //     let userRolesData = 
+                //     await coreService.rolesDocuments({
+                //         code : { $in : roleIds }
+                //     },["code"]);
 
-                    let userRolesData = 
-                    await coreService.rolesDocuments({
-                        code : { $in : roleIds }
-                    },["code"]);
+                //     if( !userRolesData.success ) {
+                //         throw {
+                //             message : CONSTANTS.apiResponses.USER_ROLES_NOT_FOUND,
+                //             status : HTTP_STATUS_CODE['bad_request'].status
+                //         }
+                //     }
 
-                    if( !userRolesData.success ) {
-                        throw {
-                            message : CONSTANTS.apiResponses.USER_ROLES_NOT_FOUND,
-                            status : HTTP_STATUS_CODE['bad_request'].status
-                        }
-                    }
-
-                    recommendedFor = userRolesData.data.reduce((ac,role)=> ({
-                        ...ac,
-                        [role.code] : {
-                            roleId : ObjectId(role._id),
-                            code : role.code
-                        }
-                    }),{});
-                }
+                //     recommendedFor = userRolesData.data.reduce((ac,role)=> ({
+                //         ...ac,
+                //         [role.code] : {
+                //             roleId : ObjectId(role._id),
+                //             code : role.code
+                //         }
+                //     }),{});
+                // }
                 // <- Entitytype validation removed {release-5.0.0} - entity generalisation
                 // let entityTypesData = {};
 
@@ -156,7 +156,7 @@ module.exports = class ProjectTemplatesHelper {
                     success : true,
                     data : {
                         categories : categoriesData,
-                        roles : recommendedFor,
+                        // roles : recommendedFor,
                         // <- Entitytype validation removed {release-5.0.0} - entity generalisation
                         // entityTypes : entityTypesData
                     }
@@ -207,15 +207,15 @@ module.exports = class ProjectTemplatesHelper {
 
                 let recommendedFor = [];
                 
-                if( parsedData.recommendedFor && parsedData.recommendedFor.length > 0 ) {
-                    parsedData.recommendedFor.forEach(recommended => {
-                        if( csvInformation.roles[recommended] ) {
-                            return recommendedFor.push(
-                                csvInformation.roles[recommended]
-                            );
-                        }
-                    });
-                }
+                // if( parsedData.recommendedFor && parsedData.recommendedFor.length > 0 ) {
+                //     parsedData.recommendedFor.forEach(recommended => {
+                //         if( csvInformation.roles[recommended] ) {
+                //             return recommendedFor.push(
+                //                 csvInformation.roles[recommended]
+                //             );
+                //         }
+                //     });
+                // }
 
                 parsedData.recommendedFor = recommendedFor;
                 // <- Entitytype validation removed {release-5.0.0} - entity generalisation
