@@ -567,45 +567,45 @@ module.exports = class ProjectTemplatesHelper {
                 projectTemplateData[0].externalId +"-"+ UTILS.epochTime();
                 newProjectTemplate.createdBy = newProjectTemplate.updatedBy = userId;
 
-                let solutionData = 
-                await surveyService.listSolutions([solutionId]);
+                // let solutionData = 
+                // await surveyService.listSolutions([solutionId]);
                 
-                if( !solutionData.success ) {
-                    throw {
-                        message : CONSTANTS.apiResponses.SOLUTION_NOT_FOUND,
-                        status : HTTP_STATUS_CODE['bad_request'].status
-                    }
-                }
+                // if( !solutionData.success ) {
+                //     throw {
+                //         message : CONSTANTS.apiResponses.SOLUTION_NOT_FOUND,
+                //         status : HTTP_STATUS_CODE['bad_request'].status
+                //     }
+                // }
 
-                if( solutionData.data[0].type !== CONSTANTS.common.IMPROVEMENT_PROJECT ) {
-                    throw {
-                        message : CONSTANTS.apiResponses.IMPROVEMENT_PROJECT_SOLUTION_NOT_FOUND,
-                        status : HTTP_STATUS_CODE['bad_request'].status
-                    }
-                }
+                // if( solutionData.data[0].type !== CONSTANTS.common.IMPROVEMENT_PROJECT ) {
+                //     throw {
+                //         message : CONSTANTS.apiResponses.IMPROVEMENT_PROJECT_SOLUTION_NOT_FOUND,
+                //         status : HTTP_STATUS_CODE['bad_request'].status
+                //     }
+                // }
 
-                if( solutionData.data[0].projectTemplateId ) {
-                    throw {
-                        message : CONSTANTS.apiResponses.PROJECT_TEMPLATE_EXISTS_IN_SOLUTION,
-                        status : HTTP_STATUS_CODE['bad_request'].status
-                    }
-                }
+                // if( solutionData.data[0].projectTemplateId ) {
+                //     throw {
+                //         message : CONSTANTS.apiResponses.PROJECT_TEMPLATE_EXISTS_IN_SOLUTION,
+                //         status : HTTP_STATUS_CODE['bad_request'].status
+                //     }
+                // }
 
-                if( 
-                    projectTemplateData[0].entityType &&  
-                    projectTemplateData[0].entityType !== "" &&
-                    projectTemplateData[0].entityType !== solutionData.data[0].entityType
-                ) {
-                    throw {
-                        message : CONSTANTS.apiResponses.ENTITY_TYPE_MIS_MATCHED,
-                        status : HTTP_STATUS_CODE['bad_request'].status
-                    }
-                }
+                // if( 
+                //     projectTemplateData[0].entityType &&  
+                //     projectTemplateData[0].entityType !== "" &&
+                //     projectTemplateData[0].entityType !== solutionData.data[0].entityType
+                // ) {
+                //     throw {
+                //         message : CONSTANTS.apiResponses.ENTITY_TYPE_MIS_MATCHED,
+                //         status : HTTP_STATUS_CODE['bad_request'].status
+                //     }
+                // }
  
-                newProjectTemplate.solutionId = solutionData.data[0]._id;
-                newProjectTemplate.solutionExternalId = solutionData.data[0].externalId;
-                newProjectTemplate.programId = solutionData.data[0].programId;
-                newProjectTemplate.programExternalId = solutionData.data[0].programExternalId;
+                // newProjectTemplate.solutionId = solutionData.data[0]._id;
+                // newProjectTemplate.solutionExternalId = solutionData.data[0].externalId;
+                // newProjectTemplate.programId = solutionData.data[0].programId;
+                // newProjectTemplate.programExternalId = solutionData.data[0].programExternalId;
 
 
                 newProjectTemplate.parentTemplateId = projectTemplateData[0]._id;
@@ -645,20 +645,20 @@ module.exports = class ProjectTemplatesHelper {
                     );
                 }
 
-                await surveyService.updateSolution(
-                    userToken,
-                    {
-                        projectTemplateId : duplicateTemplateDocument._id,
-                        name : duplicateTemplateDocument.title
-                    },
-                    newProjectTemplate.solutionExternalId
-                );  
+                // await surveyService.updateSolution(
+                //     userToken,
+                //     {
+                //         projectTemplateId : duplicateTemplateDocument._id,
+                //         name : duplicateTemplateDocument.title
+                //     },
+                //     newProjectTemplate.solutionExternalId
+                // );  
                 
-                await this.ratings(
-                    projectTemplateData[0]._id,
-                    updateData.rating,
-                    userToken
-                );  
+                // await this.ratings(
+                //     projectTemplateData[0]._id,
+                //     updateData.rating,
+                //     userToken
+                // );  
 
                 return resolve({
                     success: true,
