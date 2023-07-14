@@ -52,10 +52,10 @@ module.exports = class ProjectTemplateTasksHelper {
                         taskIds.push(parsedData.externalId);
                     }
 
-                    if ( parsedData.solutionId && parsedData.solutionId !== "" ) {
-                        solutionExists = true;
-                        solutionIds.push(parsedData.solutionId);
-                    }
+                    // if ( parsedData.solutionId && parsedData.solutionId !== "" ) {
+                    //     solutionExists = true;
+                    //     solutionIds.push(parsedData.solutionId);
+                    // }
 
                 });
 
@@ -104,39 +104,39 @@ module.exports = class ProjectTemplateTasksHelper {
                     }
                 }
 
-                if( solutionExists && !projectTemplate[0].entityType ) {
-                    throw {
-                        message : CONSTANTS.apiResponses.ENTITY_TYPE_NOT_FOUND_IN_TEMPLATE,
-                        status : HTTP_STATUS_CODE['bad_request'].status
-                    }
-                }
+                // if( solutionExists && !projectTemplate[0].entityType ) {
+                //     throw {
+                //         message : CONSTANTS.apiResponses.ENTITY_TYPE_NOT_FOUND_IN_TEMPLATE,
+                //         status : HTTP_STATUS_CODE['bad_request'].status
+                //     }
+                // }
 
                 let solutionData = {};
 
-                if ( solutionIds.length > 0 ) {
+                // if ( solutionIds.length > 0 ) {
                     
-                    let solutions = 
-                    await surveyService.listSolutions(solutionIds);
+                //     let solutions = 
+                //     await surveyService.listSolutions(solutionIds);
 
-                    if( !solutions.success ) {
-                        throw {
-                            message : CONSTANTS.apiResponses.SOLUTION_NOT_FOUND,
-                            status : HTTP_STATUS_CODE['bad_request'].status
-                        }
-                    }
+                //     if( !solutions.success ) {
+                //         throw {
+                //             message : CONSTANTS.apiResponses.SOLUTION_NOT_FOUND,
+                //             status : HTTP_STATUS_CODE['bad_request'].status
+                //         }
+                //     }
 
-                    if ( 
-                        solutions.data &&
-                        Object.keys(solutions.data).length > 0 
-                    ) {
+                //     if ( 
+                //         solutions.data &&
+                //         Object.keys(solutions.data).length > 0 
+                //     ) {
 
-                        solutions.data.forEach(solution => {
-                            if(!solutionData[solution.externalId]) {
-                                solutionData[solution.externalId] = solution;
-                            }
-                        });
-                    }
-                }
+                //         solutions.data.forEach(solution => {
+                //             if(!solutionData[solution.externalId]) {
+                //                 solutionData[solution.externalId] = solution;
+                //             }
+                //         });
+                //     }
+                // }
 
                 return resolve({
                     success : true,
@@ -196,88 +196,89 @@ module.exports = class ProjectTemplateTasksHelper {
                     
                     allValues.learningResources = learningResources.data;
 
-                } else if ( solutionTypes.includes(allValues.type) ) { 
+                } 
+                // else if ( solutionTypes.includes(allValues.type) ) { 
 
-                    allValues.solutionDetails = {};
-                    if( parsedData.solutionType && parsedData.solutionType !== "" ) {
-                        allValues.solutionDetails.type = parsedData.solutionType; 
-                    } else {
-                        parsedData.STATUS = 
-                        CONSTANTS.apiResponses.REQUIRED_SOLUTION_TYPE;
-                    }
+                //     allValues.solutionDetails = {};
+                //     if( parsedData.solutionType && parsedData.solutionType !== "" ) {
+                //         allValues.solutionDetails.type = parsedData.solutionType; 
+                //     } else {
+                //         parsedData.STATUS = 
+                //         CONSTANTS.apiResponses.REQUIRED_SOLUTION_TYPE;
+                //     }
                     
-                    if ( parsedData.solutionSubType && parsedData.solutionSubType !== "" ) {
-                        allValues.solutionDetails.subType = parsedData.solutionSubType;
-                    } else {
-                        parsedData.STATUS = 
-                        CONSTANTS.apiResponses.REQUIRED_SOLUTION_SUB_TYPE;
-                    }
+                //     if ( parsedData.solutionSubType && parsedData.solutionSubType !== "" ) {
+                //         allValues.solutionDetails.subType = parsedData.solutionSubType;
+                //     } else {
+                //         parsedData.STATUS = 
+                //         CONSTANTS.apiResponses.REQUIRED_SOLUTION_SUB_TYPE;
+                //     }
 
-                    if ( parsedData.solutionId && parsedData.solutionId !== "" ) {
+                //     if ( parsedData.solutionId && parsedData.solutionId !== "" ) {
 
-                        if ( !solutionData[parsedData.solutionId] ) {
-                            parsedData.STATUS = 
-                            CONSTANTS.apiResponses.SOLUTION_NOT_FOUND;
-                        } else {
+                //         if ( !solutionData[parsedData.solutionId] ) {
+                //             parsedData.STATUS = 
+                //             CONSTANTS.apiResponses.SOLUTION_NOT_FOUND;
+                //         } else {
 
-                            if( 
-                                solutionData[parsedData.solutionId].type !== 
-                                allValues.solutionDetails.type 
-                            ) {
+                //             if( 
+                //                 solutionData[parsedData.solutionId].type !== 
+                //                 allValues.solutionDetails.type 
+                //             ) {
                                 
-                                parsedData.STATUS = 
-                                CONSTANTS.apiResponses.SOLUTION_TYPE_MIS_MATCH;
-                            }
+                //                 parsedData.STATUS = 
+                //                 CONSTANTS.apiResponses.SOLUTION_TYPE_MIS_MATCH;
+                //             }
 
-                            if( 
-                                solutionData[parsedData.solutionId].subType !== 
-                                allValues.solutionDetails.subType
-                            ) {
-                                parsedData.STATUS = 
-                                CONSTANTS.apiResponses.SOLUTION_SUB_TYPE_MIS_MATCH;
-                            }
+                //             if( 
+                //                 solutionData[parsedData.solutionId].subType !== 
+                //                 allValues.solutionDetails.subType
+                //             ) {
+                //                 parsedData.STATUS = 
+                //                 CONSTANTS.apiResponses.SOLUTION_SUB_TYPE_MIS_MATCH;
+                //             }
 
-                            if( 
-                                template.entityType !== solutionData[parsedData.solutionId].entityType 
-                            ) {
-                                parsedData.STATUS = 
-                                CONSTANTS.apiResponses.MIS_MATCHED_PROJECT_AND_TASK_ENTITY_TYPE;
-                            } else {
+                //             if( 
+                //                 template.entityType !== solutionData[parsedData.solutionId].entityType 
+                //             ) {
+                //                 parsedData.STATUS = 
+                //                 CONSTANTS.apiResponses.MIS_MATCHED_PROJECT_AND_TASK_ENTITY_TYPE;
+                //             } else {
 
-                                let projectionFields = _solutionDocumentProjectionFieldsForTask();
-                                allValues.solutionDetails["minNoOfSubmissionsRequired"] = CONSTANTS.common.DEFAULT_SUBMISSION_REQUIRED;
+                //                 let projectionFields = _solutionDocumentProjectionFieldsForTask();
+                //                 allValues.solutionDetails["minNoOfSubmissionsRequired"] = CONSTANTS.common.DEFAULT_SUBMISSION_REQUIRED;
                                 
-                                if (parsedData.minNoOfSubmissionsRequired && parsedData.minNoOfSubmissionsRequired != "" ) {
+                //                 if (parsedData.minNoOfSubmissionsRequired && parsedData.minNoOfSubmissionsRequired != "" ) {
 
-                                    // minNoOfSubmissionsRequired present in csv
-                                    if ( parsedData.minNoOfSubmissionsRequired > CONSTANTS.common.DEFAULT_SUBMISSION_REQUIRED ) {
-                                        if ( solutionData[parsedData.solutionId].allowMultipleAssessemts ) {
-                                            allValues.solutionDetails["minNoOfSubmissionsRequired"] = parsedData.minNoOfSubmissionsRequired;
-                                        } 
-                                    }
+                //                     // minNoOfSubmissionsRequired present in csv
+                //                     if ( parsedData.minNoOfSubmissionsRequired > CONSTANTS.common.DEFAULT_SUBMISSION_REQUIRED ) {
+                //                         if ( solutionData[parsedData.solutionId].allowMultipleAssessemts ) {
+                //                             allValues.solutionDetails["minNoOfSubmissionsRequired"] = parsedData.minNoOfSubmissionsRequired;
+                //                         } 
+                //                     }
 
-                                }else{
-                                    // minNoOfSubmissionsRequired not present in csv
-                                    if (solutionData[parsedData.solutionId].minNoOfSubmissionsRequired ) {
-                                        projectionFields.push("minNoOfSubmissionsRequired");
-                                    }
-                                }
+                //                 }else{
+                //                     // minNoOfSubmissionsRequired not present in csv
+                //                     if (solutionData[parsedData.solutionId].minNoOfSubmissionsRequired ) {
+                //                         projectionFields.push("minNoOfSubmissionsRequired");
+                //                     }
+                //                 }
 
-                                Object.assign(allValues.solutionDetails, _.pick(
-                                    solutionData[parsedData.solutionId],
-                                    projectionFields
-                                ))
+                //                 Object.assign(allValues.solutionDetails, _.pick(
+                //                     solutionData[parsedData.solutionId],
+                //                     projectionFields
+                //                 ))
 
-                            }
+                //             }
 
-                        }
+                //         }
 
-                    } else {
-                        parsedData.STATUS = 
-                        CONSTANTS.apiResponses.REQUIRED_SOLUTION_ID;
-                    }
+                //     } else {
+                //         parsedData.STATUS = 
+                //         CONSTANTS.apiResponses.REQUIRED_SOLUTION_ID;
+                //     }
 
-                }
+                // }
 
                 allValues.projectTemplateId = template._id;
                 allValues.projectTemplateExternalId = template.externalId;
