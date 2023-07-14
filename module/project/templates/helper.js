@@ -654,11 +654,11 @@ module.exports = class ProjectTemplatesHelper {
                 //     newProjectTemplate.solutionExternalId
                 // );  
                 
-                await this.ratings(
-                    projectTemplateData[0]._id,
-                    updateData.rating,
-                    userToken
-                );  
+                // await this.ratings(
+                //     projectTemplateData[0]._id,
+                //     updateData.rating,
+                //     userToken
+                // );  
 
                 return resolve({
                     success: true,
