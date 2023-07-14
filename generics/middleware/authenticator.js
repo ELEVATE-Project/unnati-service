@@ -7,10 +7,10 @@
 
 // dependencies
 const jwt = require('jsonwebtoken');
-const fs = require('fs');
-const keyCloakPublicKeyPath = (process.env.KEYCLOAK_PUBLIC_KEY_PATH && process.env.KEYCLOAK_PUBLIC_KEY_PATH != "") ? PROJECT_ROOT_DIRECTORY+"/"+process.env.KEYCLOAK_PUBLIC_KEY_PATH+"/" : PROJECT_ROOT_DIRECTORY+"/"+"keycloak-public-keys/" ;
-const PEM_FILE_BEGIN_STRING = "-----BEGIN PUBLIC KEY-----";
-const PEM_FILE_END_STRING = "-----END PUBLIC KEY-----";
+// const fs = require('fs');
+// const keyCloakPublicKeyPath = (process.env.KEYCLOAK_PUBLIC_KEY_PATH && process.env.KEYCLOAK_PUBLIC_KEY_PATH != "") ? PROJECT_ROOT_DIRECTORY+"/"+process.env.KEYCLOAK_PUBLIC_KEY_PATH+"/" : PROJECT_ROOT_DIRECTORY+"/"+"keycloak-public-keys/" ;
+// const PEM_FILE_BEGIN_STRING = "-----BEGIN PUBLIC KEY-----";
+// const PEM_FILE_END_STRING = "-----END PUBLIC KEY-----";
 
 var respUtil = function (resp) {
   return {
@@ -94,56 +94,75 @@ module.exports = async function (req, res, next, token = "") {
   rspObj.errMsg = CONSTANTS.apiResponses.TOKEN_INVALID_MESSAGE;
   rspObj.responseCode = HTTP_STATUS_CODE["unauthorized"].status;
 
-  var decoded = jwt.decode(token, { complete: true });
-  if(decoded === null || decoded.header === undefined){
+  // <---- For Elevate user service user compactibility ---->
+  try {
+    decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+  } catch (err) {
     return res.status(HTTP_STATUS_CODE["unauthorized"].status).send(respUtil(rspObj));
   }
-
-  const kid = decoded.header.kid
-  let cert = "";
-  let path = keyCloakPublicKeyPath + kid;
-    
-  if (fs.existsSync(path)) {
-
-    let accessKeyFile  = await fs.readFileSync(path);
-
-    if(accessKeyFile) {
-      if(!accessKeyFile.includes(PEM_FILE_BEGIN_STRING)){
-        cert = PEM_FILE_BEGIN_STRING+"\n"+accessKeyFile+"\n"+PEM_FILE_END_STRING;
-      }else {
-        cert = fs.readFileSync(path);
-      }  
+  if (!decodedToken) {
+    return res.status(HTTP_STATUS_CODE["unauthorized"].status).send(respUtil(rspObj));
+  }
+  req.userDetails = {
+    userToken : token,
+    userInformation : {
+      userId : decodedToken.data._id,
+      userName : decodedToken.data.name,
+      email : decodedToken.data.email,
+      firstName : decodedToken.data.name
     }
+  };
+  next();
+  
+  // var decoded = jwt.decode(token, { complete: true });
+  // if(decoded === null || decoded.header === undefined){
+  //   return res.status(HTTP_STATUS_CODE["unauthorized"].status).send(respUtil(rspObj));
+  // }
+
+  // const kid = decoded.header.kid
+  // let cert = "";
+  // let path = keyCloakPublicKeyPath + kid;
     
-    jwt.verify(token, cert, { algorithm: ['sha1', 'RS256', 'HS256'] }, function (err, decode) {
+  // if (fs.existsSync(path)) {
 
-      if (err) {
-        return res.status(HTTP_STATUS_CODE["unauthorized"].status).send(respUtil(rspObj));
-      }
+  //   let accessKeyFile  = await fs.readFileSync(path);
 
-      if (decode !== undefined) {
-        const expiry = decode.exp;
-        const now = new Date();
-        if (now.getTime() > expiry * 1000) {
-          return res.status(HTTP_STATUS_CODE["unauthorized"].status).send(respUtil(rspObj));
-        }
+  //   if(accessKeyFile) {
+  //     if(!accessKeyFile.includes(PEM_FILE_BEGIN_STRING)){
+  //       cert = PEM_FILE_BEGIN_STRING+"\n"+accessKeyFile+"\n"+PEM_FILE_END_STRING;
+  //     }else {
+  //       cert = fs.readFileSync(path);
+  //     }  
+  //   }
+    
+  //   jwt.verify(token, cert, { algorithm: ['sha1', 'RS256', 'HS256'] }, function (err, decode) {
+  //     if (err) {
+  //       return res.status(HTTP_STATUS_CODE["unauthorized"].status).send(respUtil(rspObj));
+  //     }
 
-        req.userDetails = {
-          userToken : token,
-          userInformation : {
-            userId : decode.sub.split(":").pop(),
-            userName : decode.preferred_username,
-            email : decode.email,
-            firstName : decode.name
-          }
-        };
+  //     if (decode !== undefined) {
+  //       const expiry = decode.exp;
+  //       const now = new Date();
+  //       if (now.getTime() > expiry * 1000) {
+  //         return res.status(HTTP_STATUS_CODE["unauthorized"].status).send(respUtil(rspObj));
+  //       }
 
-        next();
-      } else {
-        return res.status(HTTP_STATUS_CODE["unauthorized"].status).send(respUtil(rspObj));
-      }
-    });
-  } else {
-    return res.status(HTTP_STATUS_CODE["unauthorized"].status).send(respUtil(rspObj));
-  }
+  //       req.userDetails = {
+  //         userToken : token,
+  //         userInformation : {
+  //           userId : decode.sub.split(":").pop(),
+  //           userName : decode.preferred_username,
+  //           email : decode.email,
+  //           firstName : decode.name
+  //         }
+  //       };
+
+  //       next();
+  //     } else {
+  //       return res.status(HTTP_STATUS_CODE["unauthorized"].status).send(respUtil(rspObj));
+  //     }
+  //   });
+  // } else {
+  //   return res.status(HTTP_STATUS_CODE["unauthorized"].status).send(respUtil(rspObj));
+  // }
 };
