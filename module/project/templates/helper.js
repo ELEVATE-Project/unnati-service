@@ -79,29 +79,29 @@ module.exports = class ProjectTemplatesHelper {
 
                 let categoriesData = {};
 
-                // if( categoryIds.length > 0 ) {
-                //     // what is category documents
-                //     let categories = 
-                //     await projectCategoriesQueries.categoryDocuments({
-                //         externalId : { $in : categoryIds }
-                //     },["externalId","name"]);
+                if( categoryIds.length > 0 ) {
+                    // what is category documents
+                    let categories = 
+                    await projectCategoriesQueries.categoryDocuments({
+                        externalId : { $in : categoryIds }
+                    },["externalId","name"]);
 
-                //     if( !categories.length > 0 ) {
-                //         throw {
-                //             status : HTTP_STATUS_CODE['bad_request'].status,
-                //             message : CONSTANTS.apiResponses.LIBRARY_CATEGORIES_NOT_FOUND
-                //         }
-                //     }
+                    if( !categories.length > 0 ) {
+                        throw {
+                            status : HTTP_STATUS_CODE['bad_request'].status,
+                            message : CONSTANTS.apiResponses.LIBRARY_CATEGORIES_NOT_FOUND
+                        }
+                    }
 
-                //     categoriesData = categories.reduce((ac,category)=> ({
-                //         ...ac,
-                //         [category.externalId] : {
-                //             _id : ObjectId(category._id),
-                //             externalId : category.externalId,
-                //             name : category.name
-                //         }
-                //     }),{});
-                // }
+                    categoriesData = categories.reduce((ac,category)=> ({
+                        ...ac,
+                        [category.externalId] : {
+                            _id : ObjectId(category._id),
+                            externalId : category.externalId,
+                            name : category.name
+                        }
+                    }),{});
+                }
 
                 // let recommendedFor = {};
 
