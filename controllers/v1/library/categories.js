@@ -97,4 +97,165 @@ module.exports = class LibraryCategories extends Abstract {
         })
     }
 
+    /**
+    * @api {post} /improvement-project/api/v1/library/categories/create
+    * List of library projects.
+    * @apiVersion 1.0.0
+    * @apiGroup Library Categories
+    * @apiSampleRequest /improvement-project/api/v1/library/categories/create
+    * {json} Request body
+    * @apiParamExample {json} Response:
+    * 
+    * @apiUse successBody
+    * @apiUse errorBody
+    */
+
+      /**
+      *Create new project-category.
+      * @method
+      * @name create
+      * @param {Object} req - requested data
+      * @returns {Object} Library project category details .
+     */
+
+      async create(req) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                
+                const libraryProjectcategory = 
+                await libraryCategoriesHelper.create(req.body);
+                
+                return resolve({
+                    message : libraryProjectcategory.message,
+                    result : libraryProjectcategory.data
+                });
+
+            } catch (error) {
+                return reject(error);
+            }
+        })
+    }
+
+    /**
+    * @api {post} /improvement-project/api/v1/library/categories/update/_id
+    * List of library projects.
+    * @apiVersion 1.0.0
+    * @apiGroup Library Categories
+    * @apiSampleRequest /improvement-project/api/v1/library/categories/update
+    * {json} Request body
+    * @apiParamExample {json} Response:
+    * 
+    * @apiUse successBody
+    * @apiUse errorBody
+    */
+
+      /**
+      *Create new project-category.
+      * @method
+      * @name update
+      * @param {Object} req - requested data
+      * @returns {Array} Library Categories project.
+     */
+
+      async update(req) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                
+                const findQuery = {
+                    "_id" : req.params._id
+                }
+                const libraryProjectcategory = 
+                await libraryCategoriesHelper.update(findQuery,req.body);
+                
+                return resolve({
+                    message : libraryProjectcategory.message,
+                    result : libraryProjectcategory.data
+                });
+
+            } catch (error) {
+                return reject(error);
+            }
+        })
+    }
+
+    /**
+    * @api {get} /improvement-project/api/v1/library/categories/list 
+    * List of library categories.
+    * @apiVersion 1.0.0
+    * @apiGroup Library Categories
+    * @apiSampleRequest /improvement-project/api/v1/library/categories/list
+    * @apiParamExample {json} Response:
+    {
+    "message": "Project categories fetched successfully",
+    "status": 200,
+    "result": [
+        {
+            "name": "Community",
+            "type": "community",
+            "updatedAt": "2020-11-18T16:03:22.563Z",
+            "projectsCount": 0,
+            "url": "https://storage.googleapis.com/download/storage/v1/b/sl-dev-storage/o/static%2FprojectCategories%2Fcommunity.png?alt=media"
+        },
+        {
+            "name": "Education Leader",
+            "type": "educationLeader",
+            "updatedAt": "2020-11-18T16:03:22.563Z",
+            "projectsCount": 0,
+            "url": "https://storage.googleapis.com/download/storage/v1/b/sl-dev-storage/o/static%2FprojectCategories%2FeducationLeader.png?alt=media"
+        },
+        {
+            "name": "Infrastructure",
+            "type": "infrastructure",
+            "updatedAt": "2020-11-18T16:03:22.563Z",
+            "projectsCount": 0,
+            "url": "https://storage.googleapis.com/download/storage/v1/b/sl-dev-storage/o/static%2FprojectCategories%2Finfrastructure.png?alt=media"
+        },
+        {
+            "name": "Students",
+            "type": "students",
+            "updatedAt": "2020-11-18T16:03:22.563Z",
+            "projectsCount": 0,
+            "url": "https://storage.googleapis.com/download/storage/v1/b/sl-dev-storage/o/static%2FprojectCategories%2Fstudents.png?alt=media"
+        },
+        {
+            "name": "Teachers",
+            "type": "teachers",
+            "updatedAt": "2020-11-18T16:03:22.563Z",
+            "projectsCount": 0,
+            "url": "https://storage.googleapis.com/download/storage/v1/b/sl-dev-storage/o/static%2FprojectCategories%2Fteachers.png?alt=media"
+        }
+    ]}
+    * @apiUse successBody
+    * @apiUse errorBody
+    */
+
+      /**
+      * List of library categories
+      * @method
+      * @name list
+      * @param {Object} req - requested data
+      * @returns {Array} Library categories.
+     */
+
+      async list() {
+        return new Promise(async (resolve, reject) => {
+            try {
+                
+                let projectCategories = await libraryCategoriesHelper.list();
+
+                projectCategories.result = projectCategories.data;
+
+                return resolve(projectCategories);
+
+            } catch (error) {
+                return reject({
+                    status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+                    message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+                    errorObject: error
+                });
+            }
+        })
+    }
+
+
 };

@@ -18,15 +18,15 @@ const mongodb_connect = function () {
   global.Abstract = require("../generics/abstract");
 };
 
-/**
-  * Kafka connection.
-  * @function
-  * @name kafka_connect
-*/
+// /**
+//   * Kafka connection.
+//   * @function
+//   * @name kafka_connect
+// */
 
-const kafka_connect = function() {
-  global.kafkaClient = require("./kafka")();
-};
+// const kafka_connect = function() {
+//   global.kafkaClient = require("./kafka")();
+// };
 
 // Configuration data.
 
@@ -35,6 +35,6 @@ const configuration = {
 };
 
 mongodb_connect();
-kafka_connect();
+// kafka_connect();
 
 module.exports = configuration;
