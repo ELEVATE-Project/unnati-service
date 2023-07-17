@@ -6,8 +6,8 @@
  */
 
 // Dependencies 
-const coreService = require(GENERICS_FILES_PATH + "/services/core");
-const sessionHelpers = require(GENERIC_HELPERS_PATH+"/sessions");
+// const coreService = require(GENERICS_FILES_PATH + "/services/core");
+// const sessionHelpers = require(GENERIC_HELPERS_PATH+"/sessions");
 const projectCategoriesQueries = require(DB_QUERY_BASE_PATH + "/projectCategories");
 const projectTemplateQueries = require(DB_QUERY_BASE_PATH + "/projectTemplates");
 const projectTemplateTaskQueries = require(DB_QUERY_BASE_PATH + "/projectTemplateTask");
@@ -262,6 +262,89 @@ module.exports = class LibraryCategoriesHelper {
             } catch (error) {
                 return resolve({
                     status : error.status ? error.status : HTTP_STATUS_CODE['internal_server_error'].status,
+                    success: false,
+                    message: error.message,
+                    data : {}
+                });
+            }
+        })
+    }
+
+    /**
+      * create categories
+      * @method
+      * @name create
+      * @param categoryData - categoryData.
+      * @returns {Object} category details
+     */
+
+    static create(categoryData) {    
+        return new Promise(async (resolve, reject) => {
+            try {
+                let projectCategoriesData = 
+                await database.models.projectCategories.create(categoryData)
+
+                if( !projectCategoriesData._id ) {
+                    throw {
+                        status : HTTP_STATUS_CODE['bad_request'].status,
+                        message : CONSTANTS.apiResponses.PROJECT_CATEGORIES_NOT_ADDED
+                    }
+                }
+
+                return resolve({
+                    success: true,
+                    message : CONSTANTS.apiResponses.PROJECT_CATEGORIES_ADDED,
+                    data : projectCategoriesData._id
+                });
+
+            } catch (error) {   
+                return resolve({
+                    success: false,
+                    message: error.message,
+                    data : {}
+                });
+            }
+        })
+    }
+
+    /**
+      * list categories
+      * @method
+      * @name list
+      * @returns {Object} category details
+     */
+
+    static list() {    
+        return new Promise(async (resolve, reject) => {
+            try {
+                let categoryData = await projectCategoriesQueries.categoryDocuments(
+                    {
+                        status : CONSTANTS.common.ACTIVE_STATUS
+                    },
+                    [
+                        "externalId",
+                        "name",
+                        "icon",
+                        "updatedAt",
+                        "noOfProjects"
+                    ]
+                );
+
+                if( !categoryData.length > 0 ) {
+                    throw {
+                        status : HTTP_STATUS_CODE['ok'].status,
+                        message : CONSTANTS.apiResponses.LIBRARY_CATEGORIES_NOT_FOUND
+                    };
+                }
+
+                return resolve({
+                    success: true,
+                    message : CONSTANTS.apiResponses.PROJECT_CATEGORIES_FETCHED,
+                    data : categoryData
+                });
+
+            } catch (error) {   
+                return resolve({
                     success: false,
                     message: error.message,
                     data : {}
