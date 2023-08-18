@@ -745,4 +745,118 @@ module.exports = class ProjectTemplates extends Abstract {
         })
     }
 
+    /**
+    * @description          - List project Templates.
+    * @method
+    * @name                 - list
+    * @param {Object} req   - request data.
+    * @returns {Array}      - List of projecttemplates.
+    * @apiParamExample {json} Response:
+    * {
+            "message": "List of project templates fetched successfully",
+            "status": 200,
+            "result": [
+                {
+                    "_id": "64b529375bfa678a0f257936",
+                    "description": "test",
+                    "concepts": [
+                        ""
+                    ],
+                    "keywords": [
+                        "DIET PUSA, SAMASTIPUR, मापन- लम्बाई, भार, धारिता ."
+                    ],
+                    "isDeleted": false,
+                    "recommendedFor": [],
+                    "tasks": [
+                        "64b52b371ea4158a83031417",
+                        "64b52b371ea4158a8303141a",
+                        "64b52b371ea4158a8303141d",
+                        "64b52b371ea4158a83031420",
+                        "64b52b371ea4158a83031423",
+                        "64b52b371ea4158a83031426"
+                    ],
+                    "createdBy": "64b12ef31073b0dd429e19b4",
+                    "updatedBy": "64b12ef31073b0dd429e19b4",
+                    "learningResources": [],
+                    "isReusable": true,
+                    "taskSequence": [
+                        "MIPMLC23-Task1-1688974067915",
+                        "MIPMLC23-Task2-1688974067915",
+                        "MIPMLC23-Task3-1688974067915",
+                        "MIPMLC23-Task4-1688974067915",
+                        "MIPMLC23-Task5-1688974067915",
+                        "MIPMLC23-Task6-1688974067915"
+                    ],
+                    "averageRating": 0,
+                    "noOfRatings": 0,
+                    "ratings": {
+                        "1": 0,
+                        "2": 0,
+                        "3": 0,
+                        "4": 0,
+                        "5": 0
+                    },
+                    "deleted": false,
+                    "title": "ha",
+                    "externalId": "cool",
+                    "categories": [
+                        {
+                            "_id": "64b528c45bfa678a0f257931",
+                            "externalId": "educationLeader",
+                            "name": "Education Leader"
+                        },
+                        {
+                            "_id": "64b5281a5bfa678a0f25792f",
+                            "externalId": "teachers",
+                            "name": "Teachers"
+                        }
+                    ],
+                    "entityType": "",
+                    "taskCreationForm": "",
+                    "metaInformation": {
+                        "_SYSTEM_ID": "64b0069953f17359a954ed51",
+                        "goal": "",
+                        "rationale": "",
+                        "primaryAudience": "",
+                        "duration": "2 Weeks",
+                        "successIndicators": "",
+                        "risks": "",
+                        "approaches": ""
+                    },
+                    "status": "published",
+                    "updatedAt": "2023-07-17T11:42:47.533Z",
+                    "createdAt": "2023-07-17T11:42:47.533Z",
+                    "__v": 0
+                }
+            ]
+        }
+    */
+
+    async list(req) {
+        return new Promise(async (resolve, reject) => {
+        try {
+            // Call the 'list' method from the 'projectTemplatesHelper' object,
+            // passing in the required parameters.
+            let projectTemplates = 
+            await projectTemplatesHelper.list(
+                req.pageNo,
+                req.pageSize,
+                req.searchText
+            );
+
+            // Assign the 'data' property of 'projectTemplates' to 'result'.
+            projectTemplates.result = projectTemplates.data;
+
+            // Resolve the promise with the modified 'projectTemplates'.
+            return resolve(projectTemplates);
+
+            } catch (error) {
+                return reject({
+                    status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+                    message: error.message || HTTP_STATUS_CODE.internal_server_error.message
+                });
+            }
+        })
+    }
+  
 };

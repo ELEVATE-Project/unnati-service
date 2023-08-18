@@ -1237,6 +1237,59 @@ module.exports = class ProjectTemplatesHelper {
         })
     }
 
+    /**
+     * List 
+     * @method
+     * @name                        - list
+     * @param {Number} pageNo       - page no.
+     * @param {Number} pageSize     - page size.
+     * @param {String} searchText   - text to search.
+     * @returns {Object}            - project templates list.
+    */
+
+    static list(pageNo = "", pageSize = "", searchText = "") {
+        return new Promise(async (resolve, reject) => {
+        try {
+            // Create a query object with the 'isReusable' property set to true.
+            let queryObject = { isReusable: true };
+
+            // If 'searchText' is provided, create a search query using '$or'.
+            if (searchText !== "") {
+                queryObject["$or"] = [
+                    { externalId: new RegExp(searchText, "i") },
+                    { title: new RegExp(searchText, "i") },
+                    { description: new RegExp(searchText, "i") }
+                ];
+            }
+
+            // Call the 'templateDocument' function from 'projectTemplateQueries'
+            // using the 'queryObject' to fetch templates.
+            const templates = await projectTemplateQueries.templateDocument(queryObject);
+
+            // Calculate the indices for pagination.
+            const startIndex = (pageNo - 1) * pageSize;
+            const endIndex = pageNo * pageSize;
+
+            // Slice the 'templates' array to get paginated results.
+            const paginatedResults = templates.slice(startIndex, endIndex);
+
+            // Resolve the promise with success, message, and paginated data.
+            return resolve({
+                success: true,
+                message: CONSTANTS.apiResponses.PROJECT_TEMPLATES_FETCHED,
+                data: paginatedResults,
+            });
+        } catch (error) {
+            // If an error occurs, resolve the promise with failure and error data.
+            return resolve({
+                success: false,
+                message: error.message,
+                data: [],
+            });
+        }
+        });
+    }
+
 };
 
 /**
