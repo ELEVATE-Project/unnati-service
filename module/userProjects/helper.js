@@ -131,12 +131,12 @@ module.exports = class UserProjectsHelper {
                     };
                 }
                 
-                if (userProject[0].lastDownloadedAt.toISOString() !== lastDownloadedAt) {
-                    throw {
-                        status: HTTP_STATUS_CODE['bad_request'].status,
-                        message: CONSTANTS.apiResponses.USER_ALREADY_SYNC
-                    };
-                }
+                // if (userProject[0].lastDownloadedAt.toISOString() !== lastDownloadedAt) {
+                //     throw {
+                //         status: HTTP_STATUS_CODE['bad_request'].status,
+                //         message: CONSTANTS.apiResponses.USER_ALREADY_SYNC
+                //     };
+                // }
 
                 if ( userProject[0].status == CONSTANTS.common.SUBMITTED_STATUS ) {
                     throw {
@@ -1378,20 +1378,20 @@ module.exports = class UserProjectsHelper {
                 projectDetails.data.status = UTILS.convertProjectStatus(projectDetails.data.status);
             }
             // make templateUrl downloadable befor passing to front-end
-            if ( projectDetails.data.certificate &&
-                 projectDetails.data.certificate.templateUrl &&
-                 projectDetails.data.certificate.templateUrl !== "" 
-            ) {
-                let certificateTemplateDownloadableUrl =
-                    await coreService.getDownloadableUrl(
-                        {
-                            filePaths: [projectDetails.data.certificate.templateUrl]
-                        }
-                    );
-                    if ( certificateTemplateDownloadableUrl.success ) {
-                        projectDetails.data.certificate.templateUrl = certificateTemplateDownloadableUrl.data[0].url;
-                    }
-            } 
+            // if ( projectDetails.data.certificate &&
+            //      projectDetails.data.certificate.templateUrl &&
+            //      projectDetails.data.certificate.templateUrl !== "" 
+            // ) {
+            //     let certificateTemplateDownloadableUrl =
+            //         await coreService.getDownloadableUrl(
+            //             {
+            //                 filePaths: [projectDetails.data.certificate.templateUrl]
+            //             }
+            //         );
+            //         if ( certificateTemplateDownloadableUrl.success ) {
+            //             projectDetails.data.certificate.templateUrl = certificateTemplateDownloadableUrl.data[0].url;
+            //         }
+            // } 
 
             return resolve({
                 success: true,
