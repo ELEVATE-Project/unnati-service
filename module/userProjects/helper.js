@@ -131,12 +131,12 @@ module.exports = class UserProjectsHelper {
                     };
                 }
                 
-                // if (userProject[0].lastDownloadedAt.toISOString() !== lastDownloadedAt) {
-                //     throw {
-                //         status: HTTP_STATUS_CODE['bad_request'].status,
-                //         message: CONSTANTS.apiResponses.USER_ALREADY_SYNC
-                //     };
-                // }
+                if (userProject[0].lastDownloadedAt.toISOString() !== lastDownloadedAt) {
+                    throw {
+                        status: HTTP_STATUS_CODE['bad_request'].status,
+                        message: CONSTANTS.apiResponses.USER_ALREADY_SYNC
+                    };
+                }
 
                 if ( userProject[0].status == CONSTANTS.common.SUBMITTED_STATUS ) {
                     throw {
