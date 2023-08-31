@@ -39,11 +39,11 @@ module.exports = class ReportsHelper {
             try {
                 let query = { };
                 
-                if (entityId) {
-                    query["entityId"] = entityId;
-                } else {
+                // if (entityId) {
+                //     query["entityId"] = entityId;
+                // } else {
                     query["userId"] = userId
-                }
+                // }
 
 
                 let dateRange = await _getDateRangeofReport(reportType);
@@ -56,9 +56,9 @@ module.exports = class ReportsHelper {
                     pdfReportString = pdfReportString + " - " + moment(endOf).format('MMM YY');
                 }
 
-                if (programId) {
-                    query['programId'] = ObjectId(programId);
-                }
+                // if (programId) {
+                //     query['programId'] = ObjectId(programId);
+                // }
                 query['isDeleted'] = { $ne: true };
 
                 query['$or'] = [
@@ -68,10 +68,17 @@ module.exports = class ReportsHelper {
                 
                 const projectDetails = await projectQueries.projectDocument(
                     query,
-                    ["programId","programInformation.name", "entityInformation.name", "taskReport", "status", "tasks", "categories", "endDate"],
+                    [
+                        //"programId",
+                        // "programInformation.name", 
+                        // "entityInformation.name", 
+                        "taskReport", 
+                        "status", 
+                        "tasks", 
+                        "categories", 
+                        "endDate"],
                     []
                 );
-
                 
                 let tasksReport = {
                     "total": 0,
@@ -104,65 +111,76 @@ module.exports = class ReportsHelper {
 
                 if ( !projectDetails.length > 0 ) {
 
-                  
-                    if (getPdf == true) {
-
-                        let reportTaskData = {};
-                        Object.keys(tasksReport).map(taskData => {
-                            reportTaskData[UTILS.camelCaseToTitleCase(taskData)] = tasksReport[taskData];
-                        });
-
-                        let categoryData = {};
-                        Object.keys(categories).map(category => {
-                            categoryData[UTILS.camelCaseToTitleCase(category)] = categories[category];
-                        });
-
-                        let pdfRequest = {
-                            "reportType": returnTypeInfo[0].label,
-                            "sharedBy": userName,
-                            "reportTitle": pdfReportString,
-                            categories: categoryData,
-                            tasks: reportTaskData,
-                            projects: projectReport,
-
-                        }
-                        
-                        let response = await reportService.entityReport(userToken, pdfRequest);
-
-                        if (response && response.success == true) {
-
-                            return resolve({
-                                success: true,
-                                message: CONSTANTS.apiResponses.REPORT_GENERATED,
-                                data: {
-                                    data: {
-                                        downloadUrl: response.data.pdfUrl
-                                    }
-                                }
-                            });
-                        } else {
-                            return resolve({
-                                message: CONSTANTS.apiResponses.REPORTS_DATA_NOT_FOUND,
-                                data: [],
-                                success:false
-                            })
-                        }
-
-                    } else {
-
-                        
-                        return resolve({
-                            message: CONSTANTS.apiResponses.REPORTS_DATA_NOT_FOUND,
+                    //Initially not supporting pdf report, hence resolving response here. Remove resolve if pdf capability needs to be added
+                    return resolve({
+                        message: CONSTANTS.apiResponses.REPORTS_DATA_NOT_FOUND,
+                        data: {
+                            dataAvailable: false,
                             data: {
-                                dataAvailable: false,
-                                data: {
-                                    categories: categories,
-                                    tasks: tasksReport,
-                                    projects: projectReport
-                                }
+                                categories: categories,
+                                tasks: tasksReport,
+                                projects: projectReport
                             }
-                        })
-                    }
+                        }
+                    })
+
+                  
+                    // if (getPdf == true) {
+
+                    //     let reportTaskData = {};
+                    //     Object.keys(tasksReport).map(taskData => {
+                    //         reportTaskData[UTILS.camelCaseToTitleCase(taskData)] = tasksReport[taskData];
+                    //     });
+
+                    //     let categoryData = {};
+                    //     Object.keys(categories).map(category => {
+                    //         categoryData[UTILS.camelCaseToTitleCase(category)] = categories[category];
+                    //     });
+
+                    //     let pdfRequest = {
+                    //         "reportType": returnTypeInfo[0].label,
+                    //         "sharedBy": userName,
+                    //         "reportTitle": pdfReportString,
+                    //         categories: categoryData,
+                    //         tasks: reportTaskData,
+                    //         projects: projectReport,
+
+                    //     }
+                    //     let response = await reportService.entityReport(userToken, pdfRequest);
+                    //     if (response && response.success == true) {
+
+                    //         return resolve({
+                    //             success: true,
+                    //             message: CONSTANTS.apiResponses.REPORT_GENERATED,
+                    //             data: {
+                    //                 data: {
+                    //                     downloadUrl: response.data.pdfUrl
+                    //                 }
+                    //             }
+                    //         });
+                    //     } else {
+                    //         return resolve({
+                    //             message: CONSTANTS.apiResponses.REPORTS_DATA_NOT_FOUND,
+                    //             data: [],
+                    //             success:false
+                    //         })
+                    //     }
+
+                    // } else {
+
+                        
+                    //     return resolve({
+                    //         message: CONSTANTS.apiResponses.REPORTS_DATA_NOT_FOUND,
+                    //         data: {
+                    //             dataAvailable: false,
+                    //             data: {
+                    //                 categories: categories,
+                    //                 tasks: tasksReport,
+                    //                 projects: projectReport
+                    //             }
+                    //         }
+                    //     })
+                    // }
                 }
                
                 await Promise.all(projectDetails.map(async function (project) {
@@ -253,75 +271,89 @@ module.exports = class ReportsHelper {
                     delete projectReport[CONSTANTS.common.STARTED];
                 }
 
-                if ( getPdf == true ) {
-                   
-                    let reportTaskData = {};
-                    Object.keys(tasksReport).map(taskData => {
-                        reportTaskData[UTILS.camelCaseToTitleCase(taskData)] = tasksReport[taskData];
-                    })
-
-                    let categoryData = {};
-                    Object.keys(categories).map(category => {
-                        categoryData[UTILS.camelCaseToTitleCase(category)] = categories[category];
-                    })
-
-                    let types = await this.types();
-                    let returnTypeInfo = types.data.filter(type => {
-                        if (type.value == reportType) {
-                            return type.label;
-                        }
-                    });
-
-                    let pdfRequest = {
-                        "reportType": returnTypeInfo[0].label,
-                        "sharedBy": userName,
-                        "reportTitle": pdfReportString,
-                        categories: categoryData,
-                        tasks: reportTaskData,
-                        projects: projectReport
-                    }
-                    if (programId != "") {
-                        pdfRequest['programName'] = projectDetails[0].programInformation.name;
-                    }
-                    if (entityId != "") {
-                        pdfRequest['entityName'] = projectDetails[0].entityInformation.name;
-                    }
-                   
-                    //send data to report service to generate PDF.
-                    let response = await reportService.entityReport(userToken, pdfRequest);
-                    if (response && response.success == true) {
-                        return resolve({
-                            success: true,
-                            message: CONSTANTS.apiResponses.REPORT_GENERATED,
-                            data: {
-                                data: {
-                                    downloadUrl: response.data.pdfUrl
-                                }
-
-                            }
-                        });
-                    }
-
-                } else {
-
-                    let response = {
-                        categories: categories,
-                        tasks: tasksReport,
-                        projects: projectReport
-                    }
-                    return resolve({
-                        success: true,
-                        message: CONSTANTS.apiResponses.REPORTS_GENERATED,
-                        data: {
-                            dataAvailable: true,
-                            data: response,
-                        }
-                    });
-
+                //Initially not supporting pdf report, hence resolving response here. Remove resolve if pdf capability needs to be added
+                let response = {
+                    categories: categories,
+                    tasks: tasksReport,
+                    projects: projectReport
                 }
+                return resolve({
+                    success: true,
+                    message: CONSTANTS.apiResponses.REPORTS_GENERATED,
+                    data: {
+                        dataAvailable: true,
+                        data: response,
+                    }
+                });
+
+                // if ( getPdf == true ) {
+                   
+                //     let reportTaskData = {};
+                //     Object.keys(tasksReport).map(taskData => {
+                //         reportTaskData[UTILS.camelCaseToTitleCase(taskData)] = tasksReport[taskData];
+                //     })
+
+                //     let categoryData = {};
+                //     Object.keys(categories).map(category => {
+                //         categoryData[UTILS.camelCaseToTitleCase(category)] = categories[category];
+                //     })
+
+                //     let types = await this.types();
+                //     let returnTypeInfo = types.data.filter(type => {
+                //         if (type.value == reportType) {
+                //             return type.label;
+                //         }
+                //     });
+
+                //     let pdfRequest = {
+                //         "reportType": returnTypeInfo[0].label,
+                //         "sharedBy": userName,
+                //         "reportTitle": pdfReportString,
+                //         categories: categoryData,
+                //         tasks: reportTaskData,
+                //         projects: projectReport
+                //     }
+                //     if (programId != "") {
+                //         pdfRequest['programName'] = projectDetails[0].programInformation.name;
+                //     }
+                //     if (entityId != "") {
+                //         pdfRequest['entityName'] = projectDetails[0].entityInformation.name;
+                //     }
+                   
+                //     //send data to report service to generate PDF.
+                //     let response = await reportService.entityReport(userToken, pdfRequest);
+                //     if (response && response.success == true) {
+                //         return resolve({
+                //             success: true,
+                //             message: CONSTANTS.apiResponses.REPORT_GENERATED,
+                //             data: {
+                //                 data: {
+                //                     downloadUrl: response.data.pdfUrl
+                //                 }
+
+                //             }
+                //         });
+                //     }
+
+                // } else {
+
+                //     let response = {
+                //         categories: categories,
+                //         tasks: tasksReport,
+                //         projects: projectReport
+                //     }
+                //     return resolve({
+                //         success: true,
+                //         message: CONSTANTS.apiResponses.REPORTS_GENERATED,
+                //         data: {
+                //             dataAvailable: true,
+                //             data: response,
+                //         }
+                //     });
+
+                // }
             } catch (error) {
                 return resolve({
-                   
                     success: false,
                     message: error.message,
                     data: false

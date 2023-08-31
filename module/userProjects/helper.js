@@ -27,6 +27,7 @@ const certificateTemplateQueries = require(DB_QUERY_BASE_PATH + "/certificateTem
 const certificateService = require(GENERICS_FILES_PATH + "/services/certificate");
 const certificateValidationsHelper = require(MODULES_BASE_PATH + "/certificateValidations/helper");
 const _ = require("lodash");  
+
 // const programUsersQueries = require(DB_QUERY_BASE_PATH + "/programUsers");
 
 /**
@@ -2151,30 +2152,88 @@ module.exports = class UserProjectsHelper {
    * List of projects.
    * @method
    * @name list
+   * @param {String} userId - Logged in user id.
+   * @param {Number} pageNo - Page number.
+   * @param {Number} pageSize - Page size.
+   * @param {String} filter - discoveredByMe or createdByMe.
    * @returns {Array} List of projects.
    */
   
-  static list( bodyData ) {
-    return new Promise(async (resolve, reject) => {
-        try {
+    static list( userId, pageNo, pageSize, searchText = "", filter) {
+        return new Promise(async (resolve, reject) => {
+            try {
 
-            let projects = await projectQueries.projectDocument(
-                bodyData.query,
-                bodyData.projection,
-                bodyData.skipFields
-            );
+                let query = {
+                    isDeleted : false,
+                    userId : userId
+                }
+                // If 'searchText' is provided, create a search query using '$or'.
+                if (searchText !== "") {
+                    queryObject["$or"] = [
+                        { externalId: new RegExp(searchText, "i") },
+                        { title: new RegExp(searchText, "i") },
+                        { description: new RegExp(searchText, "i") }
+                    ];
+                }
+                if (filter === CONSTANTS.common.DISCOVERED_BY_ME) {
+                    // Include records with projectTemplateId
+                    query.projectTemplateId = { $exists: true }; 
+                } else if (filter === CONSTANTS.common.CREATED_BY_ME) {
+                    // Include records without projectTemplateId
+                    query.projectTemplateId = { $exists: false }; 
+                }
+                
+                
+                let projects = await projectQueries.projectDocument(
+                    query
+                );
 
-            return resolve({
-                success : true,
-                message : CONSTANTS.apiResponses.PROJECTS_FETCHED,
-                result : projects
-            });
-            
-        } catch (error) {
-            return reject(error);
-        }
+                // Calculate the indices for pagination.
+                const startIndex = (pageNo - 1) * pageSize;
+                const endIndex = pageNo * pageSize;
+
+                // Slice the 'projects' array to get paginated results.
+                const paginatedResults = projects.slice(startIndex, endIndex);
+
+                return resolve({
+                    success : true,
+                    message : CONSTANTS.apiResponses.PROJECTS_FETCHED,
+                    result : paginatedResults
+                });
+                
+            } catch (error) {
+                return reject(error);
+            }
     });
   }
+//   /**
+//    * List of projects.
+//    * @method
+//    * @name list
+//    * @returns {Array} List of projects.
+//    */
+  
+//   static list( bodyData ) {
+//     return new Promise(async (resolve, reject) => {
+//         try {
+
+//             let projects = await projectQueries.projectDocument(
+//                 bodyData.query,
+//                 bodyData.projection,
+//                 bodyData.skipFields
+//             );
+
+//             return resolve({
+//                 success : true,
+//                 message : CONSTANTS.apiResponses.PROJECTS_FETCHED,
+//                 result : projects
+//             });
+            
+//         } catch (error) {
+//             return reject(error);
+//         }
+//     });
+//   }
 
   /**
       * Create project from template.
