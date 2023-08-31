@@ -51,5 +51,6 @@ module.exports = {
     "SERVER_TIME_OUT" : 5000,
     "OK" : "OK",
     "PROJECT" : "project",
-    "PROJECT_CERTIFICATE_GENERATED_SUCCESSFULLY" : "Certificate generated successfully"
+    "PROJECT_CERTIFICATE_GENERATED_SUCCESSFULLY" : "Certificate generated successfully",
+    "DISCOVERED_BY_ME" : "discoveredByMe"
 };

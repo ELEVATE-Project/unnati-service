@@ -725,7 +725,7 @@ module.exports = class UserProjects extends Abstract {
     }
 
     /**
-   * @api {post} /improvement-project/api/v1/userProjects/list
+   * @api {post} /improvement-project/api/v1/userProjects/list?page=1&limit=3&search=&filter=createdByMe
    * Lists of projects.
    * @apiVersion 0.0.1
    * @apiName Lists of projects.
@@ -741,41 +741,179 @@ module.exports = class UserProjects extends Abstract {
     },
     "projection" : ["_id","code"]
     }
-   * @apiParamExample {json} Response: 
-   * {
-   * "message": "Project fetched successfully",
-   * "status": 200,
-   * "result" : [
-   *  {
-   * "_id": "5d15a959e9185967a6d5e8a6",
-   *  "title": "Come See Our School!- Parent Mela"
-   }]
-  }
-   */
+    * @apiParamExample {json} Response: 
+    {
+        "message": "Successfully fetched projects",
+        "status": 200,
+        "result": [
+            {
+                "_id": "64afa1b280f9b952f4914374",
+                "userId": "64b12ef31073b0dd429e19b4",
+                "userRole": "",
+                "status": "started",
+                "isDeleted": false,
+                "categories": [
+                    {
+                        "label": "Infrastructure",
+                        "value": "5fcfa9a2457d6055e33843f1",
+                        "labelTranslations": "{\"en\":\"Infrastructure\"}",
+                        "name": "Infrastructure"
+                    },
+                    {
+                        "label": "Community",
+                        "value": "5fcfa9a2457d6055e33843f2",
+                        "labelTranslations": "{\"en\":\"Community\"}",
+                        "name": "Community"
+                    },
+                    {
+                        "label": "Education Leader",
+                        "value": "5fcfa9a2457d6055e33843f3",
+                        "labelTranslations": "{\"en\":\"Education Leader\"}",
+                        "name": "Education Leader"
+                    }
+                ],
+                "createdBy": "1349b70e-44d2-4723-9f57-caf096ec1f51",
+                "tasks": [],
+                "updatedBy": "1349b70e-44d2-4723-9f57-caf096ec1f51",
+                "learningResources": [
+                    {
+                        "name": "API_Decrication",
+                        "id": "do_113759904287850496114",
+                        "isChecked": true
+                    },
+                    {
+                        "name": "API_Decrication",
+                        "id": "do_113759897196249088113",
+                        "isChecked": true
+                    },
+                    {
+                        "name": "Content - 3",
+                        "id": "do_113762457976889344169",
+                        "isChecked": true
+                    },
+                    {
+                        "name": "Content - 4",
+                        "id": "do_113762458251059200170",
+                        "isChecked": true
+                    },
+                    {
+                        "name": "Content -1",
+                        "id": "do_113762457386450944167",
+                        "isChecked": true
+                    },
+                    {
+                        "name": "Test Content",
+                        "id": "do_11376182093890355216",
+                        "isChecked": true
+                    },
+                    {
+                        "name": "Test Content 2",
+                        "id": "do_11376182438513868818",
+                        "isChecked": true
+                    }
+                ],
+                "hasAcceptedTAndC": false,
+                "taskSequence": [],
+                "recommendedFor": [],
+                "attachments": [],
+                "deleted": false,
+                "title": "Test",
+                "description": "test",
+                "startDate": "2023-05-24T04:21:00.000Z",
+                "endDate": "2023-05-27T04:21:00.000Z",
+                "entityId": "7f6d36cf-3bd6-43fc-ab8e-f9157c9ebec1",
+                "isAPrivateProgram": true,
+                "lastDownloadedAt": "2023-07-13T07:03:14.672Z",
+                "updatedAt": "2023-07-13T07:03:14.688Z",
+                "createdAt": "2023-07-13T07:03:14.688Z",
+                "__v": 0
+            }
+        ]
+    }   
+    */
 
-  /**
-   * Lists of projects.
-   * @method
-   * @name list
-   * @returns {JSON} List projects.
-  */
+    /**
+     * Lists of projects.
+     * @method
+     * @name list
+     * @returns {JSON} List projects.
+    */
 
     async list(req) {
-      return new Promise(async (resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
         try {
 
-          let projects = await userProjectsHelper.list(req.body);
-          return resolve(projects);
+            let projects = await userProjectsHelper.list(
+                req.userDetails.userInformation.userId,
+                req.pageNo,
+                req.pageSize,
+                req.searchText,
+                req.query.filter
+            );
+            return resolve(projects);
 
         } catch (error) {
-          return reject({
+            return reject({
             status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
             message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
             errorObject: error
-          });
+            });
         }
-      });
+        });
     }
+
+//     /**
+//    * @api {post} /improvement-project/api/v1/userProjects/list
+//    * Lists of projects.
+//    * @apiVersion 0.0.1
+//    * @apiName Lists of projects.
+//    * @apiGroup Entity Types
+//    * @apiHeader {String} X-authenticated-user-token Authenticity token
+//    * @apiSampleRequest /improvement-project/api/v1/userProjects/list
+//    * @apiUse successBody
+//    * @apiUse errorBody
+//    * @apiParamExample {json} Request-Body:
+//    * {
+//     "query" : {
+//         "code" : "HM"
+//     },
+//     "projection" : ["_id","code"]
+//     }
+//    * @apiParamExample {json} Response: 
+//    * {
+//    * "message": "Project fetched successfully",
+//    * "status": 200,
+//    * "result" : [
+//    *  {
+//    * "_id": "5d15a959e9185967a6d5e8a6",
+//    *  "title": "Come See Our School!- Parent Mela"
+//    }]
+//   }
+//    */
+
+//   /**
+//    * Lists of projects.
+//    * @method
+//    * @name list
+//    * @returns {JSON} List projects.
+//   */
+
+//     async list(req) {
+//       return new Promise(async (resolve, reject) => {
+//         try {
+
+//           let projects = await userProjectsHelper.list(req.body);
+//           return resolve(projects);
+
+//         } catch (error) {
+//           return reject({
+//             status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+//             message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+//             errorObject: error
+//           });
+//         }
+//       });
+//     }
 
     /**
     * @api {post} /improvement-project/api/v1/userProjects/importFromLibrary/:projectTemplateId&isATargetedSolution=false
