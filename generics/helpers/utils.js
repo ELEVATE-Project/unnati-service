@@ -360,6 +360,17 @@ function operatorValidation(valueLhs, valueRhs, operator) {
   })          
 }
 
+/**
+   * Generate unique id.s
+   * @method
+   * @name generateUniqueId
+   * @returns {String} - unique id 
+  */
+
+function generateUniqueId() {
+  return uuidV4();
+}
+
 module.exports = {
   camelCaseToTitleCase : camelCaseToTitleCase,
   lowerCase : lowerCase,
@@ -376,5 +387,6 @@ module.exports = {
   checkValidUUID : checkValidUUID,
   createComparableDates : createComparableDates,
   noOfElementsInArray : noOfElementsInArray,
-  operatorValidation : operatorValidation
+  operatorValidation : operatorValidation,
+  generateUniqueId : generateUniqueId
 };
