@@ -12,9 +12,9 @@ const fs = require("fs");
 const inputValidator = require(PROJECT_ROOT_DIRECTORY + "/generics/middleware/validator");
 
 module.exports = function (app) {
-  
-  app.use(authenticator);
-  app.use(pagination);
+  const applicationBaseUrl = process.env.APPLICATION_BASE_URL || '/unnati/';
+  app.use(applicationBaseUrl, authenticator);
+  app.use(applicationBaseUrl, pagination);
 
   var router = async function (req, res, next) {
 
@@ -103,10 +103,10 @@ module.exports = function (app) {
     }
   };
 
-  app.all("/:version/:controller/:method", inputValidator, router);
-  app.all("/:version/:controller/:file/:method", inputValidator, router);
-  app.all("/:version/:controller/:method/:_id", inputValidator, router);
-  app.all("/:version/:controller/:file/:method/:_id", inputValidator, router);
+  app.all(applicationBaseUrl+"api/:version/:controller/:method", inputValidator, router);
+  app.all(applicationBaseUrl+"api/:version/:controller/:file/:method", inputValidator, router);
+  app.all(applicationBaseUrl+"api/:version/:controller/:method/:_id", inputValidator, router);
+  app.all(applicationBaseUrl+"api/:version/:controller/:file/:method/:_id", inputValidator, router);
 
   app.use((req, res, next) => {
     res.status(HTTP_STATUS_CODE["not_found"].status).send(HTTP_STATUS_CODE["not_found"].message);

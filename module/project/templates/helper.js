@@ -1185,7 +1185,7 @@ module.exports = class ProjectTemplatesHelper {
             try {
 
                 let findQuery = {};
-
+                let templateDataUpdate = _.omit(templateData,["scope"])
                 let validateTemplateId = UTILS.isValidMongoId(templateId);
 
                 if( validateTemplateId ) {
@@ -1207,7 +1207,7 @@ module.exports = class ProjectTemplatesHelper {
                     "$set" : {}
                 };
 
-                let templateUpdateData = templateData;
+                let templateUpdateData = templateDataUpdate;
 
                 Object.keys(templateUpdateData).forEach(updationData=>{
                     updateObject["$set"][updationData] = templateUpdateData[updationData];
@@ -1222,6 +1222,30 @@ module.exports = class ProjectTemplatesHelper {
                 if( !templateUpdatedData._id ) {
                     throw {
                       message : CONSTANTS.apiResponses.PROJECT_TEMPLATE_NOT_UPDATED
+                    }
+                }
+
+                if(templateData.hasOwnProperty("scope")){
+                    let updateScopeObject = {
+                        "$set" : {"scope":{}}
+                    };
+    
+                    let templateScopeData = templateData.scope;
+    
+                    Object.keys(templateScopeData).forEach(updationData=>{
+                        updateScopeObject["$set"].scope[updationData] = templateScopeData[updationData];
+                    });
+    
+                    updateScopeObject["$set"]["updatedBy"] = userId;
+    
+                    templateUpdatedData = await projectTemplateQueries.findOneAndUpdate({
+                        _id :  templateDocument[0]._id
+                    }, updateScopeObject, { new : true });
+    
+                    if( !templateUpdatedData._id ) {
+                        throw {
+                          message : CONSTANTS.apiResponses.PROJECT_TEMPLATE_NOT_UPDATED
+                        }
                     }
                 }
 
@@ -1247,31 +1271,15 @@ module.exports = class ProjectTemplatesHelper {
      * @returns {Object}            - project templates list.
     */
 
-    static list(pageNo = "", pageSize = "", searchText = "") {
+    static list(bodyData, pageNo = "", pageSize = "", searchText = "") {
         return new Promise(async (resolve, reject) => {
         try {
             // Create a query object with the 'isReusable' property set to true.
-            let queryObject = { isReusable: true };
+            let userRoleBasedQuery = await this.queryBasedOnRoleAndLocation(bodyData)
+            console.log(userRoleBasedQuery)
 
-            // If 'searchText' is provided, create a search query using '$or'.
-            if (searchText !== "") {
-                queryObject["$or"] = [
-                    { externalId: new RegExp(searchText, "i") },
-                    { title: new RegExp(searchText, "i") },
-                    { description: new RegExp(searchText, "i") }
-                ];
-            }
-
-            // Call the 'templateDocument' function from 'projectTemplateQueries'
-            // using the 'queryObject' to fetch templates.
-            const templates = await projectTemplateQueries.templateDocument(queryObject);
-
-            // Calculate the indices for pagination.
-            const startIndex = (pageNo - 1) * pageSize;
-            const endIndex = pageNo * pageSize;
-
-            // Slice the 'templates' array to get paginated results.
-            const paginatedResults = templates.slice(startIndex, endIndex);
+            let paginatedResults = await this.listTemplets(userRoleBasedQuery.data, pageNo, pageSize, searchText, ["_id",  "title" ,"externalId",
+            "description" ])
 
             // Resolve the promise with success, message, and paginated data.
             return resolve({
@@ -1289,8 +1297,167 @@ module.exports = class ProjectTemplatesHelper {
         }
         });
     }
+     /**
+   * Auto targeted query field.
+   * @method
+   * @name queryBasedOnRoleAndLocation
+   * @param {String} data - Requested body data.
+   * @returns {JSON} - Auto targeted solutions query.
+   */
+
+    static queryBasedOnRoleAndLocation(data) {
+        return new Promise(async (resolve, reject) => {
+        try {
+            let userRole = _.omit(data, ['factors', 'filter']);
+            let userRoleKeys = Object.keys(userRole);
+            let filterQuery = {};
+            let queryFilter = [];
+            if (data.hasOwnProperty('factors')) {
+                let factors = data.factors;
+                if (factors.length > 0) {
+                    factors.forEach((factor) => {
+                    let scope = 'scope.' + factor;
+                    queryFilter.push({ [scope]: { $in: [...userRole[factor]] } });
+                    });
+                    filterQuery = {
+                    $or: queryFilter,
+                    };
+                } else {
+                    userRoleKeys.forEach((key) => {
+                    let scope = 'scope.' + key;
+                    queryFilter.push({ [scope]: { $in: [...userRole[key]] } });
+                    });
+                    filterQuery = {
+                    $and: queryFilter,
+                    };
+                }
+            } else {
+                userRoleKeys.forEach((key) => {
+                    let scope = 'scope.' + key;
+                    queryFilter.push({ [scope]: { $in: [...userRole[key]] } });
+                });
+                filterQuery = {
+                    $and: queryFilter,
+                };
+            }
+            // if (data.filter && Object.keys(data.filter).length > 0) {
+            // // filterQuery = _.merge(filterQuery, data.filter);
+            // }
+
+            return resolve({
+            success: true,
+            data: filterQuery,
+            });
+        } catch (error) {
+            return resolve({
+            success: false,
+            status: error.status ? error.status : httpStatusCode['internal_server_error'].status,
+            message: error.message,
+            data: {},
+            });
+        }
+        });
+    }
+
+      /**
+   * Solution lists.
+   * @method
+   * @name list
+   * @param {String} solutionIds - solution ids.
+   * @returns {String} - message.
+   */
+
+  static listTemplets(filter = {}, pageNo, pageSize, searchText, projection) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let matchQuery = {
+          isDeleted: false,
+        };
+        if (Object.keys(filter).length > 0) {
+          matchQuery = _.merge(matchQuery, filter);
+        }
+
+        let searchData = [
+          {
+            name: new RegExp(searchText, 'i'),
+          },
+          {
+            externalId: new RegExp(searchText, 'i'),
+          },
+          {
+            description: new RegExp(searchText, 'i'),
+          },
+        ];
+
+        if (searchText !== '') {
+          if (matchQuery['$or']) {
+            matchQuery['$and'] = [{ $or: matchQuery.$or }, { $or: searchData }];
+
+            delete matchQuery.$or;
+          } else {
+            matchQuery['$or'] = searchData;
+          }
+        }
+
+        let projection1 = {};
+
+        if (projection) {
+          projection.forEach((projectedData) => {
+            projection1[projectedData] = 1;
+          });
+        } else {
+          projection1 = {
+            description: 1,
+            externalId: 1,
+            name: 1,
+          };
+        }
+
+        let facetQuery = {};
+        facetQuery['$facet'] = {};
+
+        facetQuery['$facet']['totalCount'] = [{ $count: 'count' }];
+
+        facetQuery['$facet']['data'] = [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize }];
+
+        let projection2 = {};
+
+        projection2['$project'] = {
+          data: 1,
+          count: {
+            $arrayElemAt: ['$totalCount.count', 0],
+          },
+        };
+
+        let projectDocuments = await projectTemplateQueries.getAggregate([
+          { $match: matchQuery },
+          {
+            $sort: { updatedAt: -1 },
+          },
+          { $project: projection1 },
+          facetQuery,
+          projection2,
+        ]);
+
+        return resolve({
+          success: true,
+          message: CONSTANTS.apiResponses.SOLUTIONS_LIST,
+          data: projectDocuments[0],
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+          message: error.message,
+          data: {},
+        });
+      }
+    });
+  }
 
 };
+
+
+
 
 /**
  * Calculate average rating and no of ratings.

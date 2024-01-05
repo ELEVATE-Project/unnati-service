@@ -67,10 +67,10 @@ module.exports = {
             type : Object,
             default : {}
         },
-        solutionInformation : {
-            type : Object,
-            default : {}
-        },
+        // solutionInformation : {
+        //     type : Object,
+        //     default : {}
+        // },
         updatedBy : {
             type : String,
             default : "SYSTEM"
@@ -93,22 +93,22 @@ module.exports = {
             type : String,
             index : true
         },
-        programId : {
-            type : "ObjectId",
-            index : true
-        },
-        programExternalId : {
-            type : String,
-            index : true
-        },
-        solutionId : {
-            type : "ObjectId",
-            index : true
-        },
-        solutionExternalId : {
-            type : String,
-            index : true
-        },
+        // programId : {
+        //     type : "ObjectId",
+        //     index : true
+        // },
+        // programExternalId : {
+        //     type : String,
+        //     index : true
+        // },
+        // solutionId : {
+        //     type : "ObjectId",
+        //     index : true
+        // },
+        // solutionExternalId : {
+        //     type : String,
+        //     index : true
+        // },
         isAPrivateProgram : {
             type : Boolean,
             index : true
@@ -170,12 +170,12 @@ module.exports = {
             
         // }
     },
-    compoundIndex: [
-        {
-            "name" :{ userId: 1, solutionId: 1 },
-            "indexType" : { unique: true, partialFilterExpression: { solutionId: { $exists: true }}}
-        }
-    ]
+    // compoundIndex: [
+    //     {
+    //         "name" :{ userId: 1, solutionId: 1 },
+    //         "indexType" : { unique: true, partialFilterExpression: { solutionId: { $exists: true }}}
+    //     }
+    // ]
         
     
 

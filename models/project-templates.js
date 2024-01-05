@@ -87,14 +87,18 @@ module.exports = {
             type : Object,
             default : {}
         },
+        scope: {
+            type: Object,
+            default: {},
+        },
         parentTemplateId : {
             type : "ObjectId",
             index: true
         },
-        solutionId : "ObjectId",
-        solutionExternalId : String,
-        programId : "ObjectId",
-        programExternalId : String,
+        // solutionId : "ObjectId",
+        // solutionExternalId : String,
+        // programId : "ObjectId",
+        // programExternalId : String,
         averageRating : {
             type : Number,
             default : 0

@@ -839,6 +839,7 @@ module.exports = class ProjectTemplates extends Abstract {
             // passing in the required parameters.
             let projectTemplates = 
             await projectTemplatesHelper.list(
+                req.body,
                 req.pageNo,
                 req.pageSize,
                 req.searchText
