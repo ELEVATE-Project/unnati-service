@@ -138,5 +138,7 @@ module.exports = {
     "ISSUER_KID_NOT_FOUND" : "Failed to fetch certificate issuer kid",
     "PROJECT_SUBMITTED_FOR_REISSUE" : "Submitted for project certificate reIssue",
     "PROGRAM_JOIN_FAILED" : "Failed to join program",
-    "DOWNLOADABLE_URL_GENERATED" : "Downloadable Url generated"
+    "DOWNLOADABLE_URL_GENERATED" : "Downloadable Url generated",
+    "KEYS_INDEXED_SUCCESSFULL": 'Keys indexed successfully',
+    "KEYS_ALREADY_INDEXED_SUCCESSFULL": 'Keys already indexed',
 };

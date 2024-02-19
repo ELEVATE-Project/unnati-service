@@ -89,7 +89,9 @@ function valueParser(dataToBeParsed) {
 
   let parsedData = {}
 
-  Object.keys(dataToBeParsed).forEach(eachDataToBeParsed => {
+  let dataToBeParsedKeys = Object.keys(dataToBeParsed)
+  dataToBeParsedKeys.forEach(eachDataToBeParsed => {
+    console.log(eachDataToBeParsed)
     parsedData[eachDataToBeParsed] = dataToBeParsed[eachDataToBeParsed].trim()
   })
 
@@ -371,6 +373,23 @@ function generateUniqueId() {
   return uuidV4();
 }
 
+
+/**
+ * Convert string to mongodb object id.
+ * @method
+ * @name convertStringToObjectId
+ * @param id - string id
+ * @returns {ObjectId} - returns objectId
+ */
+
+function convertStringToObjectId(id) {
+  let checkWhetherIdIsValidMongoId = UTILS.isValidMongoId(id);
+  if (checkWhetherIdIsValidMongoId) {
+    id = new ObjectId(id);
+  }
+
+  return id;
+}
 module.exports = {
   camelCaseToTitleCase : camelCaseToTitleCase,
   lowerCase : lowerCase,
@@ -388,5 +407,6 @@ module.exports = {
   createComparableDates : createComparableDates,
   noOfElementsInArray : noOfElementsInArray,
   operatorValidation : operatorValidation,
-  generateUniqueId : generateUniqueId
+  generateUniqueId : generateUniqueId,
+  convertStringToObjectId : convertStringToObjectId
 };

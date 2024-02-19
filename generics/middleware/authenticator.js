@@ -106,9 +106,9 @@ module.exports = async function (req, res, next, token = "") {
   req.userDetails = {
     userToken : token,
     userInformation : {
-      userId : decodedToken.data._id,
+      userId : decodedToken.data.id.toString(),
       userName : decodedToken.data.name,
-      email : decodedToken.data.email,
+      roles: decodedToken.data.roles,
       firstName : decodedToken.data.name
     }
   };
