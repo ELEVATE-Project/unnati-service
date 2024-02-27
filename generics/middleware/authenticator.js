@@ -55,7 +55,7 @@ module.exports = async function (req, res, next, token = "") {
       guestAccess = true;
     }
   }));
-  
+
   if( guestAccess == true && !token ) {
     next();
     return;
@@ -112,6 +112,8 @@ module.exports = async function (req, res, next, token = "") {
       firstName : decodedToken.data.name
     }
   };
+
+  console.log(req.userDetails,'req.userDetails')
   next();
   
   // var decoded = jwt.decode(token, { complete: true });

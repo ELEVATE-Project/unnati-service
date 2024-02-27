@@ -31,11 +31,13 @@ const fileUpload = require("express-fileupload");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const path = require("path");
-const expressValidator = require('express-validator');
+// const expressValidator = require('express-validator');
+const { body, validationResult } = require('express-validator');
 
 //To enable cors
 app.use(cors());
-app.use(expressValidator())
+// app.use(expressValidator())
+app.use(body());
 
 app.use(fileUpload());
 app.use(bodyParser.json({ limit: "50MB" }));
