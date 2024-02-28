@@ -103,10 +103,10 @@ module.exports = function (app) {
     }
   };
 
-  app.all("/:version/:controller/:method", inputValidator, router);
-  app.all("/:version/:controller/:file/:method", inputValidator, router);
-  app.all("/:version/:controller/:method/:_id", inputValidator, router);
-  app.all("/:version/:controller/:file/:method/:_id", inputValidator, router);
+  app.all("/unnati/:version/:controller/:method", inputValidator, router);
+  app.all("/unnati/:version/:controller/:file/:method", inputValidator, router);
+  app.all("/unnati/:version/:controller/:method/:_id", inputValidator, router);
+  app.all("/unnati/:version/:controller/:file/:method/:_id", inputValidator, router);
 
   app.use((req, res, next) => {
     res.status(HTTP_STATUS_CODE["not_found"].status).send(HTTP_STATUS_CODE["not_found"].message);
