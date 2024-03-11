@@ -103,12 +103,13 @@ module.exports = async function (req, res, next, token = "") {
   if (!decodedToken) {
     return res.status(HTTP_STATUS_CODE["unauthorized"].status).send(respUtil(rspObj));
   }
+
   req.userDetails = {
     userToken : token,
     userInformation : {
-      userId : decodedToken.data._id,
+      userId : decodedToken.data.id,
       userName : decodedToken.data.name,
-      email : decodedToken.data.email,
+      // email : decodedToken.data.email, //email is removed from token
       firstName : decodedToken.data.name
     }
   };

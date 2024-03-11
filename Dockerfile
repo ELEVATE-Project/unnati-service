@@ -19,4 +19,4 @@ COPY . /opt/projects
 EXPOSE 5000
 
 #Start the application
-CMD [ "nodemon", "app.js" ]
+CMD [ "node", "app.js" ]
