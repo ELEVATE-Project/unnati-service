@@ -70,15 +70,15 @@ services:
       POSTGRES_LOG_STATEMENT: 'all' # Enable query logging (set to 'all' for all queries)
     networks:
       - elevate_net
-  unnati:
+  project:
     build: '.'
     # image: elevate-unnati
     # image: shikshalokamqa/elevate-samiksha-service:0.0.6
-    container_name: unnati
+    container_name: project
     ports:
       - '5000:5000'
-    volumes:
-      - .:/var/src  
+    # volumes:
+    #   - .:/var/src  
     command: ['nodemon', 'app.js']
     environment:
       - MONGODB_URL=mongodb://mongo:27017/elevate-diksha
