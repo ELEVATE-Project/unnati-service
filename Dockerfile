@@ -8,7 +8,7 @@ COPY ./package.json /opt/projects/package.json
 
 #Install node packages
 RUN npm install
-RUN npm install -g nodemon
+RUN npm install -g nodemon@2.0.20
 
 #Copy all files 
 COPY . /opt/projects
@@ -17,4 +17,5 @@ COPY . /opt/projects
 EXPOSE 5000
 
 #Start the application
-CMD ["npm", "run", "dev"]
+# CMD ["npm", "run", "dev"]
+CMD ["nodemon", "app.js"]
