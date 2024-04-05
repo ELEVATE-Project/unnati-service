@@ -77,13 +77,12 @@ module.exports = {
           type : Array,
           index : true
         },
-        roles : [{
-          _id : "ObjectId",
-          code : {
+        roles : [
+          {
             type : String,
             index : true
           }
-        }]
+        ]
       },
       pageHeading: {
         default : "Domains",

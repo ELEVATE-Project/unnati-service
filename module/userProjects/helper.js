@@ -347,22 +347,22 @@ module.exports = class UserProjectsHelper {
                 if (!userProject[0].appInformation) {
                     updateProject["appInformation"] = {};
 
-                    if (appName !== "") {
-                        updateProject["appInformation"]["appName"] = appName;
-                    }
+                    // if (appName !== "") {
+                    //     updateProject["appInformation"]["appName"] = appName;
+                    // }
 
-                    if (appVersion !== "") {
-                        updateProject["appInformation"]["appVersion"] = appVersion;
-                    }
+                    // if (appVersion !== "") {
+                    //     updateProject["appInformation"]["appVersion"] = appVersion;
+                    // }
                 }
 
                 if ( data.status && data.status !== "" ) {
                    updateProject.status = UTILS.convertProjectStatus(data.status);
                 }
                 
-                if ( data.status == CONSTANTS.common.COMPLETED_STATUS || data.status == CONSTANTS.common.SUBMITTED_STATUS ) {
-                    updateProject.completedDate = new Date();
-                }
+                // if ( data.status == CONSTANTS.common.COMPLETED_STATUS || data.status == CONSTANTS.common.SUBMITTED_STATUS ) {
+                //     updateProject.completedDate = new Date();
+                // }
                 
                 let projectUpdated =
                     await projectQueries.findOneAndUpdate(

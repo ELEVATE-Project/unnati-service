@@ -52,5 +52,9 @@ module.exports = {
     "OK" : "OK",
     "PROJECT" : "project",
     "PROJECT_CERTIFICATE_GENERATED_SUCCESSFULLY" : "Certificate generated successfully",
-    "DISCOVERED_BY_ME" : "discoveredByMe"
+    "DISCOVERED_BY_ME" : "discoveredByMe",
+    "COURSE": "course",
+    "SURVEY": "survey",
+    "ACTIVE": "active",
+    "INACTIVE": "inactive",
 };

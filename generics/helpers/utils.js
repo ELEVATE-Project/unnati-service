@@ -361,6 +361,100 @@ function operatorValidation(valueLhs, valueRhs, operator) {
 }
 
 /**
+ * Returns endDate if time is not passed it will add default time with offset to utc
+ * @function
+ * @name getEndDate
+ * @returns {date} returns date and time with offset
+ * example:
+ * input = 2024-06-16, +05:30
+ * output = Sun Jun 16 2024 18:29:59 GMT+0000 (Coordinated Universal Time)
+ */
+function getEndDate(date, timeZoneDifference) {
+  let endDate = date.split(" ");
+  if (endDate[1] === "" || endDate[1] === undefined) {
+    date = endDate[0] + " 23:59:59";
+  }
+  date = new Date(date);
+  date = addOffsetToDateTime(date, timeZoneDifference);
+  return date;
+}
+
+/**
+ * Returns startDate if time is not passed it will add default time with offset to utc
+ * @function
+ * @name getStartDate
+ * @returns {date} returns date and time with offset
+ * example:
+ * input = 2022-06-01, +05:30
+ * output = Wed Jan 31 2001 18:30:00 GMT+0000 (Coordinated Universal Time)
+ */
+function getStartDate(date, timeZoneDifference) {
+  let startDate = date.split(" ");
+  if (startDate[1] === "" || startDate[1] === undefined) {
+    date = startDate[0] + " 00:00:00";
+  }
+  date = new Date(date);
+  date = addOffsetToDateTime(date, timeZoneDifference);
+  return date;
+
+}
+
+  /**
+   * Convert string to mongodb object id.
+   * @method
+   * @name convertStringToObjectId
+   * @param id - string id
+   * @returns {ObjectId} - returns objectId
+   */
+
+  function convertStringToObjectId(id) {
+    let checkWhetherIdIsValidMongoId = this.isValidMongoId(id);
+    if (checkWhetherIdIsValidMongoId) {
+      id = ObjectId(id);
+    }
+
+    return id;
+  }
+
+
+  /**
+   * check whether the id is mongodbId or not.
+   * @function
+   * @name isValidMongoId
+   * @param {String} id
+   * @returns {Boolean} returns whether id is valid mongodb id or not.
+   */
+
+  function isValidMongoId(id) {
+    return ObjectId.isValid(id) && new ObjectId(id).toString() === id;
+  }
+
+
+
+  /**
+   * filter out location id and code
+   * @function
+   * @name filterLocationIdandCode
+   * @returns {Object} - Object contain locationid and location code array.
+   */
+
+  function filterLocationIdandCode(dataArray) {
+    let locationIds = [];
+    let locationCodes = [];
+    dataArray.forEach((element) => {
+      if (this.checkValidUUID(element)) {
+        locationIds.push(element);
+      } else {
+        locationCodes.push(element);
+      }
+    });
+    return {
+      ids: locationIds,
+      codes: locationCodes,
+    };
+  }
+
+/**
    * Generate unique id.s
    * @method
    * @name generateUniqueId
@@ -388,5 +482,10 @@ module.exports = {
   createComparableDates : createComparableDates,
   noOfElementsInArray : noOfElementsInArray,
   operatorValidation : operatorValidation,
-  generateUniqueId : generateUniqueId
+  generateUniqueId : generateUniqueId,
+  getEndDate : getEndDate,
+  getStartDate : getStartDate,
+  convertStringToObjectId : convertStringToObjectId,
+  isValidMongoId : isValidMongoId,
+  filterLocationIdandCode : filterLocationIdandCode
 };

@@ -465,6 +465,21 @@ module.exports = class ProjectTemplateTasksHelper {
                 for ( let task = 0; task < tasks.length ; task ++ ) {
                     let currentData = UTILS.valueParser(tasks[task]);
                     currentData.createdBy = currentData.updatedBy = userId;
+                    
+                    // let solutionDetails = {}
+
+                    for (var key in currentData) {
+                        console.log(key, currentData[key],"\n")
+                        if (key.startsWith("solution") && currentData[key] !== "") {
+                            currentData[key]
+                        }
+                    }            
+
+                    // if (solutionDetails) {
+                    //     currentData.solutionDetails = solutionDetails;
+                    // }
+
+                    console.log(currentData, "line no 482")
 
                     if ( currentData.isDeletable != "" && currentData.isDeletable === "TRUE" ) {
                         checkMandatoryTask.push(currentData.externalId);
