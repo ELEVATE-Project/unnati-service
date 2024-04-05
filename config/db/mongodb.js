@@ -19,24 +19,24 @@ const ObjectId = mongoose.Types.ObjectId;
  * @name DB
 */
 
-const DB = function() {
-  mongoose.set('useCreateIndex', true)
-  mongoose.set('useFindAndModify', false)
-  mongoose.set('useUnifiedTopology', true)
-  
+const DB = function () {
+
   const db = mongoose.createConnection(
     process.env.MONGODB_URL,
     {
-      useNewUrlParser: true
+      useNewUrlParser: true,
+      useCreateIndex: true,
+      useFindAndModify: false,
+      useUnifiedTopology: true
     }
   );
-  
+
   db.on("error", console.error.bind(console, "connection error:"));
-  db.once("open", function() {
+  db.once("open", function () {
     console.log("Connected to DB");
   });
 
-  const createModel = function(opts) {
+  const createModel = function (opts) {
     if (typeof opts.schema.__proto__.instanceOfSchema === "undefined") {
       var schema = mongoose.Schema(opts.schema, opts.options);
     } else {
@@ -68,9 +68,9 @@ const DB = function() {
     return model;
   };
 
-  const runCompoundIndex = function(modelName,opts) {
+  const runCompoundIndex = function (modelName, opts) {
     if (opts && opts.length > 0) {
-      for ( let indexPointer = 0 ; indexPointer < opts.length ; indexPointer++ ) {
+      for (let indexPointer = 0; indexPointer < opts.length; indexPointer++) {
         let currentIndex = opts[indexPointer];
         db.collection(modelName).createIndex(currentIndex.name, currentIndex.indexType);
       }
