@@ -72,3 +72,7 @@ package-lock.json
 keycloak-public-keys/
 
 public/reports/*
+
+keycloak-public-keys/
+
+.dcignore

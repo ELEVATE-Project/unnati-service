@@ -33,12 +33,11 @@ module.exports = {
           type : Array,
           index : true
         },
-        roles : [
-          {
-            type : String,
+        roles : {
+            type : Array,
             index : true
           }
-        ]
+        
       },
       isDeleted: {
         default : false,

@@ -55,6 +55,8 @@ module.exports = {
     "DISCOVERED_BY_ME" : "discoveredByMe",
     "COURSE": "course",
     "SURVEY": "survey",
-    "ACTIVE": "active",
     "INACTIVE": "inactive",
+    "ALL_ROLES": "all",
+    "OFF": "OFF",
+    "DEFAULT_SURVEY_REMOVED_DAY": 15,
 };

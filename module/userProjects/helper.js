@@ -10,7 +10,7 @@
 const coreService = require(GENERICS_FILES_PATH + "/services/core");
 const libraryCategoriesHelper = require(MODULES_BASE_PATH + "/library/categories/helper");
 const projectTemplatesHelper = require(MODULES_BASE_PATH + "/project/templates/helper");
-// const projectTemplateTasksHelper = require(MODULES_BASE_PATH + "/project/templateTasks/helper");
+const projectTemplateTasksHelper = require(MODULES_BASE_PATH + "/project/templateTasks/helper");
 const { v4: uuidv4 } = require('uuid');
 const surveyService = require(GENERICS_FILES_PATH + "/services/survey");
 const reportService = require(GENERICS_FILES_PATH + "/services/report");
@@ -20,15 +20,14 @@ const projectTemplateQueries = require(DB_QUERY_BASE_PATH + "/projectTemplates")
 const projectTemplateTaskQueries = require(DB_QUERY_BASE_PATH + "/projectTemplateTask");
 const kafkaProducersHelper = require(GENERICS_FILES_PATH + "/kafka/producers");
 const removeFieldsFromRequest = ["submissionDetails"];
-// const programsQueries = require(DB_QUERY_BASE_PATH + "/programs");
+const programsQueries = require(DB_QUERY_BASE_PATH + "/programs");
 const userProfileService = require(GENERICS_FILES_PATH + "/services/users");
 const solutionsHelper = require(MODULES_BASE_PATH + "/solutions/helper");
 const certificateTemplateQueries = require(DB_QUERY_BASE_PATH + "/certificateTemplates");
 const certificateService = require(GENERICS_FILES_PATH + "/services/certificate");
 const certificateValidationsHelper = require(MODULES_BASE_PATH + "/certificateValidations/helper");
 const _ = require("lodash");  
-
-// const programUsersQueries = require(DB_QUERY_BASE_PATH + "/programUsers");
+const programUsersQueries = require(DB_QUERY_BASE_PATH + "/programUsers");
 
 /**
     * UserProjectsHelper
@@ -115,10 +114,10 @@ module.exports = class UserProjectsHelper {
                 }, [
                     "_id",
                     "tasks",
-                    // "programInformation._id",
-                    // "solutionInformation._id",
-                    // "solutionInformation.externalId",
-                    // "entityInformation._id",
+                    "programInformation._id",
+                    "solutionInformation._id",
+                    "solutionInformation.externalId",
+                    "entityInformation._id",
                     "lastDownloadedAt",
                     "appInformation",
                     "status"
@@ -131,7 +130,7 @@ module.exports = class UserProjectsHelper {
                         message: CONSTANTS.apiResponses.USER_PROJECT_NOT_FOUND
                     };
                 }
-                
+
                 if (userProject[0].lastDownloadedAt.toISOString() !== lastDownloadedAt) {
                     throw {
                         status: HTTP_STATUS_CODE['bad_request'].status,
@@ -158,99 +157,99 @@ module.exports = class UserProjectsHelper {
                 if (projectData && projectData.success == true) {
                     updateProject = _.merge(updateProject, projectData.data);
                 }
-                // let createNewProgramAndSolution = false;
-                // let solutionExists = false;
+                let createNewProgramAndSolution = false;
+                let solutionExists = false;
 
-                // if (data.programId && data.programId !== "") {
+                if (data.programId && data.programId !== "") {
 
-                //     // Check if program already existed in project and if its not an existing program.
-                //     if (!userProject[0].programInformation) {
-                //         createNewProgramAndSolution = true; 
-                //     } else if (
-                //         userProject[0].programInformation &&
-                //         userProject[0].programInformation._id &&
-                //         userProject[0].programInformation._id.toString() !== data.programId
-                //     ) {
-                //         // Not an existing program.
+                    // Check if program already existed in project and if its not an existing program.
+                    if (!userProject[0].programInformation) {
+                        createNewProgramAndSolution = true; 
+                    } else if (
+                        userProject[0].programInformation &&
+                        userProject[0].programInformation._id &&
+                        userProject[0].programInformation._id.toString() !== data.programId
+                    ) {
+                        // Not an existing program.
 
-                //         solutionExists = true; 
-                //     }
+                        solutionExists = true; 
+                    }
 
-                // } else if (data.programName) {
+                } else if (data.programName) {
 
-                //     if (!userProject[0].solutionInformation) {
-                //         createNewProgramAndSolution = true;
-                //     } else {
-                //         solutionExists = true;
-                //         // create new program using current name and add existing solution and remove program from it.
-                //     }
-                // }
+                    if (!userProject[0].solutionInformation) {
+                        createNewProgramAndSolution = true;
+                    } else {
+                        solutionExists = true;
+                        // create new program using current name and add existing solution and remove program from it.
+                    }
+                }
 
-                // let addOrUpdateEntityToProject = false;
+                let addOrUpdateEntityToProject = false;
 
-                // if (data.entityId) {
+                if (data.entityId) {
                     
-                //     // If entity is not present in project or new entity is updated.
-                //     if (
-                //         !userProject[0].entityInformation ||
-                //         (
-                //             userProject[0].entityInformation &&
-                //             userProject[0].entityInformation._id !== data.entityId
-                //         )
-                //     ) {
-                //         addOrUpdateEntityToProject = true;
-                //     }
-                // }
+                    // If entity is not present in project or new entity is updated.
+                    if (
+                        !userProject[0].entityInformation ||
+                        (
+                            userProject[0].entityInformation &&
+                            userProject[0].entityInformation._id !== data.entityId
+                        )
+                    ) {
+                        addOrUpdateEntityToProject = true;
+                    }
+                }
                 
-                // if (addOrUpdateEntityToProject) {
+                if (addOrUpdateEntityToProject) {
 
-                //     let entityInformation =
-                //         await _entitiesInformation([data.entityId]);
+                    let entityInformation =
+                        await _entitiesInformation([data.entityId]);
 
-                //     if (!entityInformation.success) {
-                //         return resolve(entityInformation);
-                //     }
+                    if (!entityInformation.success) {
+                        return resolve(entityInformation);
+                    }
 
-                //     updateProject["entityInformation"] = entityInformation.data[0];
-                //     updateProject.entityId = entityInformation.data[0]._id;
-                // }
+                    updateProject["entityInformation"] = entityInformation.data[0];
+                    updateProject.entityId = entityInformation.data[0]._id;
+                }
                 
-                // if (createNewProgramAndSolution || solutionExists) {
+                if (createNewProgramAndSolution || solutionExists) {
                     
-                //     let programAndSolutionInformation =
-                //         await this.createProgramAndSolution(
-                //             data.programId,
-                //             data.programName,
-                //             updateProject.entityId ? [updateProject.entityId] : "",
-                //             userToken,
-                //             userProject[0].solutionInformation && userProject[0].solutionInformation._id ?
-                //                 userProject[0].solutionInformation._id : ""
-                //         );
+                    let programAndSolutionInformation =
+                        await this.createProgramAndSolution(
+                            data.programId,
+                            data.programName,
+                            updateProject.entityId ? [updateProject.entityId] : "",
+                            userToken,
+                            userProject[0].solutionInformation && userProject[0].solutionInformation._id ?
+                                userProject[0].solutionInformation._id : ""
+                        );
 
-                //     if (!programAndSolutionInformation.success) {
-                //         return resolve(programAndSolutionInformation);
-                //     }
+                    if (!programAndSolutionInformation.success) {
+                        return resolve(programAndSolutionInformation);
+                    }
 
-                //     if (solutionExists) {
+                    if (solutionExists) {
 
-                //         let updateProgram =
-                //             await surveyService.removeSolutionsFromProgram(
-                //                 userToken,
-                //                 userProject[0].programInformation._id,
-                //                 [userProject[0].solutionInformation._id]
-                //             );
+                        let updateProgram =
+                            await surveyService.removeSolutionsFromProgram(
+                                userToken,
+                                userProject[0].programInformation._id,
+                                [userProject[0].solutionInformation._id]
+                            );
 
-                //         if (!updateProgram.success) {
-                //             throw {
-                //                 status: HTTP_STATUS_CODE['bad_request'].status,
-                //                 message: CONSTANTS.apiResponses.PROGRAM_NOT_UPDATED
-                //             }
-                //         }
-                //     }
+                        if (!updateProgram.success) {
+                            throw {
+                                status: HTTP_STATUS_CODE['bad_request'].status,
+                                message: CONSTANTS.apiResponses.PROGRAM_NOT_UPDATED
+                            }
+                        }
+                    }
 
-                //     updateProject =
-                //         _.merge(updateProject, programAndSolutionInformation.data);
-                // }
+                    updateProject =
+                        _.merge(updateProject, programAndSolutionInformation.data);
+                }
 
                 let booleanData = this.booleanData(schemas["projects"].schema);
                 let mongooseIdData = this.mongooseIdData(schemas["projects"].schema);
@@ -347,22 +346,22 @@ module.exports = class UserProjectsHelper {
                 if (!userProject[0].appInformation) {
                     updateProject["appInformation"] = {};
 
-                    // if (appName !== "") {
-                    //     updateProject["appInformation"]["appName"] = appName;
-                    // }
+                    if (appName !== "") {
+                        updateProject["appInformation"]["appName"] = appName;
+                    }
 
-                    // if (appVersion !== "") {
-                    //     updateProject["appInformation"]["appVersion"] = appVersion;
-                    // }
+                    if (appVersion !== "") {
+                        updateProject["appInformation"]["appVersion"] = appVersion;
+                    }
                 }
 
                 if ( data.status && data.status !== "" ) {
                    updateProject.status = UTILS.convertProjectStatus(data.status);
                 }
                 
-                // if ( data.status == CONSTANTS.common.COMPLETED_STATUS || data.status == CONSTANTS.common.SUBMITTED_STATUS ) {
-                //     updateProject.completedDate = new Date();
-                // }
+                if ( data.status == CONSTANTS.common.COMPLETED_STATUS || data.status == CONSTANTS.common.SUBMITTED_STATUS ) {
+                    updateProject.completedDate = new Date();
+                }
                 
                 let projectUpdated =
                     await projectQueries.findOneAndUpdate(
@@ -384,16 +383,15 @@ module.exports = class UserProjectsHelper {
                 }
                 
                 //  push project details to kafka
-                // await kafkaProducersHelper.pushProjectToKafka(projectUpdated);
+                await kafkaProducersHelper.pushProjectToKafka(projectUpdated);
             
                 return resolve({
                     success: true,
                     message: CONSTANTS.apiResponses.USER_PROJECT_UPDATED,
                     data : {
-                        // programId : 
-                        // projectUpdated.programInformation && projectUpdated.programInformation._id ?
-                        // projectUpdated.programInformation._id : "",
-                        projectId : projectUpdated._id,
+                        programId : 
+                        projectUpdated.programInformation && projectUpdated.programInformation._id ?
+                        projectUpdated.programInformation._id : "",
                         hasAcceptedTAndC : projectUpdated.hasAcceptedTAndC ? projectUpdated.hasAcceptedTAndC : false
                     } 
                 });
@@ -1048,323 +1046,353 @@ module.exports = class UserProjectsHelper {
     return new Promise(async (resolve, reject) => {
         try {
             
-            // let solutionExternalId = "";
+            let solutionExternalId = "";
             
-            // if( templateId !== "" ) {
+            if( templateId !== "" ) {
                 
-            //     let templateDocuments = 
-            //     await projectTemplateQueries.templateDocument({
-            //         "externalId" : templateId,
-            //         "isReusable" : false,
-            //         "solutionId" : { $exists : true }
-            //     },["solutionId","solutionExternalId"]);
+                let templateDocuments = 
+                await projectTemplateQueries.templateDocument({
+                    "externalId" : templateId,
+                    "isReusable" : false,
+                    "solutionId" : { $exists : true }
+                },["solutionId","solutionExternalId"]);
 
-            //     if( !templateDocuments.length > 0 ) {
-            //         throw {
-            //             message : CONSTANTS.apiResponses.PROJECT_TEMPLATE_NOT_FOUND,
-            //             status : HTTP_STATUS_CODE['bad_request'].status
-            //         }
-            //     }
+                if( !templateDocuments.length > 0 ) {
+                    throw {
+                        message : CONSTANTS.apiResponses.PROJECT_TEMPLATE_NOT_FOUND,
+                        status : HTTP_STATUS_CODE['bad_request'].status
+                    }
+                }
 
-            //     solutionId = templateDocuments[0].solutionId;
-            //     solutionExternalId = templateDocuments[0].solutionExternalId;
-            // }
+                solutionId = templateDocuments[0].solutionId;
+                solutionExternalId = templateDocuments[0].solutionExternalId;
+            }
             
             let userRoleInformation = _.omit(bodyData,["referenceFrom","submissions","hasAcceptedTAndC"]);
             
-            // if (projectId === "") {
-            //     // This will check wether the user user is targeted to solution or not based on his userRoleInformation
-            //     const targetedSolutionId = await coreService.checkIfSolutionIsTargetedForUserProfile(userToken,userRoleInformation,solutionId)
-            //     //based on above api will check for projects wether its is private project or public project
-            //     const projectDetails = await projectQueries.projectDocument({
-            //         solutionId: solutionId,
-            //         userId: userId,
-            //         isAPrivateProgram: targetedSolutionId.data.isATargetedSolution ? false : true
-            //     }, ["_id"]);
-            //     if( projectDetails.length > 0 ) {
-            //         projectId = projectDetails[0]._id;
-            //     } else {
-                
-            //         let solutionDetails = {}
+            if (projectId === "") {
+                // This will check wether the user user is targeted to solution or not based on his userRoleInformation
+                const targetedSolutionId = await coreService.checkIfSolutionIsTargetedForUserProfile(userToken,userRoleInformation,solutionId)
+                //based on above api will check for projects wether its is private project or public project
+                const projectDetails = await projectQueries.projectDocument({
+                    solutionId: solutionId,
+                    userId: userId,
+                    isAPrivateProgram: targetedSolutionId.data.isATargetedSolution ? false : true
+                }, ["_id"]);
+                if( projectDetails.length > 0 ) {
+                    projectId = projectDetails[0]._id;
+                } else {
+                    let isAPrivateSolution = (targetedSolutionId.data.isATargetedSolution === false)  ? true : false;
+                    let solutionDetails = {}
 
-            //         if( templateId === "" ) {
+                    if( templateId === "" ) {
+                        // If solution Id of a private program is passed, fetch solution details
+                        if ( isAPrivateSolution && solutionId != "" ) {
+                            solutionDetails = await solutionsHelper.solutionDocuments({
+                                _id: solutionId,
+                                isAPrivateProgram: true
+                            },
+                            [
+                                "name",
+                                "externalId",
+                                "description",
+                                "programId",
+                                "programName",
+                                "programDescription",
+                                "programExternalId",
+                                "isAPrivateProgram",
+                                "projectTemplateId",
+                                "entityType",
+                                "entityTypeId",
+                                "language",
+                                "creator"
+                            ]);
+                            if( !solutionDetails.length > 0 ) {
+                                throw {
+                                    status : HTTP_STATUS_CODE["bad_request"].status,
+                                    message : CONSTANTS.apiResponses.SOLUTION_NOT_FOUND
+                                }
+                            }
+                            solutionDetails = solutionDetails[0];
+                        } else {
+                            solutionDetails = 
+                            await coreService.solutionDetailsBasedOnRoleAndLocation(
+                                userToken,
+                                bodyData,
+                                solutionId,
+                                isAPrivateSolution
+                            );
+
+                            if( !solutionDetails.success || (solutionDetails.data.data && !solutionDetails.data.data.length > 0) ) {
+                                throw {
+                                    status : HTTP_STATUS_CODE["bad_request"].status,
+                                    message : CONSTANTS.apiResponses.SOLUTION_DOES_NOT_EXISTS_IN_SCOPE
+                                }
+                            }
+
+                            solutionDetails = solutionDetails.data;
+                        }
+
+                    } else {
+                        
+                        solutionDetails =
+                        await surveyService.listSolutions([solutionExternalId]);
+                        if( !solutionDetails.success ) {
+                            throw {
+                                message : CONSTANTS.apiResponses.SOLUTION_NOT_FOUND,
+                                status : HTTP_STATUS_CODE['bad_request'].status
+                            }
+                        }
+                        
+                        solutionDetails = solutionDetails.data[0];
+                        
+                    }
+                    // check for requestForPIIConsent data
+                    let queryData = {};
+                    queryData["_id"] = solutionDetails.programId;
+                    let programDetails = await programsQueries.programsDocument(queryData,["requestForPIIConsent"]);
                     
-            //             solutionDetails = 
-            //             await coreService.solutionDetailsBasedOnRoleAndLocation(
-            //                 userToken,
-            //                 bodyData,
-            //                 solutionId
-            //             );
-
-            //             if( !solutionDetails.success || (solutionDetails.data.data && !solutionDetails.data.data.length > 0) ) {
-            //                 throw {
-            //                     status : HTTP_STATUS_CODE["bad_request"].status,
-            //                     message : CONSTANTS.apiResponses.SOLUTION_DOES_NOT_EXISTS_IN_SCOPE
-            //                 }
-            //             }
-
-            //             solutionDetails = solutionDetails.data;
-
-            //         } else {
+                    // if requestForPIIConsent not there do not call program join
+                    if ( programDetails.length > 0 && programDetails[0].hasOwnProperty('requestForPIIConsent')) {
                         
-            //             solutionDetails =
-            //             await surveyService.listSolutions([solutionExternalId]);
-            //             if( !solutionDetails.success ) {
-            //                 throw {
-            //                     message : CONSTANTS.apiResponses.SOLUTION_NOT_FOUND,
-            //                     status : HTTP_STATUS_CODE['bad_request'].status
-            //                 }
-            //             }
-                        
-            //             solutionDetails = solutionDetails.data[0];
-                        
-            //         }
-            //         // check for requestForPIIConsent data
-            //         let queryData = {};
-            //         queryData["_id"] = solutionDetails.programId;
-            //         let programDetails = await programsQueries.programsDocument(queryData,["requestForPIIConsent"]);
-                    
-            //         // if requestForPIIConsent not there do not call program join
-            //         if ( programDetails.length > 0 && programDetails[0].hasOwnProperty('requestForPIIConsent')) {
-                        
-            //             // program join API call it will increment the noOfResourcesStarted counter and will make user join program
-            //             // before creating any project this api has to called 
-            //             let programUsers = await programUsersQueries.programUsersDocument(
-            //                 {
-            //                     userId : userId,
-            //                     programId : solutionDetails.programId
-            //                 },
-            //                 [
-            //                     "_id",
-            //                     "resourcesStarted"
-            //                 ]
-            //             );
+                        // program join API call it will increment the noOfResourcesStarted counter and will make user join program
+                        // before creating any project this api has to called 
+                        let programUsers = await programUsersQueries.programUsersDocument(
+                            {
+                                userId : userId,
+                                programId : solutionDetails.programId
+                            },
+                            [
+                                "_id",
+                                "resourcesStarted"
+                            ]
+                        );
         
-            //             if (!programUsers.length > 0 || ( programUsers.length > 0 && programUsers[0].resourcesStarted == false)) {
-            //                 let programJoinBody = {};
-            //                 programJoinBody.userRoleInformation = userRoleInformation;
-            //                 programJoinBody.isResource = true;
-            //                 programJoinBody.consentShared = true;
-            //                 let joinProgramData = await coreService.joinProgram (
-            //                     solutionDetails.programId,
-            //                     programJoinBody,
-            //                     userToken
-            //                 );
-            //                 if ( !joinProgramData.success ) {
-            //                     return resolve({ 
-            //                         status: HTTP_STATUS_CODE.bad_request.status, 
-            //                         message: CONSTANTS.apiResponses.PROGRAM_JOIN_FAILED
-            //                     });
-            //                 }
-            //             }
-            //         }
+                        if (!programUsers.length > 0 || ( programUsers.length > 0 && programUsers[0].resourcesStarted == false)) {
+                            let programJoinBody = {};
+                            programJoinBody.userRoleInformation = userRoleInformation;
+                            programJoinBody.isResource = true;
+                            programJoinBody.consentShared = true;
+                            let joinProgramData = await coreService.joinProgram (
+                                solutionDetails.programId,
+                                programJoinBody,
+                                userToken
+                            );
+                            if ( !joinProgramData.success ) {
+                                return resolve({ 
+                                    status: HTTP_STATUS_CODE.bad_request.status, 
+                                    message: CONSTANTS.apiResponses.PROGRAM_JOIN_FAILED
+                                });
+                            }
+                        }
+                    }
                     
-            //         let projectCreation = 
-            //         await this.userAssignedProjectCreation(
-            //             solutionDetails.projectTemplateId,
-            //             userId,
-            //             userToken
-            //         );
+                    let projectCreation = 
+                    await this.userAssignedProjectCreation(
+                        solutionDetails.projectTemplateId,
+                        userId,
+                        userToken
+                    );
 
-            //         if( !projectCreation.success ) {
-            //             return resolve(projectCreation);
-            //         }
-    
-            //         projectCreation.data["isAPrivateProgram"] = 
-            //         solutionDetails.isAPrivateProgram;
-    
-            //         projectCreation.data.programInformation = {
-            //             _id : ObjectId(solutionDetails.programId),
-            //             externalId : solutionDetails.programExternalId,
-            //             description : 
-            //             solutionDetails.programDescription ? solutionDetails.programDescription : "",
-            //             name : solutionDetails.programName
-            //         }
-    
-            //         projectCreation.data.solutionInformation = {
-            //             _id : ObjectId(solutionDetails._id),
-            //             externalId : solutionDetails.externalId,
-            //             description : 
-            //             solutionDetails.description ? 
-            //             solutionDetails.description : "",
-            //             name : solutionDetails.name
-            //         };
-    
-            //         projectCreation.data["programId"] = 
-            //         projectCreation.data.programInformation._id;
-    
-            //         projectCreation.data["programExternalId"] = 
-            //         projectCreation.data.programInformation.externalId;
-    
-            //         projectCreation.data["solutionId"] = 
-            //         projectCreation.data.solutionInformation._id;
-    
-            //         projectCreation.data["solutionExternalId"] = 
-            //         projectCreation.data.solutionInformation.externalId;
-    
-            //         projectCreation.data["userRole"] = 
-            //         bodyData.role;
-    
-            //         projectCreation.data["appInformation"] = {};
-    
-            //         if( appName !== "" ) {
-            //             projectCreation.data["appInformation"]["appName"] = appName;
-            //         }
-    
-            //         if( appVersion !== "" ) {
-            //             projectCreation.data["appInformation"]["appVersion"] = appVersion;
-            //         }
+                    if( !projectCreation.success ) {
+                        return resolve(projectCreation);
+                    }
                     
-            //         if ( solutionDetails.certificateTemplateId && solutionDetails.certificateTemplateId !== "" ) {
-            //             // <- Add certificate template details to projectCreation data if present ->
-            //             const certificateTemplateDetails = await certificateTemplateQueries.certificateTemplateDocument({
-            //                 _id : solutionDetails.certificateTemplateId
-            //             });
+                    projectCreation.data["isAPrivateProgram"] = 
+                    solutionDetails.isAPrivateProgram;
+    
+                    projectCreation.data.programInformation = {
+                        _id : ObjectId(solutionDetails.programId),
+                        externalId : solutionDetails.programExternalId,
+                        description : 
+                        solutionDetails.programDescription ? solutionDetails.programDescription : "",
+                        name : solutionDetails.programName
+                    }
+    
+                    projectCreation.data.solutionInformation = {
+                        _id : ObjectId(solutionDetails._id),
+                        externalId : solutionDetails.externalId,
+                        description : 
+                        solutionDetails.description ? 
+                        solutionDetails.description : "",
+                        name : solutionDetails.name
+                    };
+    
+                    projectCreation.data["programId"] = 
+                    projectCreation.data.programInformation._id;
+    
+                    projectCreation.data["programExternalId"] = 
+                    projectCreation.data.programInformation.externalId;
+    
+                    projectCreation.data["solutionId"] = 
+                    projectCreation.data.solutionInformation._id;
+    
+                    projectCreation.data["solutionExternalId"] = 
+                    projectCreation.data.solutionInformation.externalId;
+    
+                    projectCreation.data["userRole"] = 
+                    bodyData.role;
+    
+                    projectCreation.data["appInformation"] = {};
+    
+                    if( appName !== "" ) {
+                        projectCreation.data["appInformation"]["appName"] = appName;
+                    }
+    
+                    if( appVersion !== "" ) {
+                        projectCreation.data["appInformation"]["appVersion"] = appVersion;
+                    }
+                    
+                    if ( solutionDetails.certificateTemplateId && solutionDetails.certificateTemplateId !== "" ) {
+                        // <- Add certificate template details to projectCreation data if present ->
+                        const certificateTemplateDetails = await certificateTemplateQueries.certificateTemplateDocument({
+                            _id : solutionDetails.certificateTemplateId
+                        });
                         
-            //             // create certificate object and add data if certificate template is present.
-            //             if ( certificateTemplateDetails.length > 0 ) {
-            //                 projectCreation.data["certificate"] = _.pick(certificateTemplateDetails[0], ['templateUrl', 'status', 'criteria']);
-            //                 projectCreation.data["certificate"]["templateId"] = solutionDetails.certificateTemplateId;
-            //             }
-            //         }
+                        // create certificate object and add data if certificate template is present.
+                        if ( certificateTemplateDetails.length > 0 ) {
+                            projectCreation.data["certificate"] = _.pick(certificateTemplateDetails[0], ['templateUrl', 'status', 'criteria']);
+                            projectCreation.data["certificate"]["templateId"] = solutionDetails.certificateTemplateId;
+                        }
+                    }
                     
-            //         let getUserProfileFromObservation = false;
+                    let getUserProfileFromObservation = false;
     
-            //         if( bodyData && Object.keys(bodyData).length > 0 ) {
+                    if( bodyData && Object.keys(bodyData).length > 0 ) {
     
-            //             if( bodyData.hasAcceptedTAndC ) {
-            //                 projectCreation.data.hasAcceptedTAndC = bodyData.hasAcceptedTAndC;
-            //             }
+                        if( bodyData.hasAcceptedTAndC ) {
+                            projectCreation.data.hasAcceptedTAndC = bodyData.hasAcceptedTAndC;
+                        }
 
-            //             if( bodyData.referenceFrom ) {
-            //                 projectCreation.data.referenceFrom = bodyData.referenceFrom;
+                        if( bodyData.referenceFrom ) {
+                            projectCreation.data.referenceFrom = bodyData.referenceFrom;
                             
-            //                 if( bodyData.submissions ) {
-            //                     if ( bodyData.submissions.observationId && bodyData.submissions.observationId != "" ) {
-            //                         getUserProfileFromObservation = true;
-            //                     }
-            //                     projectCreation.data.submissions = bodyData.submissions;
-            //                 }
-            //             }
+                            if( bodyData.submissions ) {
+                                if ( bodyData.submissions.observationId && bodyData.submissions.observationId != "" ) {
+                                    getUserProfileFromObservation = true;
+                                }
+                                projectCreation.data.submissions = bodyData.submissions;
+                            }
+                        }
     
-            //             if( bodyData.role ) {
-            //                 projectCreation.data["userRole"] = bodyData.role;
-            //             }
+                        if( bodyData.role ) {
+                            projectCreation.data["userRole"] = bodyData.role;
+                        }
 
-            //             if( 
-            //                 solutionDetails.entityType && bodyData[solutionDetails.entityType] 
-            //             ) {
-            //                 let entityInformation = 
-            //                 await surveyService.listEntitiesByLocationIds(
-            //                     userToken,
-            //                     [bodyData[solutionDetails.entityType]] 
-            //                 );
+                        if( 
+                            solutionDetails.entityType && bodyData[solutionDetails.entityType] 
+                        ) {
+                            let entityInformation = 
+                            await surveyService.listEntitiesByLocationIds(
+                                userToken,
+                                [bodyData[solutionDetails.entityType]] 
+                            );
 
-            //                 if( !entityInformation.success ) {
-            //                     throw {
-            //                         message : CONSTANTS.apiResponses.ENTITY_NOT_FOUND,
-            //                         status : HTTP_STATUS_CODE['bad_request'].status
-            //                     }
-            //                 }
+                            if( !entityInformation.success ) {
+                                throw {
+                                    message : CONSTANTS.apiResponses.ENTITY_NOT_FOUND,
+                                    status : HTTP_STATUS_CODE['bad_request'].status
+                                }
+                            }
 
-            //                 let entityDetails = await _entitiesMetaInformation(
-            //                     entityInformation.data
-            //                 );
+                            let entityDetails = await _entitiesMetaInformation(
+                                entityInformation.data
+                            );
 
-            //                 if ( entityDetails && entityDetails.length > 0 ) {
-            //                     projectCreation.data["entityInformation"] = entityDetails[0];
-            //                 }
+                            if ( entityDetails && entityDetails.length > 0 ) {
+                                projectCreation.data["entityInformation"] = entityDetails[0];
+                            }
         
-            //                 projectCreation.data.entityId = entityInformation.data[0]._id;
-            //             }
+                            projectCreation.data.entityId = entityInformation.data[0]._id;
+                        }
     
-            //         }
+                    }
     
-            //         projectCreation.data.status = CONSTANTS.common.STARTED;
-            //         projectCreation.data.lastDownloadedAt = new Date();
+                    projectCreation.data.status = CONSTANTS.common.STARTED;
+                    projectCreation.data.lastDownloadedAt = new Date();
                     
-            //         // fetch userRoleInformation from observation if referenecFrom is observation
-            //         let addReportInfoToSolution = false;
-            //         if ( getUserProfileFromObservation ){
+                    // fetch userRoleInformation from observation if referenecFrom is observation
+                    let addReportInfoToSolution = false;
+                    if ( getUserProfileFromObservation ){
 
-            //             let observationDetails = await surveyService.observationDetails(
-            //                 userToken,
-            //                 bodyData.submissions.observationId
-            //             );
+                        let observationDetails = await surveyService.observationDetails(
+                            userToken,
+                            bodyData.submissions.observationId
+                        );
 
-            //             if( observationDetails.data &&
-            //                 Object.keys(observationDetails.data).length > 0 && 
-            //                 observationDetails.data.userRoleInformation &&
-            //                 Object.keys(observationDetails.data.userRoleInformation).length > 0
-            //             ) {
+                        if( observationDetails.data &&
+                            Object.keys(observationDetails.data).length > 0 && 
+                            observationDetails.data.userRoleInformation &&
+                            Object.keys(observationDetails.data.userRoleInformation).length > 0
+                        ) {
 
-            //                 userRoleInformation = observationDetails.data.userRoleInformation;
+                            userRoleInformation = observationDetails.data.userRoleInformation;
                             
-            //             }
+                        }
 
-            //             if( observationDetails.data &&
-            //                 Object.keys(observationDetails.data).length > 0 && 
-            //                 observationDetails.data.userProfile &&
-            //                 Object.keys(observationDetails.data.userProfile).length > 0
-            //             ) {
+                        if( observationDetails.data &&
+                            Object.keys(observationDetails.data).length > 0 && 
+                            observationDetails.data.userProfile &&
+                            Object.keys(observationDetails.data.userProfile).length > 0
+                        ) {
 
-            //                 projectCreation.data.userProfile = observationDetails.data.userProfile;
-            //                 addReportInfoToSolution = true; 
+                            projectCreation.data.userProfile = observationDetails.data.userProfile;
+                            addReportInfoToSolution = true; 
                             
-            //             } else {
-            //                 //Fetch user profile information by calling sunbird's user read api.
+                        } else {
+                            //Fetch user profile information by calling sunbird's user read api.
 
-            //                 let userProfile = await userProfileService.profile(userToken, userId);
-            //                 if ( userProfile.success && 
-            //                      userProfile.data &&
-            //                      userProfile.data.response
-            //                 ) {
-            //                         projectCreation.data.userProfile = userProfile.data.response;
-            //                         addReportInfoToSolution = true; 
-            //                 } 
-            //             }
+                            let userProfile = await userProfileService.profile(userToken, userId);
+                            if ( userProfile.success && 
+                                 userProfile.data &&
+                                 userProfile.data.response
+                            ) {
+                                    projectCreation.data.userProfile = userProfile.data.response;
+                                    addReportInfoToSolution = true; 
+                            } 
+                        }
 
-            //         } else {
-            //             //Fetch user profile information by calling sunbird's user read api.
+                    } else {
+                        //Fetch user profile information by calling sunbird's user read api.
 
-            //             let userProfileData = await userProfileService.profile(userToken, userId);
-            //             if ( userProfileData.success && 
-            //                  userProfileData.data &&
-            //                  userProfileData.data.response
-            //             ) {
-            //                     projectCreation.data.userProfile = userProfileData.data.response;
-            //                     addReportInfoToSolution = true; 
-            //             } 
-            //         }
-
-            //         projectCreation.data.userRoleInformation = userRoleInformation;
+                        let userProfileData = await userProfileService.profile(userToken, userId);
+                        if ( userProfileData.success && 
+                             userProfileData.data &&
+                             userProfileData.data.response
+                        ) {
+                                projectCreation.data.userProfile = userProfileData.data.response;
+                                addReportInfoToSolution = true; 
+                        } 
+                    }
                     
-            //         //compare & update userProfile with userRoleInformation
-            //         if ( projectCreation.data.userProfile && userRoleInformation && Object.keys(userRoleInformation).length > 0 && Object.keys(projectCreation.data.userProfile).length > 0 ) {
-            //             let updatedUserProfile = await _updateUserProfileBasedOnUserRoleInfo(
-            //                 projectCreation.data.userProfile,
-            //                 userRoleInformation
-            //             );
+                    projectCreation.data.userRoleInformation = userRoleInformation;
+                    
+                    //compare & update userProfile with userRoleInformation
+                    if ( projectCreation.data.userProfile && userRoleInformation && Object.keys(userRoleInformation).length > 0 && Object.keys(projectCreation.data.userProfile).length > 0 ) {
+                        let updatedUserProfile = await _updateUserProfileBasedOnUserRoleInfo(
+                            projectCreation.data.userProfile,
+                            userRoleInformation
+                        );
 
-            //             if (updatedUserProfile && updatedUserProfile.success == true && updatedUserProfile.profileMismatchFound == true) {
-            //                 projectCreation.data.userProfile = updatedUserProfile.data;
-            //             }
-            //         }
+                        if (updatedUserProfile && updatedUserProfile.success == true && updatedUserProfile.profileMismatchFound == true) {
+                            projectCreation.data.userProfile = updatedUserProfile.data;
+                        }
+                    }
     
-            //         let project = await projectQueries.createProject(projectCreation.data);
+                    let project = await projectQueries.createProject(projectCreation.data);
                     
-            //         if ( addReportInfoToSolution && project.solutionId ) {
-            //             let updateSolution = await solutionsHelper.addReportInformationInSolution(
-            //                 project.solutionId,
-            //                 project.userProfile
-            //             ); 
-            //         }
+                    if ( addReportInfoToSolution && project.solutionId ) {
+                        let updateSolution = await solutionsHelper.addReportInformationInSolution(
+                            project.solutionId,
+                            project.userProfile
+                        ); 
+                    }
 
-            //         await kafkaProducersHelper.pushProjectToKafka(project);
+                    await kafkaProducersHelper.pushProjectToKafka(project);
                     
-            //         projectId = project._id;
-            //     }
-            // }
+                    projectId = project._id;
+                }
+            }
 
             let projectDetails = await this.details(
                 projectId, 
@@ -1379,20 +1407,20 @@ module.exports = class UserProjectsHelper {
                 projectDetails.data.status = UTILS.convertProjectStatus(projectDetails.data.status);
             }
             // make templateUrl downloadable befor passing to front-end
-            // if ( projectDetails.data.certificate &&
-            //      projectDetails.data.certificate.templateUrl &&
-            //      projectDetails.data.certificate.templateUrl !== "" 
-            // ) {
-            //     let certificateTemplateDownloadableUrl =
-            //         await coreService.getDownloadableUrl(
-            //             {
-            //                 filePaths: [projectDetails.data.certificate.templateUrl]
-            //             }
-            //         );
-            //         if ( certificateTemplateDownloadableUrl.success ) {
-            //             projectDetails.data.certificate.templateUrl = certificateTemplateDownloadableUrl.data[0].url;
-            //         }
-            // } 
+            if ( projectDetails.data.certificate &&
+                 projectDetails.data.certificate.templateUrl &&
+                 projectDetails.data.certificate.templateUrl !== "" 
+            ) {
+                let certificateTemplateDownloadableUrl =
+                    await coreService.getDownloadableUrl(
+                        {
+                            filePaths: [projectDetails.data.certificate.templateUrl]
+                        }
+                    );
+                    if ( certificateTemplateDownloadableUrl.success ) {
+                        projectDetails.data.certificate.templateUrl = certificateTemplateDownloadableUrl.data[0].url;
+                    }
+            } 
 
             return resolve({
                 success: true,
@@ -1545,13 +1573,13 @@ module.exports = class UserProjectsHelper {
 
                 //Fetch user profile information by calling sunbird's user read api.
 
-                // let userProfile = await userProfileService.profile(userToken, userId);
-                // if ( userProfile.success && 
-                //      userProfile.data &&
-                //      userProfile.data.response
-                // ) {
-                //     createProject.userProfile = userProfile.data.response;
-                // } 
+                let userProfile = await userProfileService.profile(userToken, userId);
+                if ( userProfile.success && 
+                     userProfile.data &&
+                     userProfile.data.response
+                ) {
+                    createProject.userProfile = userProfile.data.response;
+                } 
 
                 
 
@@ -1560,66 +1588,66 @@ module.exports = class UserProjectsHelper {
                     createProject = _.merge(createProject, projectData.data);
                 }
 
-                // let createNewProgramAndSolution = false;
+                let createNewProgramAndSolution = false;
 
-                // if (data.programId && data.programId !== "") {
-                //     createNewProgramAndSolution = false;
-                // }
-                // else if (data.programName) {
-                //     createNewProgramAndSolution = true;
-                // }
+                if (data.programId && data.programId !== "") {
+                    createNewProgramAndSolution = false;
+                }
+                else if (data.programName) {
+                    createNewProgramAndSolution = true;
+                }
                 
-                // if (data.entityId) {
-                //     let entityInformation =
-                //         await _entitiesInformation([data.entityId]);
+                if (data.entityId) {
+                    let entityInformation =
+                        await _entitiesInformation([data.entityId]);
 
-                //     if (!entityInformation.success) {
-                //         return resolve(entityInformation);
-                //     }
+                    if (!entityInformation.success) {
+                        return resolve(entityInformation);
+                    }
 
-                //     createProject["entityInformation"] = entityInformation.data[0];
-                //     createProject.entityId = entityInformation.data[0]._id;
-                // }
-                // if (createNewProgramAndSolution) {
+                    createProject["entityInformation"] = entityInformation.data[0];
+                    createProject.entityId = entityInformation.data[0]._id;
+                }
+                if (createNewProgramAndSolution) {
 
-                //     let programAndSolutionInformation =
-                //         await this.createProgramAndSolution(
-                //             data.programId,
-                //             data.programName,
-                //             createProject.entityId ? [createProject.entityId] : "",
-                //             userToken
-                //         );
+                    let programAndSolutionInformation =
+                        await this.createProgramAndSolution(
+                            data.programId,
+                            data.programName,
+                            createProject.entityId ? [createProject.entityId] : "",
+                            userToken
+                        );
 
-                //     if (!programAndSolutionInformation.success) {
-                //         return resolve(programAndSolutionInformation);
-                //     }
-                //     createProject =
-                //         _.merge(createProject, programAndSolutionInformation.data);
-                // } 
+                    if (!programAndSolutionInformation.success) {
+                        return resolve(programAndSolutionInformation);
+                    }
+                    createProject =
+                        _.merge(createProject, programAndSolutionInformation.data);
+                } 
 
-                // if (data.programId && data.programId !== "") {
+                if (data.programId && data.programId !== "") {
 
-                //     let queryData = {};
-                //     queryData["_id"] = data.programId;
-                //     let programDetails = await programsQueries.programsDocument(queryData,
-                //             [
-                //                 "_id",
-                //                 "name",
-                //                 "description",
-                //                 "isAPrivateProgram"
-                //             ]
-                //     );
-                //     if( !programDetails.length > 0 ){
-                //         throw {
-                //             status: HTTP_STATUS_CODE['bad_request'].status,
-                //             message: CONSTANTS.apiResponses.PROGRAM_NOT_FOUND
-                //         };
-                //     } 
-                //     let programInformationData = {};
-                //     programInformationData["programInformation"] = programDetails[0];
-                //     createProject =
-                //         _.merge(createProject, programInformationData);
-                // }
+                    let queryData = {};
+                    queryData["_id"] = data.programId;
+                    let programDetails = await programsQueries.programsDocument(queryData,
+                            [
+                                "_id",
+                                "name",
+                                "description",
+                                "isAPrivateProgram"
+                            ]
+                    );
+                    if( !programDetails.length > 0 ){
+                        throw {
+                            status: HTTP_STATUS_CODE['bad_request'].status,
+                            message: CONSTANTS.apiResponses.PROGRAM_NOT_FOUND
+                        };
+                    } 
+                    let programInformationData = {};
+                    programInformationData["programInformation"] = programDetails[0];
+                    createProject =
+                        _.merge(createProject, programInformationData);
+                }
                 
 
                 if (data.tasks) {
@@ -1692,7 +1720,7 @@ module.exports = class UserProjectsHelper {
                     createProject
                 );
                 
-                // await kafkaProducersHelper.pushProjectToKafka(userProject);
+                await kafkaProducersHelper.pushProjectToKafka(userProject);
 
                 if (!userProject._id) {
                     throw {
@@ -1705,9 +1733,9 @@ module.exports = class UserProjectsHelper {
                     success: true,
                     message: CONSTANTS.apiResponses.PROJECT_CREATED,
                     data: {
-                        // programId:
-                        // userProject.programInformation && userProject.programInformation._id ?
-                        // userProject.programInformation._id : data.programId,
+                        programId:
+                        userProject.programInformation && userProject.programInformation._id ?
+                        userProject.programInformation._id : data.programId,
                         projectId: userProject._id,
                         lastDownloadedAt: userProject.lastDownloadedAt,
                         hasAcceptedTAndC : userProject.hasAcceptedTAndC ? userProject.hasAcceptedTAndC : false
@@ -2152,88 +2180,29 @@ module.exports = class UserProjectsHelper {
    * List of projects.
    * @method
    * @name list
-   * @param {String} userId - Logged in user id.
-   * @param {Number} pageNo - Page number.
-   * @param {Number} pageSize - Page size.
-   * @param {String} filter - discoveredByMe or createdByMe.
    * @returns {Array} List of projects.
    */
   
-    static list( userId, pageNo, pageSize, searchText = "", filter) {
-        return new Promise(async (resolve, reject) => {
-            try {
+  static list( bodyData ) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let projects = await projectQueries.projectDocument(
+                bodyData.query,
+                bodyData.projection,
+                bodyData.skipFields
+            );
 
-                let query = {
-                    isDeleted : false,
-                    userId : userId
-                }
-                // If 'searchText' is provided, create a search query using '$or'.
-                if (searchText !== "") {
-                    queryObject["$or"] = [
-                        { externalId: new RegExp(searchText, "i") },
-                        { title: new RegExp(searchText, "i") },
-                        { description: new RegExp(searchText, "i") }
-                    ];
-                }
-                if (filter === CONSTANTS.common.DISCOVERED_BY_ME) {
-                    // Include records with projectTemplateId
-                    query.projectTemplateId = { $exists: true }; 
-                } else if (filter === CONSTANTS.common.CREATED_BY_ME) {
-                    // Include records without projectTemplateId
-                    query.projectTemplateId = { $exists: false }; 
-                }
-                
-                
-                let projects = await projectQueries.projectDocument(
-                    query
-                );
-
-                // Calculate the indices for pagination.
-                const startIndex = (pageNo - 1) * pageSize;
-                const endIndex = pageNo * pageSize;
-
-                // Slice the 'projects' array to get paginated results.
-                const paginatedResults = projects.slice(startIndex, endIndex);
-
-                return resolve({
-                    success : true,
-                    message : CONSTANTS.apiResponses.PROJECTS_FETCHED,
-                    result : paginatedResults
-                });
-                
-            } catch (error) {
-                return reject(error);
-            }
+            return resolve({
+                success : true,
+                message : CONSTANTS.apiResponses.PROJECTS_FETCHED,
+                result : projects
+            });
+            
+        } catch (error) {
+            return reject(error);
+        }
     });
   }
-//   /**
-//    * List of projects.
-//    * @method
-//    * @name list
-//    * @returns {Array} List of projects.
-//    */
-  
-//   static list( bodyData ) {
-//     return new Promise(async (resolve, reject) => {
-//         try {
-
-//             let projects = await projectQueries.projectDocument(
-//                 bodyData.query,
-//                 bodyData.projection,
-//                 bodyData.skipFields
-//             );
-
-//             return resolve({
-//                 success : true,
-//                 message : CONSTANTS.apiResponses.PROJECTS_FETCHED,
-//                 result : projects
-//             });
-            
-//         } catch (error) {
-//             return reject(error);
-//         }
-//     });
-//   }
 
   /**
       * Create project from template.
@@ -2302,103 +2271,103 @@ module.exports = class UserProjectsHelper {
                     libraryProjects.data["taskReport"] = taskReport;
                 }
 
-                // if (requestedData.entityId && requestedData.entityId !== "") {
+                if (requestedData.entityId && requestedData.entityId !== "") {
 
-                //     let entityInformation =
-                //         await _entitiesInformation([requestedData.entityId]);
+                    let entityInformation =
+                        await _entitiesInformation([requestedData.entityId]);
 
-                //     if (!entityInformation.success) {
-                //         return resolve(entityInformation);
-                //     }
+                    if (!entityInformation.success) {
+                        return resolve(entityInformation);
+                    }
 
-                //     libraryProjects.data["entityInformation"] = entityInformation.data[0];
-                //     libraryProjects.data.entityId = entityInformation.data[0]._id;
-                // }
+                    libraryProjects.data["entityInformation"] = entityInformation.data[0];
+                    libraryProjects.data.entityId = entityInformation.data[0]._id;
+                }
 
-                // if( requestedData.solutionId && requestedData.solutionId !== "" && isATargetedSolution === false ){
+                if( requestedData.solutionId && requestedData.solutionId !== "" && isATargetedSolution === false ){
 
-                //     let programAndSolutionInformation =
-                //         await this.createProgramAndSolution(
-                //             requestedData.programId,
-                //             requestedData.programName,
-                //             requestedData.entityId ? [requestedData.entityId] : "",
-                //             userToken,
-                //             requestedData.solutionId,
-                //             isATargetedSolution
-                //         );
+                    let programAndSolutionInformation =
+                        await this.createProgramAndSolution(
+                            requestedData.programId,
+                            requestedData.programName,
+                            requestedData.entityId ? [requestedData.entityId] : "",
+                            userToken,
+                            requestedData.solutionId,
+                            isATargetedSolution
+                        );
 
-                //     if (!programAndSolutionInformation.success) {
-                //         return resolve(programAndSolutionInformation);
-                //     }
+                    if (!programAndSolutionInformation.success) {
+                        return resolve(programAndSolutionInformation);
+                    }
 
-                //     libraryProjects.data = _.merge(
-                //         libraryProjects.data,
-                //         programAndSolutionInformation.data
-                //     )
+                    libraryProjects.data = _.merge(
+                        libraryProjects.data,
+                        programAndSolutionInformation.data
+                    )
 
-                //     libraryProjects.data["referenceFrom"] = CONSTANTS.common.LINK;
-                // }
-                // else if (
-                //     (requestedData.programId && requestedData.programId !== "") ||
-                //     (requestedData.programName && requestedData.programName !== "" )
-                // ) {
+                    libraryProjects.data["referenceFrom"] = CONSTANTS.common.LINK;
+                }
+                else if (
+                    (requestedData.programId && requestedData.programId !== "") ||
+                    (requestedData.programName && requestedData.programName !== "" )
+                ) {
 
-                //     let programAndSolutionInformation =
-                //         await this.createProgramAndSolution(
-                //             requestedData.programId,
-                //             requestedData.programName,
-                //             requestedData.entityId ? [requestedData.entityId] : "",
-                //             userToken
-                //         );
+                    let programAndSolutionInformation =
+                        await this.createProgramAndSolution(
+                            requestedData.programId,
+                            requestedData.programName,
+                            requestedData.entityId ? [requestedData.entityId] : "",
+                            userToken
+                        );
 
-                //     if (!programAndSolutionInformation.success) {
-                //         return resolve(programAndSolutionInformation);
-                //     }
+                    if (!programAndSolutionInformation.success) {
+                        return resolve(programAndSolutionInformation);
+                    }
 
-                //     if (
-                //         libraryProjects.data["entityInformation"] &&
-                //         libraryProjects.data["entityInformation"].entityType !==
-                //         programAndSolutionInformation.data.solutionInformation.entityType
-                //     ) {
-                //         throw {
-                //             message: CONSTANTS.apiResponses.ENTITY_TYPE_MIS_MATCHED,
-                //             status: HTTP_STATUS_CODE['bad_request'].status
-                //         }
-                //     }
+                    if (
+                        libraryProjects.data["entityInformation"] &&
+                        libraryProjects.data["entityInformation"].entityType !==
+                        programAndSolutionInformation.data.solutionInformation.entityType
+                    ) {
+                        throw {
+                            message: CONSTANTS.apiResponses.ENTITY_TYPE_MIS_MATCHED,
+                            status: HTTP_STATUS_CODE['bad_request'].status
+                        }
+                    }
 
-                //     libraryProjects.data = _.merge(
-                //         libraryProjects.data,
-                //         programAndSolutionInformation.data
-                //     )
-                // }
+                    libraryProjects.data = _.merge(
+                        libraryProjects.data,
+                        programAndSolutionInformation.data
+                    )
+                }
                 //  <- Add certificate template data
-                // if ( 
-                //     libraryProjects.data.certificateTemplateId &&
-                //     libraryProjects.data.certificateTemplateId !== ""
-                // ){
-                //     // <- Add certificate template details to projectCreation data if present ->
-                //     const certificateTemplateDetails = await certificateTemplateQueries.certificateTemplateDocument({
-                //         _id : libraryProjects.data.certificateTemplateId
-                //     });
+                if ( 
+                    libraryProjects.data.certificateTemplateId &&
+                    libraryProjects.data.certificateTemplateId !== ""
+                ){
+                    // <- Add certificate template details to projectCreation data if present ->
+                    const certificateTemplateDetails = await certificateTemplateQueries.certificateTemplateDocument({
+                        _id : libraryProjects.data.certificateTemplateId
+                    });
                     
-                //     // create certificate object and add data if certificate template is present.
-                //     if ( certificateTemplateDetails.length > 0 ) {
-                //         libraryProjects.data["certificate"] = _.pick(certificateTemplateDetails[0], ['templateUrl', 'status', 'criteria']);
-                //     }
-                //     libraryProjects.data["certificate"]["templateId"] = libraryProjects.data.certificateTemplateId;
-                //     delete  libraryProjects.data.certificateTemplateId;
-                // }
+                    // create certificate object and add data if certificate template is present.
+                    if ( certificateTemplateDetails.length > 0 ) {
+                        libraryProjects.data["certificate"] = _.pick(certificateTemplateDetails[0], ['templateUrl', 'status', 'criteria']);
+                    }
+                    libraryProjects.data["certificate"]["templateId"] = libraryProjects.data.certificateTemplateId;
+                    delete  libraryProjects.data.certificateTemplateId;
+                }
                 
-                // //Fetch user profile information by calling sunbird's user read api.
-                // let addReportInfoToSolution = false;
-                // let userProfile = await userProfileService.profile(userToken, userId);
-                // if ( userProfile.success && 
-                //      userProfile.data &&
-                //      userProfile.data.response
-                // ) {
-                //     libraryProjects.data.userProfile = userProfile.data.response;
-                //     addReportInfoToSolution = true;
-                // } 
+                //Fetch user profile information by calling sunbird's user read api.
+                let addReportInfoToSolution = false;
+                let userProfile = await userProfileService.profile(userToken, userId);
+                if ( userProfile.success && 
+                     userProfile.data &&
+                     userProfile.data.response
+                ) {
+                    libraryProjects.data.userProfile = userProfile.data.response;
+                    addReportInfoToSolution = true;
+                } 
     
                 libraryProjects.data.userId = libraryProjects.data.updatedBy = libraryProjects.data.createdBy = userId;
                 libraryProjects.data.lastDownloadedAt = new Date();
@@ -2423,23 +2392,23 @@ module.exports = class UserProjectsHelper {
                     _.omit(libraryProjects.data, ["_id"])
                 );
         
-                // if ( addReportInfoToSolution && projectCreation._doc.solutionId ) {
+                if ( addReportInfoToSolution && projectCreation._doc.solutionId ) {
 
-                //     let updateSolution = await solutionsHelper.addReportInformationInSolution(
-                //         projectCreation._doc.solutionId,
-                //         projectCreation._doc.userProfile
-                //     );
-                // }
+                    let updateSolution = await solutionsHelper.addReportInformationInSolution(
+                        projectCreation._doc.solutionId,
+                        projectCreation._doc.userProfile
+                    );
+                }
                 
-                // await kafkaProducersHelper.pushProjectToKafka(projectCreation);
+                await kafkaProducersHelper.pushProjectToKafka(projectCreation);
 
-                // if (requestedData.rating && requestedData.rating > 0) {
-                //     await projectTemplatesHelper.ratings(
-                //         projectTemplateId,
-                //         requestedData.rating,
-                //         userToken
-                //     );
-                // }
+                if (requestedData.rating && requestedData.rating > 0) {
+                    await projectTemplatesHelper.ratings(
+                        projectTemplateId,
+                        requestedData.rating,
+                        userToken
+                    );
+                }
                 
                 projectCreation = await _projectInformation(projectCreation._doc);
                 
@@ -2650,7 +2619,6 @@ module.exports = class UserProjectsHelper {
                 return resolve(certificateData);
 
             } catch (error) {
-                console.log("error:",error.message)
                 return resolve({
                     success: false,
                     message: error.message
