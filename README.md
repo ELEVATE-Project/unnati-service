@@ -1,2 +1,2 @@
-# ml-projects-service
-ML projects Service
+# project service
+project service

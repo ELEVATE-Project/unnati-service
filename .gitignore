@@ -70,3 +70,10 @@ config/credentials/*
 
 package-lock.json
 keycloak-public-keys/
+
+dev-ops/report
+
+gcp.json
+
+gcp1.json
+coverage
