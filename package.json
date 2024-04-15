@@ -7,24 +7,29 @@
     "improvement-service-migrations": "module/migrations/bin/migrations.js"
   },
   "scripts": {
-    "test": "mocha --timeout 10000",
-    "start": "node app.js",
+    "test": "",
+    "start": "NODE_ENV=development nodemon app.js",
+		"prod": "NODE_ENV=production node app.js",
+		"stage": "NODE_ENV=stage node app.js",
+		"qa": "NODE_ENV=qa node app.js",
+    "integration": "node app.js",
     "dev": "nodemon app.js",
+    "prepare": "husky install .husky",
     "coverage": " nyc --reporter=lcov mocha --timeout 10000 test --exit"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/shikshalokam/sl-unnati-service.git"
+    "url": "https://github.com/ELEVATE-Project/project-service.git"
   },
   "keywords": [
     "shikshalokam"
   ],
-  "author": "Shikshalokam <info@shikshalokam.com>",
+  "author": "Priyanka Pradeep <priyankapradeepng@gmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/shikshalokam/sl-unnati-service/issues"
+    "url": "https://github.com/ELEVATE-Project/project-service/issues"
   },
-  "homepage": "https://github.com/shikshalokam/sl-unnati-service#readme",
+  "homepage": "https://github.com/ELEVATE-Project/project-service#readme",
   "dependencies": {
     "async": "^3.2.0",
     "body-parser": "^1.19.0",
@@ -69,10 +74,16 @@
     "xml-js": "^1.6.11"
   },
   "devDependencies": {
-    "grunt-apidoc": "^0.11.0",
-    "gulp": "^4.0.2",
-    "gulp-apidoc": "^0.2.8",
-    "prettier": "^3.0.2",
-    "nodemon": "^2.0.20"
-  }
+		"grunt-apidoc": "^0.11.0",
+		"gulp": "^4.0.2",
+		"gulp-apidoc": "^0.2.8",
+		"eslint": "^8.16.0",
+		"husky": "^8.0.1",
+		"lint-staged": "^12.4.1",
+		"prettier": "^2.6.2",
+		"nodemon": "^2.0.20"
+	},
+  "lint-staged": {
+		"*": "prettier --ignore-unknown --write"
+	}
 }
