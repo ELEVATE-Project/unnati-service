@@ -14,7 +14,7 @@
 		"qa": "NODE_ENV=qa node app.js",
     "integration": "node app.js",
     "dev": "nodemon app.js",
-    "prepare": "husky install .husky",
+    "prepare": "husky install",
     "coverage": " nyc --reporter=lcov mocha --timeout 10000 test --exit"
   },
   "repository": {
@@ -24,7 +24,7 @@
   "keywords": [
     "shikshalokam"
   ],
-  "author": "Priyanka Pradeep <priyankapradeepng@gmail.com>",
+  "author": "Shikshalokam",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/ELEVATE-Project/project-service/issues"
@@ -84,6 +84,7 @@
 		"nodemon": "^2.0.20"
 	},
   "lint-staged": {
+    "../*": "prettier --ignore-unknown --write",
 		"*": "prettier --ignore-unknown --write"
 	}
 }
