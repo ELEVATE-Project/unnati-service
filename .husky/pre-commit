@@ -1,5 +1,4 @@
 echo "Current directory: $(pwd)"
 . "$(dirname "$0")/_/husky.sh"
-ls -la .husky
 
 npx lint-staged
