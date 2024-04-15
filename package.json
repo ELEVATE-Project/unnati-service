@@ -14,7 +14,7 @@
 		"qa": "NODE_ENV=qa node app.js",
     "integration": "node app.js",
     "dev": "nodemon app.js",
-    "prepare": "husky install",
+    "prepare": "husky install /.husky",
     "coverage": " nyc --reporter=lcov mocha --timeout 10000 test --exit"
   },
   "repository": {
@@ -84,7 +84,7 @@
 		"nodemon": "^2.0.20"
 	},
   "lint-staged": {
-    "../*": "prettier --ignore-unknown --write",
+    ".*": "prettier --ignore-unknown --write",
 		"*": "prettier --ignore-unknown --write"
 	}
 }
