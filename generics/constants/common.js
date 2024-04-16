@@ -67,4 +67,6 @@ module.exports = {
     "CREATE_OBSERVATION": "/create-observation/",
     "CREATE_PROJECT": "/create-project/",
     "CREATE_SURVEY": "/create-survey/",
+    "SUBMISSION_STATUS_COMPLETED" : "completed",
+    "EXPIRED": "expired",
 };

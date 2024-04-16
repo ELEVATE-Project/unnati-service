@@ -9,6 +9,7 @@
 
 const timeZoneDifference = process.env.TIMEZONE_DIFFRENECE_BETWEEN_LOCAL_TIME_AND_UTC;
 const programsQueries = require(DB_QUERY_BASE_PATH + "/programs")
+const userService = require(GENERICS_FILES_PATH + "/services/users")
 
 /**
  * ProgramsHelper
@@ -506,36 +507,36 @@ module.exports = class ProgramsHelper {
           };
         }
 
-        // let entityIds = [];
-        // let bodyData = {};
-        // let locationData = gen.utils.filterLocationIdandCode(entities);
+        let entityIds = [];
+        let bodyData = {};
+        let locationData = UTILS.filterLocationIdandCode(entities);
 
-        // if (locationData.ids.length > 0) {
-        //   bodyData = {
-        //     id: locationData.ids,
-        //     type: programData[0].scope.entityType,
-        //   };
-        //   let entityData = await userService.locationSearch(bodyData);
-        //   if (entityData.success) {
-        //     entityData.data.forEach((entity) => {
-        //       entityIds.push(entity.id);
-        //     });
-        //   }
-        // }
+        if (locationData.ids.length > 0) {
+          bodyData = {
+            id: locationData.ids,
+            type: programData[0].scope.entityType,
+          };
+          let entityData = await userService.locationSearch(bodyData);
+          if (entityData.success) {
+            entityData.data.forEach((entity) => {
+              entityIds.push(entity.id);
+            });
+          }
+        }
 
-        // if (locationData.codes.length > 0) {
-        //   let filterData = {
-        //     code: locationData.codes,
-        //     type: programData[0].scope.entityType,
-        //   };
-        //   let entityDetails = await userService.locationSearch(filterData);
+        if (locationData.codes.length > 0) {
+          let filterData = {
+            code: locationData.codes,
+            type: programData[0].scope.entityType,
+          };
+          let entityDetails = await userService.locationSearch(filterData);
 
-        //   if (entityDetails.success) {
-        //     entityDetails.data.forEach((entity) => {
-        //       entityIds.push(entity.externalId);
-        //     });
-        //   }
-        // }
+          if (entityDetails.success) {
+            entityDetails.data.forEach((entity) => {
+              entityIds.push(entity.externalId);
+            });
+          }
+        }
 
 
         let updateProgram = await database.models.programs
@@ -915,6 +916,115 @@ module.exports = class ProgramsHelper {
             ? error.status
             : HTTP_STATUS_CODE.internal_server_error.status,
           message: error.message,
+        });
+      }
+    });
+  }
+
+
+
+
+   /**
+   * List program
+   * @method
+   * @name list
+   * @param {Number} pageNo - page no.
+   * @param {Number} pageSize - page size.
+   * @param {String} searchText - text to search.
+   *  @param {Object} filter - filter.
+   *  @param {Array} projection - projection.
+   * @returns {Object} - Programs list.
+   */
+
+   static list(pageNo = "", pageSize = "", searchText, filter = {}, projection) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let programDocument = [];
+
+        let matchQuery = { status: CONSTANTS.common.ACTIVE };
+
+        if (Object.keys(filter).length > 0) {
+          matchQuery = _.merge(matchQuery, filter);
+        }
+
+        if (searchText !== "") {
+          matchQuery["$or"] = [];
+          matchQuery["$or"].push(
+            {
+              externalId: new RegExp(searchText, "i"),
+            },
+            {
+              name: new RegExp(searchText, "i"),
+            },
+            {
+              description: new RegExp(searchText, "i"),
+            }
+          );
+        }
+
+        let sortQuery = {
+          $sort: { createdAt: -1 },
+        };
+
+        let projection1 = {};
+
+        if (projection && projection.length > 0) {
+          projection.forEach((projectedData) => {
+            projection1[projectedData] = 1;
+          });
+        } else {
+          projection1 = {
+            description: 1,
+            externalId: 1,
+            isAPrivateProgram: 1,
+          };
+        }
+
+        let facetQuery = {};
+        facetQuery["$facet"] = {};
+
+        facetQuery["$facet"]["totalCount"] = [{ $count: "count" }];
+
+        if (pageSize === "" && pageNo === "") {
+          facetQuery["$facet"]["data"] = [{ $skip: 0 }];
+        } else {
+          facetQuery["$facet"]["data"] = [
+            { $skip: pageSize * (pageNo - 1) },
+            { $limit: pageSize },
+          ];
+        }
+
+        let projection2 = {};
+        projection2["$project"] = {
+          data: 1,
+          count: {
+            $arrayElemAt: ["$totalCount.count", 0],
+          },
+        };
+
+        programDocument.push(
+          { $match: matchQuery },
+          sortQuery,
+          { $project: projection1 },
+          facetQuery,
+          projection2
+        );
+
+        let programDocuments = await database.models.programs.aggregate(
+          programDocument
+        );
+        return resolve({
+          success: true,
+          message: CONSTANTS.apiResponses.PROGRAM_LIST,
+          data: {
+            result : programDocuments[0]
+          },
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+          message: error.message,
+          data: [],
         });
       }
     });

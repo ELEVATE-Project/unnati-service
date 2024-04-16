@@ -607,4 +607,210 @@ module.exports = class Solutions extends Abstract {
     });
   }
 
+
+
+    /**
+  * @api {post} /unnati/v1/solutions/verifySolution/:Id
+  * @apiVersion 1.0.0
+  * @apiName verify Solutions targeted
+  * @apiGroup Solutions
+  * @apiSampleRequest /unnati/v1/solutions/verifySolution/5f6853f293734140ccce90cf
+  * @apiHeader {String} X-authenticated-user-token Authenticity token  
+  * @apiUse successBody
+  * @apiUse errorBody
+  * @apiParamExample {json} Request:
+  * {
+  *   "role" : "HM,DEO",
+      "entities" : "[236f5cff-c9af-4366-b0b6-253a1789766a"],
+      "entityType" : "1dcbc362-ec4c-4559-9081-e0c2864c2931",
+    }
+  * @apiParamExample {json} Response:
+  * {
+      "message": "Solution Link verified successfully",
+      "status": 200,
+      "result": {
+          isATargetedSolution : true/false,
+          _id : “5f6853f293734140ccce90cf”,
+      }
+    }
+  */
+
+   /**
+   * verify Solution
+   * @method
+   * @name verifySolution
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - solution id
+   * @returns {Array}
+   */
+
+   async verifySolution(req) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        
+        let solutionData = await solutionsHelper.isTargetedBasedOnUserProfile(
+          req.params._id,
+          req.body,
+        );
+
+        return resolve(solutionData);
+
+      }
+      catch (error) {
+        return reject({
+          status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+          message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+          errorObject: error
+        })
+      }
+    })
+  }
+
+
+  /**
+    * @api {post} /unnati/v1/solutions/forUserRoleAndLocation?programId=:programId&type=:type&subType=:subType&page=:page&limit=:limit Auto targeted solutions
+    * @apiVersion 1.0.0
+    * @apiName Auto targeted solution
+    * @apiGroup Solutions
+    * @apiParamExample {json} Request-Body:
+    * {
+        "role" : "HM,DEO",
+   		  "entities" : "[236f5cff-c9af-4366-b0b6-253a1789766a]",
+        "entityType" : "1dcbc362-ec4c-4559-9081-e0c2864c2931",
+      }
+    * @apiHeader {String} X-authenticated-user-token Authenticity token
+    * @apiSampleRequest /unnati/v1/solutions/forUserRoleAndLocation?type=assessment&page=1&limit=5
+    * @apiUse successBody
+    * @apiUse errorBody
+    * @apiParamExample {json} Response:
+    * {
+    "message": "Successfully targeted solutions fetched",
+    "status": 200,
+    "result": {
+        "data": [
+            {
+                "_id": "5ff447e127ef425953bd8306",
+                "programId": "5ff438b04698083dbfab7284",
+                "programName": "TEST scope in program"
+            }
+        ],
+        "count": 1
+    }
+    }
+    */
+
+     /**
+   * Auto targeted solution.
+   * @method
+   * @name forUserRoleAndLocation
+   * @param {Object} req - requested data.
+   * @returns {JSON} Created solution data.
+   */
+
+     async forUserRoleAndLocation(req) {
+      return new Promise(async (resolve, reject) => {
+        try {
+  
+          let targetedSolutions = await solutionsHelper.forUserRoleAndLocation(
+            req.body,
+            req.query.type ? req.query.type : "",
+            req.query.subType ? req.query.subType : "",
+            req.query.programId ? req.query.programId : "",
+            req.pageSize,
+            req.pageNo,
+            req.searchText
+          );
+            
+          targetedSolutions["result"] = targetedSolutions.data;
+          return resolve(targetedSolutions);
+  
+        } catch (error) {
+          return reject({
+            status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+            message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+            errorObject: error
+          });
+        }
+      });
+    }
+
+
+
+     /**
+    * @api {post} /unnati/v1/solutions/targetedSolutions?type=:solutionType&page=:page&limit=:limit&search=:search&filter=:filter
+    * List of assigned solutions and targetted ones.
+    * @apiVersion 1.0.0
+    * @apiGroup Solutions
+    * @apiSampleRequest /unnati/v1/solutions/targetedSolutions?type=observation&page=1&limit=10&search=a&filter=assignedToMe
+    * @apiParamExample {json} Request:
+    * {
+    *   "role" : "HM,DEO",
+   		  "state" : "236f5cff-c9af-4366-b0b6-253a1789766a",
+        "district" : "1dcbc362-ec4c-4559-9081-e0c2864c2931",
+        "school" : "c5726207-4f9f-4f45-91f1-3e9e8e84d824"
+    }
+    * @apiParamExample {json} Response:
+    {
+    "message": "Solutions fetched successfully",
+    "status": 200,
+    "result": {
+        "data": [
+            {
+                "_id": "5f9288fd5e25636ce6dcad66",
+                "name": "obs1",
+                "description": "observation1",
+                "solutionId": "5f9288fd5e25636ce6dcad65",
+                "programId": "5d287326652f311044f41dbb"
+            },
+            {
+                "_id": "5fc7aa9e73434430731f6a10",
+                "solutionId": "5fb4fce4c7439a3412ff013b",
+                "programId": "5f5b216a9c70bd2973aee29f",
+                "name": "My Solution",
+                "description": "My Solution Description"
+            }
+        ],
+        "count": 2
+    }}
+    * @apiUse successBody
+    * @apiUse errorBody
+    */
+
+    /**
+      * List of solutions and targetted ones.
+      * @method
+      * @name targetedSolutions
+      * @param {Object} req - request data.
+      * @returns {JSON} List of solutions with targetted ones.
+     */
+
+  async targetedSolutions(req) {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            let observations = await solutionsHelper.targetedSolutions(
+                req.body,
+                req.query.type,
+                req.userDetails.userInformation.userId,
+                req.pageSize,
+                req.pageNo,
+                req.searchText,
+                req.query.filter,
+                req.query.surveyReportPage ? req.query.surveyReportPage : ""
+            );
+
+            observations["result"] = observations.data;
+
+            return resolve(observations);
+
+        } catch (error) {
+            return reject({
+                status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+                message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+                errorObject: error
+            });
+        }
+    })
+}
+
 }

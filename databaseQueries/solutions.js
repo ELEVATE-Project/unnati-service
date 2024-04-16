@@ -95,4 +95,31 @@ module.exports= class Solutions{
         }
     });
     }
+
+
+     /**
+   * find solutions
+   * @method
+   * @name solutionDocumentsByAggregateQuery
+   * @param {Array} query - aggregation query.
+   * @returns {Array} List of solutions. 
+   */
+  
+  static solutionDocumentsByAggregateQuery(
+    query = []
+  ) {
+    return new Promise(async (resolve, reject) => {
+        try {
+    
+            let solutionDocuments = await database.models.solutions.aggregate(
+              query
+            );
+            
+            return resolve(solutionDocuments);
+            
+        } catch (error) {
+            return reject(error);
+        }
+    });
+  }
 }

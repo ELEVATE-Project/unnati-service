@@ -346,5 +346,42 @@ module.exports = class  Programs extends Abstract{
       }
     });
   }
+
+
+
+   /**
+   * List programs.
+   * @method
+   * @name list
+   * @param {Object} req - Requested data.
+   * @param {Array} req.query.page - Page number.
+   * @param {Array} req.query.limit - Page Limit.
+   * @param {Array} req.query.search - Search text.
+   * @returns {JSON} List programs data.
+  */
+
+ async list(req) {
+  return new Promise(async (resolve, reject) => {
+    try {
+
+      let listOfPrograms = await programsHelper.list(
+        req.pageNo,
+        req.pageSize,
+        req.searchText
+      );
+
+      listOfPrograms["result"] = listOfPrograms.data;
+
+      return resolve(listOfPrograms);
+
+    } catch (error) {
+      return reject({
+        status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+        message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+        errorObject: error
+      });
+    }
+  });
+}
         
 }

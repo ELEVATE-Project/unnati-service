@@ -164,7 +164,7 @@ module.exports = {
     "SOLUTION_DETAILS_VERIFIED": "Solution verified successfully",
     "TARGETED_SOLUTIONS_FETCHED": "Successfully targeted solutions fetched",
     "FAILED_TO_START_RESOURCE": "There was an error in starting/joining. Please try again after some time.",
-    "ENTITY_FETCHED": "Entities fetched successfull",
+    "ENTITY_FETCHED": "Entities fetched successfully",
     "SCOPE_NOT_UPDATED_IN_PROGRAM" : "Scope is not updated in program",
     "USER_PROGRAM_AND_SOLUTION_CREATED" : "User program and solution created successfully",
     "ROLES_REMOVED_IN_SOLUTION" : "Successfully removed roles in solution scope",
@@ -178,4 +178,12 @@ module.exports = {
     "ENTITY_NOT_EXISTS_IN_PARENT" : "Entity could not found in parent entities",
     "ENTITIES_ADDED_IN_SOLUTION" : "Successfully added entities in solution scope",
     "ENTITIES_REMOVED_IN_SOLUTION" : "Successfully removed entities from solution scope",
+    "PROGRAM_UPDATED_SUCCESSFULLY" : "Program updated successfully",
+    "ENTITIES_FETCHED" : "Entities fetched successfully",
+    "USER_ASSIGNED_OBSERVATION_FETCHED" : "List of user assigned observations",
+    "USER_ASSIGNED_SURVEY_FETCHED" : "List of user assigned surveys",
+    "SURVEYS_FETCHED": "Surveys fetched successfully",
+    "TARGETED_OBSERVATION_FETCHED": "Targeted observations fetched successfully",
+    "PROGRAM_LIST" : "Program lists fetched successfully",
+
 };

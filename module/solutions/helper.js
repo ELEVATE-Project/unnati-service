@@ -13,12 +13,33 @@ const programQueries = require(DB_QUERY_BASE_PATH + "/programs")
 const userService = require(GENERICS_FILES_PATH + "/services/users")
 const validateEntity = process.env.VALIDATE_ENTITIES
 const appsPortalBaseUrl = process.env.APP_PORTAL_BASE_URL + "/"
+const entitiesHelper = require(MODULES_BASE_PATH + "/entities/helper")
+const projectQueries = require(DB_QUERY_BASE_PATH + "/projects")
+const filesHelpers = require(MODULES_BASE_PATH + "/files/helper")
 
 /**
     * SolutionsHelper
     * @class
 */
 module.exports = class SolutionsHelper {
+
+
+
+  /**
+ * Targeted solutions types.
+ * @method
+ * @name _targetedSolutionTypes
+ * @returns {Array} - Targeted solution types
+ */
+
+static _targetedSolutionTypes() {
+  return [
+    CONSTANTS.common.OBSERVATION,
+    CONSTANTS.common.SURVEY,
+    CONSTANTS.common.IMPROVEMENT_PROJECT,
+    CONSTANTS.common.COURSE,
+  ];
+}
 
   /**
  * Generate solution creation data.
@@ -682,6 +703,230 @@ static _createSolutionData(
       }
     });
   }
+
+
+
+    /**
+   * Auto targeted query field.
+   * @method
+   * @name queryBasedOnRoleAndLocation
+   * @param {String} data - Requested body data.
+   * @returns {JSON} - Auto targeted solutions query.
+   */
+
+    static queryBasedOnRoleAndLocation(data, type = "") {
+      return new Promise(async (resolve, reject) => {
+        try {
+          let registryIds = [];
+          let entityTypes = [];
+          let filterQuery = {
+            isReusable: false,
+            isDeleted: false,
+          }
+  
+          if(validateEntity !== CONSTANTS.common.OFF){
+            Object.keys(_.omit(data, ["filter", "role"])).forEach(
+              (requestedDataKey) => {
+                registryIds.push(data[requestedDataKey]);
+                entityTypes.push(requestedDataKey);
+              }
+            );
+            if (!registryIds.length > 0) {
+              throw {
+                message: CONSTANTS.apiResponses.NO_LOCATION_ID_FOUND_IN_DATA,
+              };
+            }
+  
+            filterQuery["scope.roles.code"] = {
+                $in: [CONSTANTS.common.ALL_ROLES, ...data.role.split(",")],
+              }
+            filterQuery["scope.entities"]= { $in: registryIds }
+            filterQuery["scope.entityType"]= { $in: entityTypes }
+          }else{
+            let userRoleInfo = _.omit(data, ['filter'])
+            let userRoleKeys = Object.keys(userRoleInfo);
+            userRoleKeys.forEach(entities => {
+              filterQuery["scope."+entities] = {$in:userRoleInfo[entities].split(",")}
+            });
+          }
+  
+          if (type === CONSTANTS.common.SURVEY) {
+            filterQuery["status"] = {
+              $in: [CONSTANTS.common.ACTIVE, CONSTANTS.common.INACTIVE],
+            };
+            let validDate = new Date();
+            validDate.setDate(
+              validDate.getDate() - CONSTANTS.common.DEFAULT_SURVEY_REMOVED_DAY
+            );
+            filterQuery["endDate"] = { $gte: validDate };
+          } else {
+            filterQuery.status = CONSTANTS.common.ACTIVE;
+          }
+  
+          if (data.filter && Object.keys(data.filter).length > 0) {
+            let solutionsSkipped = [];
+  
+            if (data.filter.skipSolutions) {
+              data.filter.skipSolutions.forEach((solution) => {
+                solutionsSkipped.push(ObjectId(solution.toString()));
+              });
+  
+              data.filter["_id"] = {
+                $nin: solutionsSkipped,
+              };
+  
+              delete data.filter.skipSolutions;
+            }
+  
+            filterQuery = _.merge(filterQuery, data.filter);
+          }
+  
+          return resolve({
+            success: true,
+            data: filterQuery,
+          });
+        } catch (error) {
+          return resolve({
+            success: false,
+            status: error.status
+              ? error.status
+              : HTTP_STATUS_CODE.internal_server_error.status,
+            message: error.message,
+            data: {},
+          });
+        }
+      });
+    }
+
+
+    /**
+   * List of solutions based on role and location.
+   * @method
+   * @name forUserRoleAndLocation
+   * @param {String} bodyData - Requested body data.
+   * @param {String} type - solution type.
+   * @param {String} subType - solution sub type.
+   * @param {String} programId - program Id
+   * @param {String} pageSize - Page size.
+   * @param {String} pageNo - Page no.
+   * @param {String} searchText - search text.
+   * @returns {JSON} - List of solutions based on role and location.
+   */
+
+    static forUserRoleAndLocation(
+      bodyData,
+      type,
+      subType = "",
+      programId,
+      pageSize,
+      pageNo,
+      searchText = ""
+    ) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          let queryData = await this.queryBasedOnRoleAndLocation(
+            bodyData,
+            type,
+            subType,
+            programId
+          );
+  
+          if (!queryData.success) {
+            return resolve(queryData);
+          }
+  
+          let matchQuery = queryData.data;
+  
+          if (type === "" && subType === "") {
+            let targetedTypes = this._targetedSolutionTypes();
+  
+            matchQuery["$or"] = [];
+  
+            targetedTypes.forEach((type) => {
+              let singleType = {};
+              if (type === CONSTANTS.common.SURVEY) {
+                singleType = {
+                  type: type,
+                };
+                const currentDate = new Date();
+                currentDate.setDate(currentDate.getDate() - 15);
+                singleType["endDate"] = { $gte: currentDate };
+              } else {
+                singleType = {
+                  type: type,
+                };
+                singleType["endDate"] = { $gte: new Date() };
+              }
+  
+              if (type === CONSTANTS.common.IMPROVEMENT_PROJECT) {
+                singleType["projectTemplateId"] = { $exists: true };
+              }
+  
+              matchQuery["$or"].push(singleType);
+            });
+          } else {
+            if (type !== "") {
+              matchQuery["type"] = type;
+              if (type === CONSTANTS.common.SURVEY) {
+                const currentDate = new Date();
+                currentDate.setDate(currentDate.getDate() - 15);
+                matchQuery["endDate"] = { $gte: currentDate };
+              } else {
+                matchQuery["endDate"] = { $gte: new Date() };
+              }
+            }
+  
+            if (subType !== "") {
+              matchQuery["subType"] = subType;
+            }
+          }
+  
+          if (programId !== "") {
+            matchQuery["programId"] = ObjectId(programId);
+          }
+  
+          matchQuery["startDate"] = { $lte: new Date() };
+          // for survey type solutions even after expiry it should be visible to user for 15 days
+  
+          let targetedSolutions = await this.list(
+            type,
+            subType,
+            matchQuery,
+            pageNo,
+            pageSize,
+            searchText,
+            [
+              "name",
+              "description",
+              "programName",
+              "programId",
+              "externalId",
+              "projectTemplateId",
+              "type",
+              "language",
+              "creator",
+              "endDate",
+              "link",
+              "referenceFrom",
+              "entityType",
+              "certificateTemplateId",
+            ]
+          );
+  
+          return resolve({
+            success: true,
+            message: CONSTANTS.apiResponses.TARGETED_SOLUTIONS_FETCHED,
+            data: targetedSolutions.data,
+          });
+        } catch (error) {
+          return resolve({
+            success: false,
+            message: error.message,
+            data: {},
+          });
+        }
+      });
+    }
 
 
 
@@ -1906,8 +2151,1398 @@ static _generateLink(appsPortalBaseUrl, prefix, solutionLink, solutionType) {
       }
     });
   }
+
+
+
+   /**
+   * Check the user is targeted.
+   * @method
+   * @name checkForTargetedSolution
+   * @param {String} link - Solution link.
+   * @returns {Object} - Details of the solution.
+   */
+
+   static checkForTargetedSolution(
+    link = "",
+    bodyData = {},
+    userId = "",
+    userToken = ""
+  ) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let response = {
+          isATargetedSolution: false,
+          link: link,
+        };
+
+        let solutionDetails = await solutionsQueries.solutionsDocument({ link: link }, [
+          "type",
+          "_id",
+          "programId",
+          "name",
+          "projectTemplateId",
+          "programName",
+          "status",
+        ]);
+
+        let queryData = await this.queryBasedOnRoleAndLocation(bodyData);
+        if (!queryData.success) {
+          return resolve(queryData);
+        }
+
+        queryData.data["link"] = link;
+        let matchQuery = queryData.data;
+
+        let solutionData = await solutionsQueries.solutionsDocument(matchQuery, [
+          "_id",
+          "link",
+          "type",
+          "programId",
+          "name",
+          "projectTemplateId",
+        ]);
+
+        if (!Array.isArray(solutionData) || solutionData.length < 1) {
+          response.solutionId = solutionDetails[0]._id;
+          response.type = solutionDetails[0].type;
+          response.name = solutionDetails[0].name;
+          response.programId = solutionDetails[0].programId;
+          response.programName = solutionDetails[0].programName;
+          response.status = solutionDetails[0].status;
+
+          return resolve({
+            success: true,
+            message:
+              CONSTANTS.apiResponses.SOLUTION_NOT_FOUND_OR_NOT_A_TARGETED,
+            result: response,
+          });
+        }
+
+        response.isATargetedSolution = true;
+        Object.assign(response, solutionData[0]);
+        response.solutionId = solutionData[0]._id;
+        response.projectTemplateId = solutionDetails[0].projectTemplateId
+          ? solutionDetails[0].projectTemplateId
+          : "";
+        response.programName = solutionDetails[0].programName;
+        delete response._id;
+
+        return resolve({
+          success: true,
+          message: CONSTANTS.apiResponses.SOLUTION_DETAILS_VERIFIED,
+          result: response,
+        });
+      } catch (error) {
+        return resolve({
+          success: false,
+          status: error.status
+            ? error.status
+            : HTTP_STATUS_CODE.internal_server_error.status,
+          message: error.message,
+        });
+      }
+    });
+  }
+
+
+      /**
+      * List of user assigned observations.
+      * @method
+      * @name userAssigned
+      * @param {String} userId - logged in user id.
+      * @param {Number} pageNo - Recent page no.
+      * @param {Number} pageSize - Size of page.
+      * @param {String} search - search text.
+      * @param {String} [ filter = ""] - filter text.
+      * @returns {Object} List of user assigned observations.
+     */
+
+      static assignedObservations(userId, pageNo, pageSize, search,filter = "" ) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                let matchQuery = {
+                    $match : {
+                        createdBy : userId,
+                        deleted : false,
+                        referenceFrom: {$ne: CONSTANTS.common.PROJECT}
+                    }
+                };
+
+                if (search && search !== "" ) {
+                    matchQuery["$match"]["$or"] = [
+                        { "name" : new RegExp(search, 'i') },
+                        { "description" : new RegExp(search, 'i') }
+                    ];
+                }
+
+                if ( filter && filter !== "" ) {
+                    if( filter === CONSTANTS.common.CREATED_BY_ME ) {
+                        matchQuery["$match"]["isAPrivateProgram"] = {
+                            $ne : false
+                        };
+                    } else if ( filter === CONSTANTS.common.ASSIGN_TO_ME ) {
+                        matchQuery["$match"]["isAPrivateProgram"] = false;
+                    }
+                }
+
+                let projection1 = {
+                    $project : {
+                        "name" : 1, 
+                        "description" : 1,
+                        "solutionId" : 1,
+                        "programId" : 1
+                    }
+                };
+
+                let facetQuery = {};
+                facetQuery["$facet"] = {};
+        
+                facetQuery["$facet"]["totalCount"] = [
+                  { "$count": "count" }
+                ];
+        
+                facetQuery["$facet"]["data"] = [
+                  { $skip: pageSize * (pageNo - 1) },
+                  { $limit: pageSize }
+                ];
+
+                let projection2 = {};
+                projection2["$project"] = {
+                  "data": 1,
+                  "count": {
+                    $arrayElemAt: ["$totalCount.count", 0]
+                  }
+                };
+
+                let aggregateData = [];
+                aggregateData.push(matchQuery,{
+                    $sort : { "updatedAt" : -1 }
+                },projection1,facetQuery,projection2);
+
+                let result =
+                await database.models.observations.aggregate(aggregateData);
+
+                if( result[0].data.length > 0 ) {
+                    
+                    let solutionIds = [];
+
+                    result[0].data.forEach(resultedData => {
+                        solutionIds.push(resultedData.solutionId);
+                    });
+
+                    let solutionDocuments = 
+                    await solutionsQueries.solutionsDocument({
+                        _id: { $in : solutionIds }
+                    },["language","creator"]);
+
+                    solutionDocuments.forEach(solutionDocument => {
+                        let solution = result[0].data.find(resultData => resultData.solutionId.toString() === solutionDocument._id.toString());
+                        solution["language"] = solutionDocument.language;
+                        solution["creator"] = solutionDocument.creator ? solutionDocument.creator : "";
+                    });
+
+                }
+
+                return resolve({
+                    success: true,
+                    message: CONSTANTS.apiResponses.USER_ASSIGNED_OBSERVATION_FETCHED,
+                    data: {
+                        data: result[0].data,
+                        count: result[0].count ? result[0].count : 0
+                    }
+                })
+            } catch (error) {
+                return resolve({
+                    success : false,
+                    message : error.message,
+                    data : {
+                        data : [],
+                        count : 0
+                    }
+                });
+            }
+        })
+    }
+
+
+
+    /**
+    * List of created survey solutions by user.
+    * @method
+    * @name surveySolutions
+    * @param {String} userId - logged in userId
+    * @param {String} search - search key
+    * @param {String} [filter = ""] - filter text
+    * @returns {Json} - survey list.
+    */
+
+      static surveySolutions(userId, pageNo, pageSize, search,filter = "") {
+        return new Promise(async (resolve, reject) => {
+            try {
+    
+                if (userId == "") {
+                    throw new Error(CONSTANTS.apiResponses.USER_ID_REQUIRED_CHECK)
+                }
+    
+                let solutionMatchQuery = {
+                    "$match": {
+                        "author": userId,
+                        "type": CONSTANTS.common.SURVEY,
+                        "isReusable": false,
+                        "isDeleted": false
+                    }
+                };
+    
+                if (search !== "") {
+                    solutionMatchQuery["$match"]["$or"] = [
+                        { "name": new RegExp(search, 'i') },
+                        { "description": new RegExp(search, 'i') }
+                    ];
+                }
+    
+                if ( filter && filter !== "" ) {
+                    if( filter === CONSTANTS.common.CREATED_BY_ME ) {
+                        solutionMatchQuery["$match"]["isAPrivateProgram"] = {
+                            $ne : false
+                        };
+                    } else if ( filter === CONSTANTS.common.ASSIGN_TO_ME ) {
+                        solutionMatchQuery["$match"]["isAPrivateProgram"] = false;
+                    }
+                }
+    
+                let result = await solutionsQueries.solutionDocumentsByAggregateQuery
+                    (
+                        [
+                            solutionMatchQuery,
+                            {
+                                "$project": {
+                                    "solutionId": "$_id",
+                                    "name": 1,
+                                    "description": 1,
+                                    "status": 1,
+                                    "_id": 0
+    
+                                }
+                            },
+                            {
+                                $facet: {
+                                    "totalCount": [
+                                        { "$count": "count" }
+                                    ],
+                                    "data": [
+                                        { $skip: pageSize * (pageNo - 1) },
+                                        { $limit: pageSize }
+                                    ],
+                                }
+                            }, {
+                                $project: {
+                                    "data": 1,
+                                    "count": {
+                                        $arrayElemAt: ["$totalCount.count", 0]
+                                    }
+                                }
+                            }
+                        ]
+                    )
+    
+                return resolve({
+                    success: true,
+                    data: {
+                        data: result[0].data,
+                        count: result[0].count ? result[0].count : 0
+                    }
+                })
+    
+            } catch (error) {
+                return resolve({
+                    success: false,
+                    message: error.message,
+                    data: false
+                });
+            }
+        });
+    }
+
+     /**
+    * List of surveys for user.
+    * @method
+    * @name surveyList
+    * @param {String} userId - logged in userId
+    * @param {String} pageNo - page number
+    * @param {String} pageSize - page size.
+    * @param {String} filter - filter text.
+    * @returns {Json} - survey list.
+    */
+
+     static surveyList(userId = "", pageNo, pageSize, search,filter, surveyReportPage = "") {
+      return new Promise(async (resolve, reject) => {
+          try {
+
+              if (userId == "") {
+                  throw new Error(CONSTANTS.apiResponses.USER_ID_REQUIRED_CHECK)
+              }
+
+              let result = {
+                  data: [],
+                  count : 0
+              }
+
+              let submissionMatchQuery = { "$match": { "createdBy": userId } };
+
+              if (UTILS.convertStringToBoolean(surveyReportPage) ) {
+                  submissionMatchQuery["$match"]["status"] = CONSTANTS.common.SUBMISSION_STATUS_COMPLETED; 
+              }
+              
+              if (search !== "") {
+                  submissionMatchQuery["$match"]["$or"] = [
+                      { "surveyInformation.name": new RegExp(search, 'i') },
+                      { "surveyInformation.description": new RegExp(search, 'i') }
+                  ];
+              }
+
+              if ( filter && filter !== "" ) {
+                  if( filter === CONSTANTS.common.CREATED_BY_ME ) {
+                      matchQuery["$match"]["isAPrivateProgram"] = {
+                          $ne : false
+                      };
+                  } else if ( filter === CONSTANTS.common.ASSIGN_TO_ME ) {
+                      matchQuery["$match"]["isAPrivateProgram"] = false;
+                  }
+              }
+
+              let surveySubmissions = await database.models.surveySubmissions.aggregate
+              (
+                  [
+                     submissionMatchQuery,
+                      {
+                          "$project": {
+                              'submissionId': "$_id",
+                              "surveyId": 1,
+                              "solutionId": 1,
+                              "surveyInformation.name" : 1,
+                              "surveyInformation.endDate": 1,
+                              "surveyInformation.description": 1,
+                              "status": 1,
+                              "_id": 0
+
+                          }
+                      },
+                      {
+                          $facet: {
+                              "totalCount": [
+                                  { "$count": "count" }
+                              ],
+                              "data": [
+                                  { $skip: pageSize * (pageNo - 1) },
+                                  { $limit: pageSize }
+                              ],
+                          }
+                      }, {
+                          $project: {
+                              "data": 1,
+                              "count": {
+                                  $arrayElemAt: ["$totalCount.count", 0]
+                              }
+                          }
+                      }
+                  ]
+              )
+
+              if (surveySubmissions[0].data && surveySubmissions[0].data.length > 0) {
+                  surveySubmissions[0].data.forEach( async surveySubmission => {
+
+                      let submissionStatus = surveySubmission.status;
+
+                      if (surveyReportPage === "") {
+                          if (new Date() > new Date(surveySubmission.surveyInformation.endDate)) {
+                              surveySubmission.status = CONSTANTS.common.EXPIRED
+                         }
+                      }
+                      
+                      surveySubmission.name = surveySubmission.surveyInformation.name;
+                      surveySubmission.description = surveySubmission.surveyInformation.description;
+                      surveySubmission._id = surveySubmission.surveyId;
+                      delete surveySubmission.surveyId;
+                      delete surveySubmission["surveyInformation"];
+
+                      if( !surveyReportPage ) {
+
+                          if( submissionStatus === CONSTANTS.common.SUBMISSION_STATUS_COMPLETED ) {
+                              result.data.push(surveySubmission);
+                          } else {
+                              if ( surveySubmission.status !== CONSTANTS.common.EXPIRED ) {
+                                  result.data.push(surveySubmission);
+                              }
+                          }
+                      } else {
+                          result.data.push(surveySubmission);
+                      }
+                  })
+                  result.count = surveySubmissions[0].count ? result.count + surveySubmissions[0].count : result.count;
+              }
+
+              return resolve({
+                  success: true,
+                  message: CONSTANTS.apiResponses.SURVEYS_FETCHED,
+                  data: {
+                      data: result.data,
+                      count: result.count 
+                  }
+              })
+
+          } catch (error) {
+              return resolve({
+                  success: false,
+                  message: error.message,
+                  data: false
+              });
+          }
+      });
+  }
+
+           /**
+    * List of user assigned surveys.
+    * @method
+    * @name userAssigned
+    * @param {String} userId - Logged in user Id.
+    * @param {String} pageSize - size of page.
+    * @param {String} pageNo - page number.
+    * @param {String} search - search text.
+    * @param {String} filter - filter text.
+    * @returns {Object}
+   */
+
+   static assignedSurveys( userId,pageSize,pageNo,search = "",filter, surveyReportPage = "") {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            let surveySolutions = {
+                success : false
+            };
+
+            if ( surveyReportPage === "" || UTILS.convertStringToBoolean(surveyReportPage) ) {
+                
+                surveySolutions = await this.surveySolutions(
+                    userId,
+                    pageNo,
+                    pageSize,
+                    search,
+                    filter
+                ); 
+            }
+            
+            let totalCount = 0;
+            let mergedData = [];
+            
+            if( surveySolutions.success && surveySolutions.data ) {
+
+                totalCount = surveySolutions.data.count;
+                mergedData = surveySolutions.data.data;
+
+                if( mergedData.length > 0 ) {
+                    
+                    mergedData.forEach( surveyData => {
+                        surveyData.isCreator = true;
+                    });
+                }
+            }
+
+            let surveySubmissions = await this.surveyList
+            (
+                userId,
+                pageNo,
+                pageSize,
+                search,
+                filter,
+                surveyReportPage
+            )
+            
+            if( surveySubmissions.success && surveySubmissions.data.data.length > 0 ) {
+
+                totalCount += surveySubmissions.data.count;
+                
+                surveySubmissions.data.data.forEach( surveyData => {
+                    surveyData.isCreator = false;
+                });
+
+                mergedData = [...mergedData, ...surveySubmissions.data.data];
+            }
+
+            return resolve({
+                success : true,
+                message : CONSTANTS.apiResponses.USER_ASSIGNED_SURVEY_FETCHED,
+                data : {
+                    data : mergedData,
+                    count : totalCount
+                }
+            });
+            
+        } catch (error) {
+            return resolve({
+                success : false,
+                message : error.message,
+                data : []
+            });
+        }
+    })
+  }
+
+   /**
+      * List of library projects.
+      * @method
+      * @name projects
+      * @param pageSize - Size of page.
+      * @param pageNo - Recent page no.
+      * @param search - search text.
+      * @param fieldsArray - array of projections fields.
+      * @param groupBy - groupBy query.
+      * @returns {Object} List of library projects.
+     */
+
+   static projects(query, pageSize, pageNo, searchQuery, fieldsArray, groupBy = "") {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            let matchQuery = {
+                $match: query
+            };
+
+            if (searchQuery && searchQuery.length > 0) {
+                matchQuery["$match"]["$or"] = searchQuery;
+            }
+
+            let projection = {}
+            fieldsArray.forEach(field => {
+                projection[field] = 1;
+            });
+
+            let aggregateData = [];
+            aggregateData.push(matchQuery);
+            aggregateData.push({
+                $sort : { "syncedAt" : -1 }
+            })
+
+            if (groupBy !== "") {
+                aggregateData.push({
+                    $group: groupBy
+                });
+            } else {
+                aggregateData.push({
+                    $project: projection
+                });
+            }
+
+            aggregateData.push(
+                {
+                    $facet: {
+                        "totalCount": [
+                            { "$count": "count" }
+                        ],
+                        "data": [
+                            { $skip: pageSize * (pageNo - 1) },
+                            { $limit: pageSize }
+                        ],
+                    }
+                },
+                {
+                    $project: {
+                        "data": 1,
+                        "count": {
+                            $arrayElemAt: ["$totalCount.count", 0]
+                        }
+                    }
+                }
+            );
+
+            let result =
+                await projectQueries.getAggregate(aggregateData);
+
+            return resolve({
+                success: true,
+                message: CONSTANTS.apiResponses.PROJECTS_FETCHED,
+                data: {
+                    data: result[0].data,
+                    count: result[0].count ? result[0].count : 0
+                }
+            })
+
+        } catch (error) {
+            return resolve({
+                success: false,
+                message: error.message,
+                data: {
+                    data: [],
+                    count: 0
+                }
+            });
+        }
+    })
+}
+
+
+  /**
+   * Get Downloadable URL from cloud.
+   * @method
+   * @name getDownloadableUrl
+   * @param {Array} payloadData       - payload for files data.
+   * @returns {JSON}                  - Response with status and message.
+   */
+
+  static getDownloadableUrl(payloadData) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let downloadableUrl = await filesHelpers.getDownloadableUrl(
+          payloadData
+        );
+        if (!downloadableUrl.success) {
+          return resolve({
+            status: HTTP_STATUS_CODE.bad_request.status,
+            message: CONSTANTS.apiResponses.FAILED_TO_CREATE_DOWNLOADABLEURL,
+            result: {},
+          });
+        }
+
+        return resolve({
+          message: CONSTANTS.apiResponses.CLOUD_SERVICE_SUCCESS_MESSAGE,
+          result: downloadableUrl.result,
+        });
+      } catch (error) {
+        return reject({
+          status:
+            error.status || HTTP_STATUS_CODE.internal_server_error.status,
+
+          message:
+            error.message || HTTP_STATUS_CODE.internal_server_error.message,
+
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+
+
+
+ /**
+    * Get list of user projects with the targetted ones.
+    * @method
+    * @name userAssigned 
+    * @param {String} userId - Logged in user id.
+    * @param {Number} pageSize - Page size.
+    * @param {Number} pageNo - Page No.
+    * @param {String} search - Search text.
+    * @param {String} filter - filter text.
+    * @returns {Object}
+   */
+
+ static assignedProjects( userId,pageSize,pageNo,search, filter ) {
+  return new Promise(async (resolve, reject) => {
+      try {
+
+          let query = {
+              userId : userId,
+              isDeleted : false
+          }
+
+          let searchQuery = [];
+
+          if (search !== "") {
+              searchQuery = [
+                  { "title" : new RegExp(search, 'i') },
+                  { "description" : new RegExp(search, 'i') }
+              ];
+          }
+
+          if ( filter && filter !== "" ) {
+              if( filter === CONSTANTS.common.CREATED_BY_ME ) {
+                  query["referenceFrom"] = {
+                      $ne : CONSTANTS.common.LINK
+                  };
+                  query["isAPrivateProgram"] = {
+                      $ne : false
+                  };
+              } else if( filter == CONSTANTS.common.ASSIGN_TO_ME ) {
+                  query["isAPrivateProgram"] = false;
+              } else{
+                  query["referenceFrom"] = CONSTANTS.common.LINK;
+              }
+          }
+          
+          let projects = await this.projects(
+              query,
+              pageSize,
+              pageNo,
+              searchQuery,    
+              [
+                  "title", 
+                  "description",
+                  "solutionId",
+                  "programId",
+                  "programInformation.name",
+                  "projectTemplateId",
+                  "solutionExternalId",
+                  "lastDownloadedAt",
+                  "hasAcceptedTAndC",
+                  "referenceFrom",
+                  "status",
+                  "certificate"
+              ]
+          );
+          
+          let totalCount = 0;
+          let data = [];
+          if( projects.success && projects.data && projects.data.data && Object.keys(projects.data.data).length > 0 ) {
+
+              totalCount = projects.data.count;
+              data = projects.data.data;
+              
+              if( data.length > 0 ) {
+                  let templateFilePath = [];
+                  data.forEach( projectData => {
+                      
+                      projectData.name = projectData.title;
+
+
+                      if (projectData.programInformation) {
+                          projectData.programName = projectData.programInformation.name;
+                          delete projectData.programInformation;
+                      }
+
+                      if (projectData.solutionExternalId) {
+                          projectData.externalId = projectData.solutionExternalId;
+                          delete projectData.solutionExternalId;
+                      }
+
+                      projectData.type = CONSTANTS.common.IMPROVEMENT_PROJECT;
+                      delete projectData.title;
+
+                      if (projectData.certificate &&
+                          projectData.certificate.osid &&
+                          projectData.certificate.osid !== "" && 
+                          projectData.certificate.templateUrl &&
+                          projectData.certificate.templateUrl !== ""
+                          ) {
+                              templateFilePath.push(projectData.certificate.templateUrl);
+                      }
+
+                  });
+
+                  if( templateFilePath.length > 0 ) {
+
+                      let certificateTemplateDownloadableUrl = 
+                          await this.getDownloadableUrl(
+                              {
+                                  filePaths: templateFilePath
+                              }
+                      );
+                      if ( !certificateTemplateDownloadableUrl.success ) {
+                          throw {
+                              message:  CONSTANTS.apiResponses.DOWNLOADABLE_URL_NOT_FOUND
+                          };
+                      }
+                      // map downloadable templateUrl to corresponding project data
+                      data.forEach(projectData => {
+                          if (projectData.certificate) {
+                              var itemFromUrlArray = certificateTemplateDownloadableUrl.data.find(item=> item.filePath == projectData.certificate.templateUrl);
+                                  if (itemFromUrlArray) {
+                                      projectData.certificate.templateUrl = itemFromUrlArray.url;
+                                  }
+                              }
+                          }
+                          
+                      )
+                  }
+
+              }
+          }
+          
+          return resolve({
+              success : true,
+              message : CONSTANTS.apiResponses.USER_ASSIGNED_PROJECT_FETCHED,
+              data : {
+                  data: data,
+                  count: totalCount
+              }
+          });
+
+      } catch (error) {
+          return resolve({
+              success : false,
+              message : error.message,
+              status : 
+              error.status ? 
+              error.status : HTTP_STATUS_CODE.internal_server_error.status,
+              data : {
+                  description : CONSTANTS.common.PROJECT_DESCRIPTION,
+                  data : [],
+                  count : 0
+              }
+          });
+      }
+  })
+}
+
+
+    /**
+   * Solution details.
+   * @method
+   * @name assignedUserSolutions
+   * @param {String} solutionId - Program Id.
+   * @returns {Object} - Details of the solution.
+   */
+
+    static assignedUserSolutions(
+      solutionType,
+      userId,
+      search,
+      filter,
+      pageSize,
+      pageNo,
+      surveyReportPage = ""
+    ) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          let userAssignedSolutions = {};
+          if (solutionType === CONSTANTS.common.OBSERVATION) {
+            userAssignedSolutions = await this.assignedObservations(
+              userId,
+              pageNo,
+              pageSize,
+              search,
+              filter
+            );
+          } else if (solutionType === CONSTANTS.common.SURVEY) {
+            userAssignedSolutions = await this.assignedSurveys(
+              userId,
+              pageSize,
+              pageNo,
+              search,
+              filter,
+              surveyReportPage
+            );
+          } else {
+            userAssignedSolutions =
+              await this.assignedProjects(
+                userId,
+                pageSize,
+                pageNo,
+                search,
+                filter
+              );
+          }
+  
+          return resolve(userAssignedSolutions);
+        } catch (error) {
+          return resolve({
+            success: false,
+            status: error.status
+              ? error.status
+              : HTTP_STATUS_CODE.internal_server_error.status,
+            message: error.message,
+          });
+        }
+      });
+    }
   
 
+
+   /**
+   * List of solutions and targeted ones.
+   * @method
+   * @name targetedSolutions
+   * @param {String} solutionId - Program Id.
+   * @returns {Object} - Details of the solution.
+   */
+
+   static targetedSolutions(
+    requestedData,
+    solutionType,
+    userId,
+    pageSize,
+    pageNo,
+    search,
+    filter,
+    surveyReportPage = ""
+  ) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let assignedSolutions = await this.assignedUserSolutions(
+          solutionType,
+          userId,
+          search,
+          filter,    
+          pageSize,
+          pageNo,
+          surveyReportPage
+        );
+
+        let totalCount = 0;
+        let mergedData = [];
+        let solutionIds = [];
+        if (assignedSolutions.success && assignedSolutions.data) {
+          // Remove observation solutions which for project tasks.
+
+          _.remove(assignedSolutions.data.data, function (solution) {
+            return (
+              solution.referenceFrom == CONSTANTS.common.PROJECT &&
+              solution.type == CONSTANTS.common.OBSERVATION
+            );
+          });
+
+          totalCount =
+            assignedSolutions.data.data &&
+            assignedSolutions.data.data.length > 0
+              ? assignedSolutions.data.data.length
+              : totalCount;
+          mergedData = assignedSolutions.data.data;
+
+          if (mergedData.length > 0) {
+            let programIds = [];
+
+            mergedData.forEach((mergeSolutionData) => {
+              if (mergeSolutionData.solutionId) {
+                solutionIds.push(mergeSolutionData.solutionId);
+              }
+
+              if (mergeSolutionData.programId) {
+                programIds.push(mergeSolutionData.programId);
+              }
+            });
+
+            let programsData = await programQueries.programsDocument(
+              {
+                _id: { $in: programIds },
+              },
+              ["name"]
+            );
+
+            if (programsData.length > 0) {
+              let programs = programsData.reduce(
+                (ac, program) => ({ ...ac, [program._id.toString()]: program }),
+                {}
+              );
+
+              mergedData = mergedData.map((data) => {
+                if (data.programId && programs[data.programId.toString()]) {
+                  data.programName = programs[data.programId.toString()].name;
+                }
+                return data;
+              });
+            }
+          }
+        }
+
+        requestedData["filter"] = {};
+        if (solutionIds.length > 0) {
+          requestedData["filter"]["skipSolutions"] = solutionIds;
+        }
+
+        if (filter && filter !== "") {
+          if (filter === CONSTANTS.common.CREATED_BY_ME) {
+            requestedData["filter"]["isAPrivateProgram"] = {
+              $ne: false,
+            };
+          } else if (filter === CONSTANTS.common.ASSIGN_TO_ME) {
+            requestedData["filter"]["isAPrivateProgram"] = false;
+          }
+        }
+
+        let targetedSolutions = {
+          success: false,
+        };
+
+        let getTargetedSolution = true;
+
+        if (filter === CONSTANTS.common.DISCOVERED_BY_ME) {
+          getTargetedSolution = false;
+        } else if (
+          UTILS.convertStringToBoolean(surveyReportPage) === true
+        ) {
+          getTargetedSolution = false;
+        }
+
+        if (getTargetedSolution) {
+          targetedSolutions = await this.forUserRoleAndLocation(
+            requestedData,
+            solutionType,
+            "",
+            "",
+            CONSTANTS.common.DEFAULT_PAGE_SIZE,
+            CONSTANTS.common.DEFAULT_PAGE_NO,
+            search
+          );
+        }
+
+        if (targetedSolutions.success) {
+          if (
+            targetedSolutions.success &&
+            targetedSolutions.data.data &&
+            targetedSolutions.data.data.length > 0
+          ) {
+            totalCount += targetedSolutions.data.count;
+            targetedSolutions.data.data.forEach((targetedSolution) => {
+              targetedSolution.solutionId = targetedSolution._id;
+              targetedSolution._id = "";
+
+              if (solutionType !== CONSTANTS.common.COURSE) {
+                targetedSolution["creator"] = targetedSolution.creator
+                  ? targetedSolution.creator
+                  : "";
+              }
+
+              if (solutionType === CONSTANTS.common.SURVEY) {
+                targetedSolution.isCreator = false;
+              }
+
+              mergedData.push(targetedSolution);
+              delete targetedSolution.type;
+              delete targetedSolution.externalId;
+            });
+          }
+        }
+
+        if (mergedData.length > 0) {
+          let startIndex = pageSize * (pageNo - 1);
+          let endIndex = startIndex + pageSize;
+          mergedData = mergedData.slice(startIndex, endIndex);
+        }
+
+        return resolve({
+          success: true,
+          message: CONSTANTS.apiResponses.TARGETED_OBSERVATION_FETCHED,
+          data: {
+            data: mergedData,
+            count: totalCount,
+          },
+        });
+      } catch (error) {
+        return reject({
+          status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+          message:
+            error.message || HTTP_STATUS_CODE.internal_server_error.message,
+          errorObject: error,
+        });
+      }
+    });
+  }
+
+
+   /**
+   * privateProgramAndSolutionDetails
+   * @method
+   * @name PrivateProgramAndSolutionDetails
+   * @param {Object} solutionData - solution data.
+   * @param {String} userId - user Id.
+   * @param {String} userToken - user token.
+   * @returns {Object} - Details of the private solution.
+   */
+
+   static privateProgramAndSolutionDetails(
+    solutionData,
+    userId = "",
+    userToken = ""
+  ) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // Check if a private program and private solution already exist or not for this user.
+        let privateSolutionDetails = await solutionsQueries.solutionsDocument(
+          {
+            parentSolutionId: solutionData.solutionId,
+            author: userId,
+            type: solutionData.type,
+            isAPrivateProgram: true,
+          },
+          ["_id", "programId", "programName"]
+        );
+
+        if (!privateSolutionDetails.length > 0) {
+          // Data for program and solution creation
+          let programAndSolutionData = {
+            type: CONSTANTS.common.IMPROVEMENT_PROJECT,
+            subType: CONSTANTS.common.IMPROVEMENT_PROJECT,
+            isReusable: false,
+            solutionId: solutionData.solutionId,
+          };
+
+          if (solutionData.programId && solutionData.programId !== "") {
+            programAndSolutionData["programId"] = solutionData.programId;
+            programAndSolutionData["programName"] = solutionData.programName;
+          }
+          // create private program and solution
+          let solutionAndProgramCreation = await this.createProgramAndSolution(
+            userId,
+            programAndSolutionData,
+            userToken,
+            "true" // create duplicate solution
+          );
+
+          if (!solutionAndProgramCreation.success) {
+            throw {
+              status: HTTP_STATUS_CODE.bad_request.status,
+              message: CONSTANTS.apiResponses.SOLUTION_PROGRAMS_NOT_CREATED,
+            };
+          }
+          return resolve({
+            success: true,
+            result: solutionAndProgramCreation.result.solution._id,
+          });
+        } else {
+          return resolve({
+            success: true,
+            result: privateSolutionDetails[0]._id,
+          });
+        }
+      } catch (error) {
+        return resolve({
+          success: false,
+          status: error.status
+            ? error.status
+            : HTTP_STATUS_CODE.internal_server_error.status,
+          message: error.message,
+        });
+      }
+    });
+  }
+
+
+
+
+   /**
+   * Verify solution link
+   * @method
+   * @name verifyLink
+   * @param {String} solutionId - solution Id.
+   * @param {String} userId - user Id.
+   * @param {String} userToken - user token.
+   * @param {Boolean} createProject - create project.
+   * @param {Object} bodyData - Req Body.
+   * @param {Object} createPrivateSolutionIfNotTargeted - flag to create private program if user is non targeted
+   * @returns {Object} - Details of the solution.
+   */
+
+   static verifyLink(
+    link = "",
+    bodyData = {},
+    userId = "",
+    userToken = "",
+    createProject = true
+  ) {
+    return new Promise(async (resolve, reject) => {
+      try {
+
+        let checkForTargetedSolution = await this.checkForTargetedSolution(
+          link,
+          bodyData,
+          userId,
+          userToken
+        );
+
+        if (
+          !checkForTargetedSolution ||
+          Object.keys(checkForTargetedSolution.result).length <= 0
+        ) {
+          return resolve(checkForTargetedSolution);
+        }
+
+        let solutionData = checkForTargetedSolution.result;
+        let isSolutionActive =
+          solutionData.status === CONSTANTS.common.INACTIVE ? false : true;
+        if (solutionData.type == CONSTANTS.common.OBSERVATION) {
+          // Targeted solution
+          // if (checkForTargetedSolution.result.isATargetedSolution) {
+          //   let observationDetailFromLink =
+          //     await entitiesHelper.details(
+          //       userToken,
+          //       solutionData.solutionId
+          //     );
+
+          //   if (observationDetailFromLink.success) {
+          //     checkForTargetedSolution.result["observationId"] =
+          //       observationDetailFromLink.result._id != ""
+          //         ? observationDetailFromLink.result._id
+          //         : "";
+          //   } else if (!isSolutionActive) {
+          //     throw new Error(CONSTANTS.apiResponses.LINK_IS_EXPIRED);
+          //   }
+          // } else {
+          //   if (!isSolutionActive) {
+          //     throw new Error(CONSTANTS.apiResponses.LINK_IS_EXPIRED);
+          //   }
+          // }
+        } else if (solutionData.type === CONSTANTS.common.SURVEY) {
+          // Get survey submissions of user
+          /**
+           * function userServeySubmission 
+           * Request:
+           * @query :SolutionId -> solutionId
+           * @param {userToken} for UserId
+           * @response Array of survey submissions
+           * example: {
+            "success":true,
+            "message":"Survey submission fetched successfully",
+            "data":[
+                {
+                    "_id":"62e228eedd8c6d0009da5084",
+                    "solutionId":"627dfc6509446e00072ccf78",
+                    "surveyId":"62e228eedd8c6d0009da507d",
+                    "status":"completed",
+                    "surveyInformation":{
+                        "name":"Create a Survey (To check collated reports) for 4.9 regression -- FD 380",
+                        "description":"Create a Survey (To check collated reports) for 4.9 regression -- FD 380"
+                    }
+                }
+            ]
+          }       
+           */
+          // let surveySubmissionDetails =
+          //   await surveyService.userSurveySubmissions(
+          //     userToken,
+          //     solutionData.solutionId
+          //   );
+          // let surveySubmissionData = surveySubmissionDetails.result;
+          // if (surveySubmissionData.length > 0) {
+          //   checkForTargetedSolution.result.submissionId =
+          //     surveySubmissionData[0]._id ? surveySubmissionData[0]._id : "";
+          //   checkForTargetedSolution.result.surveyId = surveySubmissionData[0]
+          //     .surveyId
+          //     ? surveySubmissionData[0].surveyId
+          //     : "";
+          //   checkForTargetedSolution.result.submissionStatus =
+          //     surveySubmissionData[0].status;
+          // } else if (!isSolutionActive) {
+          //   throw new Error(CONSTANTS.apiResponses.LINK_IS_EXPIRED);
+          // }
+        } else if (solutionData.type === CONSTANTS.common.IMPROVEMENT_PROJECT) {
+          // Targeted solution
+          if (
+            checkForTargetedSolution.result.isATargetedSolution &&
+            createProject
+          ) {
+            //targeted user with project creation
+
+            let projectDetailFromLink =
+              await projectQueries.projectDocument(
+                {"solutionId" : solutionId}
+              );
+
+            if (!projectDetailFromLink || !projectDetailFromLink.data) {
+              return resolve(projectDetailFromLink);
+            }
+            if (projectDetailFromLink.data.length < 1 && !isSolutionActive) {
+              throw new Error(CONSTANTS.apiResponses.LINK_IS_EXPIRED);
+            }
+
+            checkForTargetedSolution.result["projectId"] = projectDetailFromLink
+              .data._id
+              ? projectDetailFromLink.data._id
+              : "";
+          } else if (
+            checkForTargetedSolution.result.isATargetedSolution &&
+            !createProject
+          ) {
+            //targeted user with no project creation
+            let findQuery = {
+              userId: userId,
+              projectTemplateId: solutionData.projectTemplateId,
+              referenceFrom: {
+                $ne: CONSTANTS.common.LINK,
+              },
+              isDeleted: false,
+            };
+
+            let checkTargetedProjectExist =
+              await projectQueries.projectDocument(
+                userToken,
+                findQuery,
+                ["_id"]
+              );
+
+            if (
+              checkTargetedProjectExist.success &&
+              checkTargetedProjectExist.data &&
+              checkTargetedProjectExist.data.length > 0 &&
+              checkTargetedProjectExist.data[0]._id != ""
+            ) {
+              checkForTargetedSolution.result["projectId"] =
+                checkTargetedProjectExist.data[0]._id;
+            } else if (!isSolutionActive) {
+              throw new Error(CONSTANTS.apiResponses.LINK_IS_EXPIRED);
+            }
+          } else {
+            if (!isSolutionActive) {
+              throw new Error(CONSTANTS.apiResponses.LINK_IS_EXPIRED);
+            }
+
+            // check if private-Project already exists
+            let checkIfUserProjectExistsQuery = {
+              createdBy: userId,
+              referenceFrom: CONSTANTS.common.LINK,
+              link: link,
+            };
+            let checkForProjectExist =
+              await projectQueries.projectDocument(
+                userToken,
+                checkIfUserProjectExistsQuery,
+                ["_id"]
+              );
+            if (
+              checkForProjectExist.success &&
+              checkForProjectExist.data &&
+              checkForProjectExist.data.length > 0 &&
+              checkForProjectExist.data[0]._id != ""
+            ) {
+              checkForTargetedSolution.result["projectId"] =
+                checkForProjectExist.data[0]._id;
+            }
+            // If project not found and createPrivateSolutionIfNotTargeted := true
+            // By default will be false for old version of app
+            if (
+              !checkForTargetedSolution.result["projectId"] ||
+              checkForTargetedSolution.result["projectId"] === ""
+            ) {
+              // user is not targeted and privateSolutionCreation required
+              /**
+               * function privateProgramAndSolutionDetails
+               * Request:
+               * @param {solutionData} solution data
+               * @param {userToken} for UserId
+               * @response private solutionId
+               */
+              let privateProgramAndSolutionDetails =
+                await this.privateProgramAndSolutionDetails(
+                  solutionData,
+                  userId,
+                  userToken
+                );
+              if (!privateProgramAndSolutionDetails.success) {
+                throw {
+                  status: HTTP_STATUS_CODE.bad_request.status,
+                  message: CONSTANTS.apiResponses.SOLUTION_PROGRAMS_NOT_CREATED,
+                };
+              }
+              // Replace public solutionId with private solutionId.
+              if (privateProgramAndSolutionDetails.result != "") {
+                checkForTargetedSolution.result["solutionId"] =
+                  privateProgramAndSolutionDetails.result;
+              }
+            }
+          }
+        }
+        delete checkForTargetedSolution.result["status"];
+
+        return resolve(checkForTargetedSolution);
+      } catch (error) {
+        return resolve({
+          success: false,
+          status: error.status
+            ? error.status
+            : HTTP_STATUS_CODE.internal_server_error.status,
+          message: error.message,
+        });
+      }
+    });
+  }
 
 
 };

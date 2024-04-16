@@ -28,7 +28,8 @@ const certificateValidationsHelper = require(MODULES_BASE_PATH + "/certificateVa
 const _ = require("lodash");  
 const programUsersQueries = require(DB_QUERY_BASE_PATH + "/programUsers");
 const solutionsQueries = require(DB_QUERY_BASE_PATH + "/solutions");
-
+const programQueries = require(DB_QUERY_BASE_PATH + "/programs")
+const entitiesHelper = require(MODULES_BASE_PATH + "/entities/helper")
 /**
     * UserProjectsHelper
     * @class
@@ -89,6 +90,59 @@ module.exports = class UserProjectsHelper {
 
         return mongooseIds;
     }
+
+
+        /**
+    * Remove solutions from program.
+    * @method
+    * @name removeSolutions
+    * @param {Array} programId - Program id. 
+    * @param {Array} solutionIds - Program id. 
+    * @returns {Array} Update program.
+    */
+
+   static removeSolutions(userToken="",programId,solutionIds) {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            let programsData = await programQueries.programsDocument({_id : programId },["_id"]);
+
+            if( !programsData.length > 0 ) {
+              throw {
+                status : HTTP_STATUS_CODE.bad_request.status,
+                message : CONSTANTS.apiResponses.PROGRAM_NOT_FOUND
+              }
+            }
+
+            let updateSolutionIds = solutionIds.map(solutionId => ObjectId(solutionId));
+
+            let updateSolution = 
+            await database.models.programs.findOneAndUpdate({
+              _id : programId
+            },{
+              $pull : {
+                components : { $in : updateSolutionIds }
+              }
+            });
+
+            return resolve({
+                success: true,
+                message: CONSTANTS.apiResponses.PROGRAM_UPDATED_SUCCESSFULLY,
+                data: updateSolution
+            });
+
+        } catch (error) {
+            return resolve({
+                status : error.status ? error.status : HTTP_STATUS_CODE.internal_server_error.status,
+                success: false,
+                message: error.message,
+                data: false
+            });
+        }
+    });
+   }
+
+
 
     /**
       * Sync project.
@@ -230,22 +284,22 @@ module.exports = class UserProjectsHelper {
                         return resolve(programAndSolutionInformation);
                     }
 
-                    // if (solutionExists) {
+                    if (solutionExists) {
 
-                    //     let updateProgram =
-                    //         await surveyService.removeSolutionsFromProgram(
-                    //             userToken,
-                    //             userProject[0].programInformation._id,
-                    //             [userProject[0].solutionInformation._id]
-                    //         );
+                        let updateProgram =
+                            await this.removeSolutions(
+                                userToken,
+                                userProject[0].programInformation._id,
+                                [userProject[0].solutionInformation._id]
+                            );
 
-                    //     if (!updateProgram.success) {
-                    //         throw {
-                    //             status: HTTP_STATUS_CODE.bad_request.status,
-                    //             message: CONSTANTS.apiResponses.PROGRAM_NOT_UPDATED
-                    //         }
-                    //     }
-                    // }
+                        if (!updateProgram.success) {
+                            throw {
+                                status: HTTP_STATUS_CODE.bad_request.status,
+                                message: CONSTANTS.apiResponses.PROGRAM_NOT_UPDATED
+                            }
+                        }
+                    }
 
                     updateProject =
                         _.merge(updateProject, programAndSolutionInformation.data);
@@ -343,17 +397,17 @@ module.exports = class UserProjectsHelper {
                 updateProject.updatedBy = userId;
                 updateProject.updatedAt = new Date();
 
-                if (!userProject[0].appInformation) {
-                    updateProject["appInformation"] = {};
+                // if (!userProject[0].appInformation) {
+                //     updateProject["appInformation"] = {};
 
-                    if (appName !== "") {
-                        updateProject["appInformation"]["appName"] = appName;
-                    }
+                //     if (appName !== "") {
+                //         updateProject["appInformation"]["appName"] = appName;
+                //     }
 
-                    if (appVersion !== "") {
-                        updateProject["appInformation"]["appVersion"] = appVersion;
-                    }
-                }
+                //     if (appVersion !== "") {
+                //         updateProject["appInformation"]["appVersion"] = appVersion;
+                //     }
+                // }
 
                 if ( data.status && data.status !== "" ) {
                    updateProject.status = UTILS.convertProjectStatus(data.status);
@@ -389,10 +443,12 @@ module.exports = class UserProjectsHelper {
                     success: true,
                     message: CONSTANTS.apiResponses.USER_PROJECT_UPDATED,
                     data : {
-                        programId : 
-                        projectUpdated.programInformation && projectUpdated.programInformation._id ?
-                        projectUpdated.programInformation._id : "",
-                        hasAcceptedTAndC : projectUpdated.hasAcceptedTAndC ? projectUpdated.hasAcceptedTAndC : false
+                        result : {
+                            programId : 
+                            projectUpdated.programInformation && projectUpdated.programInformation._id ?
+                            projectUpdated.programInformation._id : "",
+                            hasAcceptedTAndC : projectUpdated.hasAcceptedTAndC ? projectUpdated.hasAcceptedTAndC : false
+                        }
                     } 
                 });
 
@@ -786,7 +842,6 @@ module.exports = class UserProjectsHelper {
 
                         data["submissionStatus"] = CONSTANTS.common.STARTED;
 
-                        // For 4.7 Urgent fix, need to check why observationInformation is not present at task level.
                         let submissionDetails =  {};
                         if(currentTask.observationInformation) {
                             submissionDetails = currentTask.observationInformation
@@ -1028,6 +1083,118 @@ module.exports = class UserProjectsHelper {
         })
     }
 
+
+      /**
+   * Implement find query for entity
+   * @method
+   * @name entityDocuments
+   * @param {Object} [findQuery = "all"] - filter query object if not provide 
+   * it will load all the document.
+   * @param {Array} [fields = "all"] - All the projected field. If not provided
+   * returns all the field
+   * @param {Number} [limitingValue = ""] - total data to limit.
+   * @param {Number} [skippingValue = ""] - total data to skip.
+   * @returns {Array} - returns an array of entities data.
+   */
+
+      static entityDocuments(findQuery = "all", fields = "all", limitingValue = "", skippingValue = "",sortedData = "") {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let queryObject = {};
+
+                if (findQuery != "all") {
+                    queryObject = findQuery;
+                }
+
+                let projectionObject = {};
+
+                if (fields != "all") {
+                    fields.forEach(element => {
+                        projectionObject[element] = 1;
+                    });
+                }
+
+                let entitiesDocuments;
+
+                if( sortedData !== "" ) {
+                entitiesDocuments = await database.models.entities
+                    .find(queryObject, projectionObject)
+                    .sort(sortedData)
+                    .limit(limitingValue)
+                    .skip(skippingValue)
+                    .lean();
+                } else {
+                    entitiesDocuments = await database.models.entities
+                    .find(queryObject, projectionObject)
+                    .limit(limitingValue)
+                    .skip(skippingValue)
+                    .lean();
+                }
+                
+                return resolve(entitiesDocuments);
+            } catch (error) {
+                return reject({
+                    status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+                    message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+                    errorObject: error
+                });
+            }
+        });
+    }
+
+
+
+      /**
+   * update registry in entities.
+   * @method
+   * @name listByLocationIds
+   * @param {Object} locationIds - locationIds
+   * @returns {Object} entity Document
+   */
+
+  static listByLocationIds(locationIds) {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            let filterQuery = {
+                $or : [{
+                  "registryDetails.code" : { $in : locationIds }
+                },{
+                  "registryDetails.locationId" : { $in : locationIds }
+                }]
+              };      
+
+            let entities = 
+            await this.entityDocuments(
+                filterQuery,
+                ["metaInformation", "entityType", "entityTypeId","registryDetails"]
+            );
+
+            if( !entities.length > 0 ) {
+                throw {
+                    message : CONSTANTS.apiResponses.ENTITIES_FETCHED
+                }
+            }
+
+            return resolve({
+                success : true,
+                message : CONSTANTS.apiResponses.ENTITY_FETCHED,
+                data : entities
+            });
+
+        } catch(error) {
+            return resolve({
+                success : false,
+                message : error.message
+            });
+        }
+    })
+  }
+
+
+
+
+
   /**
      * Creation of user targeted projects.
      * @method
@@ -1235,13 +1402,13 @@ module.exports = class UserProjectsHelper {
     
                     projectCreation.data["appInformation"] = {};
     
-                    if( appName !== "" ) {
-                        projectCreation.data["appInformation"]["appName"] = appName;
-                    }
+                    // if( appName !== "" ) {
+                    //     projectCreation.data["appInformation"]["appName"] = appName;
+                    // }
     
-                    if( appVersion !== "" ) {
-                        projectCreation.data["appInformation"]["appVersion"] = appVersion;
-                    }
+                    // if( appVersion !== "" ) {
+                    //     projectCreation.data["appInformation"]["appVersion"] = appVersion;
+                    // }
                     
                     if ( solutionDetails.certificateTemplateId && solutionDetails.certificateTemplateId !== "" ) {
                         // <- Add certificate template details to projectCreation data if present ->
@@ -1282,28 +1449,27 @@ module.exports = class UserProjectsHelper {
                         if( 
                             solutionDetails.entityType && bodyData[solutionDetails.entityType] 
                         ) {
-                            // let entityInformation = 
-                            // await surveyService.listEntitiesByLocationIds(
-                            //     userToken,
-                            //     [bodyData[solutionDetails.entityType]] 
-                            // );
+                            let entityInformation = 
+                            await this.listByLocationIds(
+                                [bodyData[solutionDetails.entityType]] 
+                            );
 
-                            // if( !entityInformation.success ) {
-                            //     throw {
-                            //         message : CONSTANTS.apiResponses.ENTITY_NOT_FOUND,
-                            //         status : HTTP_STATUS_CODE.bad_request.status
-                            //     }
-                            // }
+                            if( !entityInformation.success ) {
+                                throw {
+                                    message : CONSTANTS.apiResponses.ENTITY_NOT_FOUND,
+                                    status : HTTP_STATUS_CODE.bad_request.status
+                                }
+                            }
 
-                            // let entityDetails = await _entitiesMetaInformation(
-                            //     entityInformation.data
-                            // );
+                            let entityDetails = await _entitiesMetaInformation(
+                                entityInformation.data
+                            );
 
-                            // if ( entityDetails && entityDetails.length > 0 ) {
-                            //     projectCreation.data["entityInformation"] = entityDetails[0];
-                            // }
+                            if ( entityDetails && entityDetails.length > 0 ) {
+                                projectCreation.data["entityInformation"] = entityDetails[0];
+                            }
         
-                            // projectCreation.data.entityId = entityInformation.data[0]._id;
+                            projectCreation.data.entityId = entityInformation.data[0]._id;
                         }
     
                     }
@@ -1315,42 +1481,42 @@ module.exports = class UserProjectsHelper {
                     let addReportInfoToSolution = false;
                     if ( getUserProfileFromObservation ){
 
-                        // let observationDetails = await surveyService.observationDetails(
-                        //     userToken,
-                        //     bodyData.submissions.observationId
-                        // );
+                        let observationDetails = await entitiesHelper.details(
+                            userToken,
+                            bodyData.submissions.observationId
+                        );
 
-                        // if( observationDetails.data &&
-                        //     Object.keys(observationDetails.data).length > 0 && 
-                        //     observationDetails.data.userRoleInformation &&
-                        //     Object.keys(observationDetails.data.userRoleInformation).length > 0
-                        // ) {
+                        if( observationDetails.data &&
+                            Object.keys(observationDetails.data).length > 0 && 
+                            observationDetails.data.userRoleInformation &&
+                            Object.keys(observationDetails.data.userRoleInformation).length > 0
+                        ) {
 
-                        //     userRoleInformation = observationDetails.data.userRoleInformation;
+                            userRoleInformation = observationDetails.data.userRoleInformation;
                             
-                        // }
+                        }
 
-                        // if( observationDetails.data &&
-                        //     Object.keys(observationDetails.data).length > 0 && 
-                        //     observationDetails.data.userProfile &&
-                        //     Object.keys(observationDetails.data.userProfile).length > 0
-                        // ) {
+                        if( observationDetails.data &&
+                            Object.keys(observationDetails.data).length > 0 && 
+                            observationDetails.data.userProfile &&
+                            Object.keys(observationDetails.data.userProfile).length > 0
+                        ) {
 
-                        //     projectCreation.data.userProfile = observationDetails.data.userProfile;
-                        //     addReportInfoToSolution = true; 
+                            projectCreation.data.userProfile = observationDetails.data.userProfile;
+                            addReportInfoToSolution = true; 
                             
-                        // } else {
-                        //     //Fetch user profile information by calling sunbird's user read api.
+                        } else {
+                            //Fetch user profile information by calling sunbird's user read api.
 
-                        //     let userProfile = await userService.profile(userToken, userId);
-                        //     if ( userProfile.success && 
-                        //          userProfile.data &&
-                        //          userProfile.data.response
-                        //     ) {
-                        //             projectCreation.data.userProfile = userProfile.data.response;
-                        //             addReportInfoToSolution = true; 
-                        //     } 
-                        // }
+                            let userProfile = await userService.profile(userToken, userId);
+                            if ( userProfile.success && 
+                                 userProfile.data &&
+                                 userProfile.data.response
+                            ) {
+                                    projectCreation.data.userProfile = userProfile.data.response;
+                                    addReportInfoToSolution = true; 
+                            } 
+                        }
 
                     } else {
                         //Fetch user profile information by calling sunbird's user read api.
@@ -1700,14 +1866,14 @@ module.exports = class UserProjectsHelper {
                     }
                 });
 
-                createProject["appInformation"] = {};
-                if (appName !== "") {
-                    createProject["appInformation"]["appName"] = appName;
-                }
+                // createProject["appInformation"] = {};
+                // if (appName !== "") {
+                //     createProject["appInformation"]["appName"] = appName;
+                // }
 
-                if (appVersion !== "") {
-                    createProject["appInformation"]["appVersion"] = appVersion;
-                }
+                // if (appVersion !== "") {
+                //     createProject["appInformation"]["appVersion"] = appVersion;
+                // }
 
                 createProject["lastDownloadedAt"] = new Date();
 
@@ -1733,12 +1899,14 @@ module.exports = class UserProjectsHelper {
                     success: true,
                     message: CONSTANTS.apiResponses.PROJECT_CREATED,
                     data: {
-                        programId:
-                        userProject.programInformation && userProject.programInformation._id ?
-                        userProject.programInformation._id : data.programId,
-                        projectId: userProject._id,
-                        lastDownloadedAt: userProject.lastDownloadedAt,
-                        hasAcceptedTAndC : userProject.hasAcceptedTAndC ? userProject.hasAcceptedTAndC : false
+                        result : {
+                            programId:
+                            userProject.programInformation && userProject.programInformation._id ?
+                            userProject.programInformation._id : data.programId,
+                            projectId: userProject._id,
+                            lastDownloadedAt: userProject.lastDownloadedAt,
+                            hasAcceptedTAndC : userProject.hasAcceptedTAndC ? userProject.hasAcceptedTAndC : false                            
+                        }
                     }
                 });
             } catch (error) {
