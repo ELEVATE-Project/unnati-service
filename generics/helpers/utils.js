@@ -7,6 +7,7 @@
 // Dependencies
 const {validate : uuidValidate,v4 : uuidV4} = require('uuid');
 const packageData = require(PROJECT_ROOT_DIRECTORY + "/package.json");
+const md5 = require("md5");
 /**
   * convert camel case to title case.
   * @function
@@ -530,6 +531,18 @@ function checkIfValidUUID(value) {
 }
 
 
+/**
+ * md5 hash
+ * @function
+ * @name md5Hash
+ * @returns {String} returns hashed value.
+ */
+
+function md5Hash(value) {
+  return md5(value);
+}
+
+
 
 module.exports = {
   camelCaseToTitleCase : camelCaseToTitleCase,
@@ -556,5 +569,6 @@ module.exports = {
   filterLocationIdandCode : filterLocationIdandCode,
   generateTelemetryEventSkeletonStructure : generateTelemetryEventSkeletonStructure,
   generateTelemetryEvent : generateTelemetryEvent,
-  checkIfValidUUID : checkIfValidUUID
+  checkIfValidUUID : checkIfValidUUID,
+  md5Hash : md5Hash
 };

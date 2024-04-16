@@ -8,7 +8,6 @@
 // Dependencies
 
 const timeZoneDifference = process.env.TIMEZONE_DIFFRENECE_BETWEEN_LOCAL_TIME_AND_UTC;
-const userService = require(PROJECT_ROOT_DIRECTORY + "/generics/services/users");
 const programsQueries = require(DB_QUERY_BASE_PATH + "/programs")
 
 /**
@@ -170,7 +169,6 @@ module.exports = class ProgramsHelper {
           result: result,
         });
       } catch (error) {
-        console.log(error);
         return resolve({
           message: error.message,
           success: false,
@@ -206,13 +204,13 @@ module.exports = class ProgramsHelper {
         };
 
         if (checkDate) {
-          if (data.hasOwnProperty("endDate")) {
+          if (data.hasOwnProperty(CONSTANTS.common.END_DATE)) {
             data.endDate = UTILS.getEndDate(
               data.endDate,
               timeZoneDifference
             );
           }
-          if (data.hasOwnProperty("startDate")) {
+          if (data.hasOwnProperty(CONSTANTS.common.START_DATE)) {
             data.startDate = UTILS.getStartDate(
               data.startDate,
               timeZoneDifference
@@ -246,7 +244,13 @@ module.exports = class ProgramsHelper {
           }
         }
 
-        return resolve(program);
+        return resolve({
+          success : true,
+          message : CONSTANTS.apiResponses.PROGRAMS_CREATED,
+          data : {
+            result : program
+          }
+        });
       } catch (error) {
         return reject(error);
       }
@@ -279,26 +283,27 @@ module.exports = class ProgramsHelper {
         }
 
         if (checkDate) {
-          if (data.hasOwnProperty("endDate")) {
+          if (data.hasOwnProperty(CONSTANTS.common.END_DATE)) {
             data.endDate = UTILS.getEndDate(
               data.endDate,
               timeZoneDifference
             );
           }
-          if (data.hasOwnProperty("startDate")) {
+          if (data.hasOwnProperty(CONSTANTS.common.START_DATE)) {
             data.startDate = UTILS.getStartDate(
               data.startDate,
               timeZoneDifference
             );
           }
         }
-        let program = await database.models.programs.findOneAndUpdate(
+
+        let program = await programsQueries.findAndUpdate(
           {
             _id: programId,
           },
           { $set: _.omit(data, ["scope"]) },
           { new: true }
-        );
+        )
 
         if (!program) {
           throw {
@@ -320,7 +325,9 @@ module.exports = class ProgramsHelper {
           success: true,
           message: CONSTANTS.apiResponses.PROGRAMS_UPDATED,
           data: {
-            _id: programId,
+            result : {
+              _id: programId,
+            }
           },
         });
       } catch (error) {
@@ -358,7 +365,9 @@ module.exports = class ProgramsHelper {
             return resolve({
               message: CONSTANTS.apiResponses.PROGRAMS_FETCHED,
               success: true,
-              data: programData[0],
+              data: {
+                result: programData[0]
+                }
             });
           } catch (error) {
             return resolve({
@@ -404,18 +413,17 @@ module.exports = class ProgramsHelper {
         let updateQuery = {};
 
         if (Array.isArray(roles) && roles.length > 0) {
-          let currentRoles = await database.models.programs.find(  
-            { _id: programId },
-            { 'scope.roles': 1, _id: 0 }
+
+            let currentRoles = await programsQueries.programsDocument(
+              { _id: programId },
             )
             currentRoles = currentRoles[0].scope.roles 
 
             if(currentRoles[0] == CONSTANTS.common.ALL_ROLES){
               updateQuery["$set"] = {
                 "scope.roles": [ CONSTANTS.common.ALL_ROLES ],
-              };
-            }
-            else{
+              }
+            }else{
               let currentRolesSet = new Set(currentRoles);
               let rolesSet = new Set(roles);
               
@@ -428,33 +436,25 @@ module.exports = class ProgramsHelper {
                 "scope.roles": currentRoles,
               };
               // updateQuery["$push"] = { "scope.roles": { $each: roles } }
-            }           
-            
-            // console.log(currentRoles, roles)
-
-        } else if (roles === CONSTANTS.common.ALL_ROLES) {
-            updateQuery["$set"] = {
-              "scope.roles": [CONSTANTS.common.ALL_ROLES],
-            };
-          
-        } else {
-          if(roles === ""){
+            }            
+        }else if(roles === ""){
             return resolve({
               status: HTTP_STATUS_CODE.bad_request.status,
               message: CONSTANTS.apiResponses.INVALID_ROLE_CODE,
             });
-          }
-        }
+        }else if (roles === CONSTANTS.common.ALL_ROLES) {
+            updateQuery["$set"] = {
+              "scope.roles": [CONSTANTS.common.ALL_ROLES],
+            }          
+        } 
 
-        let updateProgram = await database.models.programs
-          .findOneAndUpdate(
-            {
-              _id: programId,
-            },
-            updateQuery,
-            { new: true }
-          )
-          .lean();
+        let updateProgram = await programsQueries.findAndUpdate(
+          {
+            _id: programId,
+          },
+          updateQuery,
+          { new: true }
+        )
 
         if (!updateProgram || !updateProgram._id) {
           throw {
@@ -467,11 +467,12 @@ module.exports = class ProgramsHelper {
           success: true,
         });
       } catch (error) {
+        console.log(error)
         return resolve({
           success: false,
           status: error.status
             ? error.status
-            : HTTP_STATUS_CODE["internal_server_error"].status,
+            : HTTP_STATUS_CODE.internal_server_error.status,
           message: error.message,
         });
       }
@@ -564,7 +565,7 @@ module.exports = class ProgramsHelper {
           success: false,
           status: error.status
             ? error.status
-            : HTTP_STATUS_CODE["internal_server_error"].status,
+            : HTTP_STATUS_CODE.internal_server_error.status,
           message: error.message,
         });
       }
@@ -585,6 +586,12 @@ module.exports = class ProgramsHelper {
    static removeRolesInScope(programId, roles) {
     return new Promise(async (resolve, reject) => {
       try {
+        if (!roles.length > 0) {
+          return resolve({
+            status: HTTP_STATUS_CODE.bad_request.status,
+            message: CONSTANTS.apiResponses.INVALID_ROLE_CODE,
+          });
+        }
         let programData = await programsQueries.programsDocument(
           {
             _id: programId,
@@ -601,19 +608,7 @@ module.exports = class ProgramsHelper {
           });
         }
 
-        let userRoles = await userRolesHelper.roleDocuments(
-          {
-            code: { $in: roles },
-          },
-          ["_id", "code"]
-        );
 
-        if (!userRoles.length > 0) {
-          return resolve({
-            status: HTTP_STATUS_CODE.bad_request.status,
-            message: CONSTANTS.apiResponses.INVALID_ROLE_CODE,
-          });
-        }
 
         let updateProgram = await database.models.programs
           .findOneAndUpdate(
@@ -621,7 +616,7 @@ module.exports = class ProgramsHelper {
               _id: programId,
             },
             {
-              $pull: { "scope.roles": { $in: userRoles } },
+              $pull: { "scope.roles": { $in: roles } },
             },
             { new: true }
           )
@@ -642,7 +637,7 @@ module.exports = class ProgramsHelper {
           success: false,
           status: error.status
             ? error.status
-            : HTTP_STATUS_CODE["internal_server_error"].status,
+            : HTTP_STATUS_CODE.internal_server_error.status,
           message: error.message,
         });
       }
@@ -712,13 +707,220 @@ module.exports = class ProgramsHelper {
           success: false,
           status: error.status
             ? error.status
-            : HTTP_STATUS_CODE["internal_server_error"].status,
+            : HTTP_STATUS_CODE.internal_server_error.status,
           message: error.message,
         });
       }
     });
   }
 
+   /**
+   * Program join.
+   * @method
+   * @name join
+   * @param {String} programId - Program Id.
+   * @param {Object} data - body data (can include isResourse flag && userRoleInformation).
+   * @param {String} userId - Logged in user id.
+   * @param {String} userToken - User token.
+   * @param {String} [appName = ""] - App Name.
+   * @param {String} [appVersion = ""] - App Version.
+   * @param {Boolean} callConsetAPIOnBehalfOfUser - required to call consent api or not
+   * @returns {Object} - Details of the program join.
+   */
+
+   static join(
+    programId,
+    data,
+    userId,
+    userToken,
+    appName = "",
+    appVersion = "",
+    callConsetAPIOnBehalfOfUser = false
+  ) {
+    return new Promise(async (resolve, reject) => {
+      try {
+       
+          let pushProgramUsersDetailsToKafka = false;
+          //Using programId fetch program details. Also checking the program status in the query.
+          let programData = await programsQueries.programsDocument(
+            {
+              _id: programId,
+              status: CONSTANTS.common.ACTIVE_STATUS,
+              isDeleted: false,
+            },
+            ["name", "externalId", "requestForPIIConsent", "rootOrganisations"]
+          );
+
+          if (!programData.length > 0) {
+            throw {
+              status: HTTP_STATUS_CODE.bad_request.status,
+              message: CONSTANTS.apiResponses.PROGRAM_NOT_FOUND,
+            };
+          }
+          let programUsersData = {};
+          let update = {};
+
+          // check if user already joined for program or not
+          // const programUsersDetails =
+          //   await programUsersHelper.programUsersDocuments(
+          //     {
+          //       userId: userId,
+          //       programId: programId,
+          //     },
+          //     ["_id", "consentShared"]
+          //   );
+          // // if user not joined for program. we have add more key values to programUsersData
+          // if (!programUsersDetails.length > 0) {
+          //   // Fetch user profile information by calling sunbird's user read api.
+          //   // !Important check specific fields of userProfile.
+          //   let userProfile = await userService.profile(userToken, userId);
+          //   if (
+          //     !userProfile.success ||
+          //     !userProfile.data ||
+          //     !userProfile.data.profileUserTypes ||
+          //     !userProfile.data.profileUserTypes.length > 0 ||
+          //     !userProfile.data.userLocations ||
+          //     !userProfile.data.userLocations.length > 0
+          //   ) {
+          //     throw {
+          //       status: HTTP_STATUS_CODE.bad_request.status,
+          //       message: CONSTANTS.apiResponses.PROGRAM_JOIN_FAILED,
+          //     };
+          //   }
+          //   programUsersData = {
+          //     programId: programId,
+          //     userRoleInformation: data.userRoleInformation,
+          //     userId: userId,
+          //     userProfile: userProfile.data,
+          //     resourcesStarted: false,
+          //   };
+          //   if (appName != "") {
+          //     programUsersData["appInformation.appName"] = appName;
+          //   }
+          //   if (appVersion != "") {
+          //     programUsersData["appInformation.appVersion"] = appVersion;
+          //   }
+
+          //   //For internal calls add consent using sunbird api
+          //   if (
+          //     callConsetAPIOnBehalfOfUser &&
+          //     programData[0].hasOwnProperty("requestForPIIConsent") &&
+          //     programData[0].requestForPIIConsent === true
+          //   ) {
+          //     if (
+          //       !programData[0].rootOrganisations ||
+          //       !programData[0].rootOrganisations.length > 0
+          //     ) {
+          //       throw {
+          //         message: CONSTANTS.apiResponses.PROGRAM_JOIN_FAILED,
+          //         status: HTTP_STATUS_CODE.bad_request.status,
+          //       };
+          //     }
+          //     let userConsentRequestBody = {
+          //       request: {
+          //         consent: {
+          //           status: CONSTANTS.common.REVOKED,
+          //           userId: userProfile.data.id,
+          //           consumerId: programData[0].rootOrganisations[0],
+          //           objectId: programId,
+          //           objectType: CONSTANTS.common.PROGRAM,
+          //         },
+          //       },
+          //     };
+          //     let consentResponse = await userService.setUserConsent(
+          //       userToken,
+          //       userConsentRequestBody
+          //     );
+
+          //     if (!consentResponse.success) {
+          //       throw {
+          //         message: CONSTANTS.apiResponses.PROGRAM_JOIN_FAILED,
+          //         status: HTTP_STATUS_CODE.bad_request.status,
+          //       };
+          //     }
+          //   }
+          // }
+
+          // if requestForPIIConsent Is false and user not joined program till now then set pushProgramUsersDetailsToKafka = true;
+          // if requestForPIIConsent == true and data.consentShared value is true which means user interacted with the consent popup set pushProgramUsersDetailsToKafka = true;
+          // if programUsersDetails[0].consentShared === true which means the data is already pushed to Kafka once
+          if (
+            (programData[0].hasOwnProperty("requestForPIIConsent") &&
+              programData[0].requestForPIIConsent === false &&
+              !programUsersDetails.length > 0) ||
+            (programData[0].hasOwnProperty("requestForPIIConsent") &&
+              programData[0].requestForPIIConsent === true &&
+              data.hasOwnProperty("consentShared") &&
+              data.consentShared == true &&
+              ((programUsersDetails.length > 0 &&
+                programUsersDetails[0].consentShared === false) ||
+                !programUsersDetails.length > 0))
+          ) {
+            pushProgramUsersDetailsToKafka = true;
+          }
+
+          //create or update query
+          const query = {
+            programId: programId,
+            userId: userId,
+          };
+          //if a resource is started
+          if (data.isResource) {
+            programUsersData.resourcesStarted = true;
+          }
+          //if user interacted with the consent-popup
+          if (data.hasOwnProperty("consentShared")) {
+            programUsersData.consentShared = data.consentShared;
+          }
+          update["$set"] = programUsersData;
+
+          // add record to programUsers collection
+          let joinProgram = await programUsersHelper.update(query, update, {
+            new: true,
+            upsert: true,
+          });
+
+          if (!joinProgram._id) {
+            throw {
+              message: CONSTANTS.apiResponses.PROGRAM_JOIN_FAILED,
+              status: HTTP_STATUS_CODE.bad_request.status,
+            };
+          }
+
+          let joinProgramDetails = joinProgram.toObject();
+
+          if (pushProgramUsersDetailsToKafka) {
+            joinProgramDetails.programName = programData[0].name;
+            joinProgramDetails.programExternalId = programData[0].externalId;
+            joinProgramDetails.requestForPIIConsent =
+              programData[0].requestForPIIConsent;
+            //  push programUsers details to kafka
+            // await kafkaProducersHelper.pushProgramUsersToKafka(
+            //   joinProgramDetails
+            // );
+          }
+
+          return resolve({
+            message: CONSTANTS.apiResponses.JOINED_PROGRAM,
+            success: true,
+            data: {
+              _id: joinProgram._id,
+            },
+          });
+       
+      } catch (error) {
+        return resolve({
+          success: false,
+          status: error.status
+            ? error.status
+            : HTTP_STATUS_CODE.internal_server_error.status,
+          message: error.message,
+        });
+      }
+    });
+  }
+
+  
 
 
 };

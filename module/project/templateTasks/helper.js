@@ -42,7 +42,6 @@ module.exports = class ProjectTemplateTasksHelper {
 
                 csvData.forEach(data => {
                     let parsedData = UTILS.valueParser(data);
-                    // console.log(parsedData.name, parsedData.solutionId)
 
                     if( parsedData._SYSTEM_ID ) {
                         taskIds.push(parsedData._SYSTEM_ID);
@@ -74,19 +73,19 @@ module.exports = class ProjectTemplateTasksHelper {
                         }
                     }
 
-                    // let tasksData = await projectTemplateTaskQueries.taskDocuments(
-                    //     filterData,
-                    //     ["_id","children","externalId","projectTemplateId","parentId", "taskSequence", "hasSubTasks"]
-                    // );
-                    // if( tasksData.length > 0 ) {
-                    //     tasksData.forEach(task=> {
-                    //         if( systemId ) {
-                    //             tasks[task._id.toString()] = task;
-                    //         } else {
-                    //             tasks[task.externalId] = task;
-                    //         }
-                    //     });
-                    // }
+                    let tasksData = await projectTemplateTaskQueries.taskDocuments(
+                        filterData,
+                        ["_id","children","externalId","projectTemplateId","parentId", "taskSequence", "hasSubTasks"]
+                    );
+                    if( tasksData.length > 0 ) {
+                        tasksData.forEach(task=> {
+                            if( systemId ) {
+                                tasks[task._id.toString()] = task;
+                            } else {
+                                tasks[task.externalId] = task;
+                            }
+                        });
+                    }
                 }
 
                 let projectTemplate = 
@@ -110,11 +109,12 @@ module.exports = class ProjectTemplateTasksHelper {
                 // }
 
                 let solutionData = {};
-                // console.log("-------------------------------------------solutionIds",solutionIds)
                 if ( solutionIds.length > 0 ) {
-                    let solutions = await database.models.solutions.find({ "_id": { "$in": solutionIds } })
+                    let solutions = await solutionsQueries.solutionsDocument(
+                        { "_id": { "$in": solutionIds } }
+                    )
 
-                    if( !solutions ) {
+                    if( !solutions.length > 0) {
                         throw {
                             message : CONSTANTS.apiResponses.SOLUTION_NOT_FOUND,
                             status : HTTP_STATUS_CODE['bad_request'].status
@@ -133,7 +133,6 @@ module.exports = class ProjectTemplateTasksHelper {
                         });
                     }
                 }
-                // console.log("-----------------------------------------solutionData",solutionData)
                 return resolve({
                     success : true,
                     data : {
@@ -172,20 +171,17 @@ module.exports = class ProjectTemplateTasksHelper {
     ) {
         return new Promise(async (resolve, reject) => {
             try {
-                // console.log("--------------------------data",data)
                 let parsedData = UTILS.valueParser(data);
 
                 let allValues = {
                     type : parsedData.type
                 };
-                // console.log(allValues.type)
                 let solutionTypes = [
                     CONSTANTS.common.ASSESSMENT,
                     CONSTANTS.common.OBSERVATION,
                     CONSTANTS.common.IMPROVEMENT_PROJECT
                 ]
 
-                // console.log("----------------------------solutionData",solutionData)
 
                 if ( allValues.type === CONSTANTS.common.CONTENT ) {
 
@@ -196,7 +192,6 @@ module.exports = class ProjectTemplateTasksHelper {
 
                 } 
                 else if ( solutionTypes.includes(allValues.type) ) { 
-                    // console.log("-----------------------")
                     allValues.solutionDetails = {};
                     if( parsedData.solutionType && parsedData.solutionType !== "" ) {
                         allValues.solutionDetails.type = parsedData.solutionType; 
@@ -497,7 +492,6 @@ module.exports = class ProjectTemplateTasksHelper {
                             currentData._SYSTEM_ID = CONSTANTS.apiResponses.PROJECT_TEMPLATE_TASK_EXISTS;
                             input.push(currentData);
                         } else {
-                            // console.log("-----------------------------------csvData.data.solutionData497",csvData.data.solutionData)
                             
                             let createdTask = 
                             await this.createOrUpdateTask(
@@ -528,7 +522,6 @@ module.exports = class ProjectTemplateTasksHelper {
                             currentData._SYSTEM_ID = CONSTANTS.apiResponses.PROJECT_TEMPLATE_TASK_EXISTS;
                             input.push(currentData);
                         } else {
-                            // console.log("-----------------------------------csvData.data.solutionData527",csvData.data.solutionData)
                             let createdTask = await this.createOrUpdateTask(
                                 currentData,
                                 csvData.data.template,

@@ -5,7 +5,7 @@
  * Description : entities helper functionality.
  */
 
-const userProfileService = require(GENERICS_FILES_PATH + "/services/users");
+const userService = require(GENERICS_FILES_PATH + "/services/users");
 
 module.exports = class entitieHelper {
 
@@ -21,7 +21,7 @@ module.exports = class entitieHelper {
         return new Promise(async (resolve, reject) => {
             try {
                 //if not uuid considering as location code- for school.
-                let locationDeatails = UTILS.filterLocationIdandCode(locationIds,);
+                let locationDeatails = UTILS.filterLocationIdandCode(locationIds);
                 //set request body for learners api
                 let entityInformation = [];
                 let formatResult = true;
@@ -30,7 +30,7 @@ module.exports = class entitieHelper {
                     let bodyData = {
                         "id" : locationDeatails.ids
                     } 
-                    let entityData = await userProfileService.locationSearch( bodyData, formatResult );
+                    let entityData = await userService.locationSearch( bodyData, formatResult );
                     if ( entityData.success ) {
                         entityInformation =  entityData.data;
                     }
@@ -40,7 +40,7 @@ module.exports = class entitieHelper {
                     let bodyData = {
                         "code" : locationDeatails.codes
                     } 
-                    let entityData = await userProfileService.locationSearch( bodyData, formatResult );
+                    let entityData = await userService.locationSearch( bodyData, formatResult );
                     if ( entityData.success ) {
                         entityInformation =  entityInformation.concat(entityData.data);
                     }

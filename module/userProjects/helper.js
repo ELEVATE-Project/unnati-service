@@ -7,12 +7,10 @@
 
 // Dependencies
 
-const coreService = require(GENERICS_FILES_PATH + "/services/core");
 const libraryCategoriesHelper = require(MODULES_BASE_PATH + "/library/categories/helper");
 const projectTemplatesHelper = require(MODULES_BASE_PATH + "/project/templates/helper");
 const projectTemplateTasksHelper = require(MODULES_BASE_PATH + "/project/templateTasks/helper");
 const { v4: uuidv4 } = require('uuid');
-const surveyService = require(GENERICS_FILES_PATH + "/services/survey");
 const reportService = require(GENERICS_FILES_PATH + "/services/report");
 const projectQueries = require(DB_QUERY_BASE_PATH + "/projects");
 const projectCategoriesQueries = require(DB_QUERY_BASE_PATH + "/projectCategories");
@@ -21,13 +19,15 @@ const projectTemplateTaskQueries = require(DB_QUERY_BASE_PATH + "/projectTemplat
 const kafkaProducersHelper = require(GENERICS_FILES_PATH + "/kafka/producers");
 const removeFieldsFromRequest = ["submissionDetails"];
 const programsQueries = require(DB_QUERY_BASE_PATH + "/programs");
-const userProfileService = require(GENERICS_FILES_PATH + "/services/users");
+const userService = require(GENERICS_FILES_PATH + "/services/users");
 const solutionsHelper = require(MODULES_BASE_PATH + "/solutions/helper");
+const programsHelper = require(MODULES_BASE_PATH + "/programs/helper")
 const certificateTemplateQueries = require(DB_QUERY_BASE_PATH + "/certificateTemplates");
 const certificateService = require(GENERICS_FILES_PATH + "/services/certificate");
 const certificateValidationsHelper = require(MODULES_BASE_PATH + "/certificateValidations/helper");
 const _ = require("lodash");  
 const programUsersQueries = require(DB_QUERY_BASE_PATH + "/programUsers");
+const solutionsQueries = require(DB_QUERY_BASE_PATH + "/solutions");
 
 /**
     * UserProjectsHelper
@@ -126,21 +126,21 @@ module.exports = class UserProjectsHelper {
                 if (!userProject.length > 0) {
 
                     throw {
-                        status: HTTP_STATUS_CODE['bad_request'].status,
+                        status: HTTP_STATUS_CODE.bad_request.status,
                         message: CONSTANTS.apiResponses.USER_PROJECT_NOT_FOUND
                     };
                 }
 
                 if (userProject[0].lastDownloadedAt.toISOString() !== lastDownloadedAt) {
                     throw {
-                        status: HTTP_STATUS_CODE['bad_request'].status,
+                        status: HTTP_STATUS_CODE.bad_request.status,
                         message: CONSTANTS.apiResponses.USER_ALREADY_SYNC
                     };
                 }
 
                 if ( userProject[0].status == CONSTANTS.common.SUBMITTED_STATUS ) {
                     throw {
-                        status: HTTP_STATUS_CODE['bad_request'].status,
+                        status: HTTP_STATUS_CODE.bad_request.status,
                         message: CONSTANTS.apiResponses.FAILED_TO_SYNC_PROJECT_ALREADY_SUBMITTED
                     };
                 }
@@ -157,7 +157,7 @@ module.exports = class UserProjectsHelper {
                 if (projectData && projectData.success == true) {
                     updateProject = _.merge(updateProject, projectData.data);
                 }
-                let createNewProgramAndSolution = false;
+                // let createNewProgramAndSolution = false;
                 let solutionExists = false;
 
                 if (data.programId && data.programId !== "") {
@@ -230,22 +230,22 @@ module.exports = class UserProjectsHelper {
                         return resolve(programAndSolutionInformation);
                     }
 
-                    if (solutionExists) {
+                    // if (solutionExists) {
 
-                        let updateProgram =
-                            await surveyService.removeSolutionsFromProgram(
-                                userToken,
-                                userProject[0].programInformation._id,
-                                [userProject[0].solutionInformation._id]
-                            );
+                    //     let updateProgram =
+                    //         await surveyService.removeSolutionsFromProgram(
+                    //             userToken,
+                    //             userProject[0].programInformation._id,
+                    //             [userProject[0].solutionInformation._id]
+                    //         );
 
-                        if (!updateProgram.success) {
-                            throw {
-                                status: HTTP_STATUS_CODE['bad_request'].status,
-                                message: CONSTANTS.apiResponses.PROGRAM_NOT_UPDATED
-                            }
-                        }
-                    }
+                    //     if (!updateProgram.success) {
+                    //         throw {
+                    //             status: HTTP_STATUS_CODE.bad_request.status,
+                    //             message: CONSTANTS.apiResponses.PROGRAM_NOT_UPDATED
+                    //         }
+                    //     }
+                    // }
 
                     updateProject =
                         _.merge(updateProject, programAndSolutionInformation.data);
@@ -378,7 +378,7 @@ module.exports = class UserProjectsHelper {
                 if (!projectUpdated._id) {
                     throw {
                         message: CONSTANTS.apiResponses.USER_PROJECT_NOT_UPDATED,
-                        status: HTTP_STATUS_CODE['bad_request'].status
+                        status: HTTP_STATUS_CODE.bad_request.status
                     }
                 }
                 
@@ -400,7 +400,7 @@ module.exports = class UserProjectsHelper {
                 return resolve({
                     status:
                         error.status ?
-                            error.status : HTTP_STATUS_CODE['internal_server_error'].status,
+                            error.status : HTTP_STATUS_CODE.internal_server_error.status,
                     success: false,
                     message: error.message,
                     data: {}
@@ -450,7 +450,7 @@ module.exports = class UserProjectsHelper {
                 }
 
                 let solutionAndProgramCreation =
-                    await coreService.createUserProgramAndSolution(
+                    await solutionsHelper.createUserProgramAndSolution(
                         programAndSolutionData,
                         userToken,
                         isATargetedSolution
@@ -458,7 +458,7 @@ module.exports = class UserProjectsHelper {
 
                 if (!solutionAndProgramCreation.success) {
                     throw {
-                        status: HTTP_STATUS_CODE['bad_request'].status,
+                        status: HTTP_STATUS_CODE.bad_request.status,
                         message: CONSTANTS.apiResponses.SOLUTION_PROGRAMS_NOT_CREATED
                     };
                 }
@@ -500,7 +500,7 @@ module.exports = class UserProjectsHelper {
                 return resolve({
                     status:
                         error.status ?
-                            error.status : HTTP_STATUS_CODE['internal_server_error'].status,
+                            error.status : HTTP_STATUS_CODE.internal_server_error.status,
                     success: false,
                     message: error.message,
                     data: {}
@@ -541,7 +541,7 @@ module.exports = class UserProjectsHelper {
                 if (!projectDetails.length > 0) {
 
                     throw {
-                        status: HTTP_STATUS_CODE["bad_request"].status,
+                        status: HTTP_STATUS_CODE.bad_request.status,
                         message: CONSTANTS.apiResponses.PROJECT_NOT_FOUND
                     }
                 }
@@ -574,7 +574,7 @@ module.exports = class UserProjectsHelper {
                 return resolve({
                     status:
                         error.status ?
-                            error.status : HTTP_STATUS_CODE['internal_server_error'].status,
+                            error.status : HTTP_STATUS_CODE.internal_server_error.status,
                     success: false,
                     message: error.message,
                     data: []
@@ -757,7 +757,7 @@ module.exports = class UserProjectsHelper {
                 if (!tasks.success || !tasks.data.length > 0) {
 
                     throw {
-                        status: HTTP_STATUS_CODE['bad_request'].status,
+                        status: HTTP_STATUS_CODE.bad_request.status,
                         message: CONSTANTS.apiResponses.PROJECT_NOT_FOUND
                     };
                 }
@@ -835,7 +835,7 @@ module.exports = class UserProjectsHelper {
                     message: error.message,
                     status:
                         error.status ?
-                            error.status : HTTP_STATUS_CODE['internal_server_error'].status,
+                            error.status : HTTP_STATUS_CODE.internal_server_error.status,
                     data: []
                 });
             }
@@ -938,7 +938,7 @@ module.exports = class UserProjectsHelper {
                 );
                 if (!project.length > 0) {
                     throw {
-                        status: HTTP_STATUS_CODE['bad_request'].status,
+                        status: HTTP_STATUS_CODE.bad_request.status,
                         message: CONSTANTS.apiResponses.USER_PROJECT_NOT_FOUND
                     };
                 }
@@ -1019,7 +1019,7 @@ module.exports = class UserProjectsHelper {
                 return resolve({
                     status:
                     error.status ?
-                    error.status : HTTP_STATUS_CODE['internal_server_error'].status,
+                    error.status : HTTP_STATUS_CODE.internal_server_error.status,
                     success: false,
                     message: error.message,
                     data: {}
@@ -1060,7 +1060,7 @@ module.exports = class UserProjectsHelper {
                 if( !templateDocuments.length > 0 ) {
                     throw {
                         message : CONSTANTS.apiResponses.PROJECT_TEMPLATE_NOT_FOUND,
-                        status : HTTP_STATUS_CODE['bad_request'].status
+                        status : HTTP_STATUS_CODE.bad_request.status
                     }
                 }
 
@@ -1072,7 +1072,7 @@ module.exports = class UserProjectsHelper {
             
             if (projectId === "") {
                 // This will check wether the user user is targeted to solution or not based on his userRoleInformation
-                const targetedSolutionId = await coreService.checkIfSolutionIsTargetedForUserProfile(userToken,userRoleInformation,solutionId)
+                const targetedSolutionId = await solutionsHelper.isTargetedBasedOnUserProfile(solutionId,bodyData)
                 //based on above api will check for projects wether its is private project or public project
                 const projectDetails = await projectQueries.projectDocument({
                     solutionId: solutionId,
@@ -1088,7 +1088,7 @@ module.exports = class UserProjectsHelper {
                     if( templateId === "" ) {
                         // If solution Id of a private program is passed, fetch solution details
                         if ( isAPrivateSolution && solutionId != "" ) {
-                            solutionDetails = await solutionsHelper.solutionDocuments({
+                            solutionDetails = await solutionsQueries.solutionsDocument({
                                 _id: solutionId,
                                 isAPrivateProgram: true
                             },
@@ -1109,23 +1109,23 @@ module.exports = class UserProjectsHelper {
                             ]);
                             if( !solutionDetails.length > 0 ) {
                                 throw {
-                                    status : HTTP_STATUS_CODE["bad_request"].status,
+                                    status : HTTP_STATUS_CODE.bad_request.status,
                                     message : CONSTANTS.apiResponses.SOLUTION_NOT_FOUND
                                 }
                             }
                             solutionDetails = solutionDetails[0];
                         } else {
-                            solutionDetails = 
-                            await coreService.solutionDetailsBasedOnRoleAndLocation(
-                                userToken,
-                                bodyData,
-                                solutionId,
-                                isAPrivateSolution
-                            );
+                            solutionDetails = await solutionsHelper.detailsBasedOnRoleAndLocation(solutionId, bodyData, isAPrivateSolution, userToken)
+                            // await coreService.solutionDetailsBasedOnRoleAndLocation(
+                            //     userToken,
+                            //     bodyData,
+                            //     solutionId,
+                            //     isAPrivateSolution
+                            // );
 
                             if( !solutionDetails.success || (solutionDetails.data.data && !solutionDetails.data.data.length > 0) ) {
                                 throw {
-                                    status : HTTP_STATUS_CODE["bad_request"].status,
+                                    status : HTTP_STATUS_CODE.bad_request.status,
                                     message : CONSTANTS.apiResponses.SOLUTION_DOES_NOT_EXISTS_IN_SCOPE
                                 }
                             }
@@ -1136,11 +1136,11 @@ module.exports = class UserProjectsHelper {
                     } else {
                         
                         solutionDetails =
-                        await surveyService.listSolutions([solutionExternalId]);
+                        await solutionsQueries.solutionsDocument([solutionExternalId]);
                         if( !solutionDetails.success ) {
                             throw {
                                 message : CONSTANTS.apiResponses.SOLUTION_NOT_FOUND,
-                                status : HTTP_STATUS_CODE['bad_request'].status
+                                status : HTTP_STATUS_CODE.bad_request.status
                             }
                         }
                         
@@ -1173,10 +1173,10 @@ module.exports = class UserProjectsHelper {
                             programJoinBody.userRoleInformation = userRoleInformation;
                             programJoinBody.isResource = true;
                             programJoinBody.consentShared = true;
-                            let joinProgramData = await coreService.joinProgram (
+                            let joinProgramData = await programsHelper.join(
                                 solutionDetails.programId,
                                 programJoinBody,
-                                userToken
+                                userId
                             );
                             if ( !joinProgramData.success ) {
                                 return resolve({ 
@@ -1282,28 +1282,28 @@ module.exports = class UserProjectsHelper {
                         if( 
                             solutionDetails.entityType && bodyData[solutionDetails.entityType] 
                         ) {
-                            let entityInformation = 
-                            await surveyService.listEntitiesByLocationIds(
-                                userToken,
-                                [bodyData[solutionDetails.entityType]] 
-                            );
+                            // let entityInformation = 
+                            // await surveyService.listEntitiesByLocationIds(
+                            //     userToken,
+                            //     [bodyData[solutionDetails.entityType]] 
+                            // );
 
-                            if( !entityInformation.success ) {
-                                throw {
-                                    message : CONSTANTS.apiResponses.ENTITY_NOT_FOUND,
-                                    status : HTTP_STATUS_CODE['bad_request'].status
-                                }
-                            }
+                            // if( !entityInformation.success ) {
+                            //     throw {
+                            //         message : CONSTANTS.apiResponses.ENTITY_NOT_FOUND,
+                            //         status : HTTP_STATUS_CODE.bad_request.status
+                            //     }
+                            // }
 
-                            let entityDetails = await _entitiesMetaInformation(
-                                entityInformation.data
-                            );
+                            // let entityDetails = await _entitiesMetaInformation(
+                            //     entityInformation.data
+                            // );
 
-                            if ( entityDetails && entityDetails.length > 0 ) {
-                                projectCreation.data["entityInformation"] = entityDetails[0];
-                            }
+                            // if ( entityDetails && entityDetails.length > 0 ) {
+                            //     projectCreation.data["entityInformation"] = entityDetails[0];
+                            // }
         
-                            projectCreation.data.entityId = entityInformation.data[0]._id;
+                            // projectCreation.data.entityId = entityInformation.data[0]._id;
                         }
     
                     }
@@ -1315,47 +1315,47 @@ module.exports = class UserProjectsHelper {
                     let addReportInfoToSolution = false;
                     if ( getUserProfileFromObservation ){
 
-                        let observationDetails = await surveyService.observationDetails(
-                            userToken,
-                            bodyData.submissions.observationId
-                        );
+                        // let observationDetails = await surveyService.observationDetails(
+                        //     userToken,
+                        //     bodyData.submissions.observationId
+                        // );
 
-                        if( observationDetails.data &&
-                            Object.keys(observationDetails.data).length > 0 && 
-                            observationDetails.data.userRoleInformation &&
-                            Object.keys(observationDetails.data.userRoleInformation).length > 0
-                        ) {
+                        // if( observationDetails.data &&
+                        //     Object.keys(observationDetails.data).length > 0 && 
+                        //     observationDetails.data.userRoleInformation &&
+                        //     Object.keys(observationDetails.data.userRoleInformation).length > 0
+                        // ) {
 
-                            userRoleInformation = observationDetails.data.userRoleInformation;
+                        //     userRoleInformation = observationDetails.data.userRoleInformation;
                             
-                        }
+                        // }
 
-                        if( observationDetails.data &&
-                            Object.keys(observationDetails.data).length > 0 && 
-                            observationDetails.data.userProfile &&
-                            Object.keys(observationDetails.data.userProfile).length > 0
-                        ) {
+                        // if( observationDetails.data &&
+                        //     Object.keys(observationDetails.data).length > 0 && 
+                        //     observationDetails.data.userProfile &&
+                        //     Object.keys(observationDetails.data.userProfile).length > 0
+                        // ) {
 
-                            projectCreation.data.userProfile = observationDetails.data.userProfile;
-                            addReportInfoToSolution = true; 
+                        //     projectCreation.data.userProfile = observationDetails.data.userProfile;
+                        //     addReportInfoToSolution = true; 
                             
-                        } else {
-                            //Fetch user profile information by calling sunbird's user read api.
+                        // } else {
+                        //     //Fetch user profile information by calling sunbird's user read api.
 
-                            let userProfile = await userProfileService.profile(userToken, userId);
-                            if ( userProfile.success && 
-                                 userProfile.data &&
-                                 userProfile.data.response
-                            ) {
-                                    projectCreation.data.userProfile = userProfile.data.response;
-                                    addReportInfoToSolution = true; 
-                            } 
-                        }
+                        //     let userProfile = await userService.profile(userToken, userId);
+                        //     if ( userProfile.success && 
+                        //          userProfile.data &&
+                        //          userProfile.data.response
+                        //     ) {
+                        //             projectCreation.data.userProfile = userProfile.data.response;
+                        //             addReportInfoToSolution = true; 
+                        //     } 
+                        // }
 
                     } else {
                         //Fetch user profile information by calling sunbird's user read api.
 
-                        let userProfileData = await userProfileService.profile(userToken, userId);
+                        let userProfileData = await userService.profile(userToken, userId);
                         if ( userProfileData.success && 
                              userProfileData.data &&
                              userProfileData.data.response
@@ -1407,20 +1407,20 @@ module.exports = class UserProjectsHelper {
                 projectDetails.data.status = UTILS.convertProjectStatus(projectDetails.data.status);
             }
             // make templateUrl downloadable befor passing to front-end
-            if ( projectDetails.data.certificate &&
-                 projectDetails.data.certificate.templateUrl &&
-                 projectDetails.data.certificate.templateUrl !== "" 
-            ) {
-                let certificateTemplateDownloadableUrl =
-                    await coreService.getDownloadableUrl(
-                        {
-                            filePaths: [projectDetails.data.certificate.templateUrl]
-                        }
-                    );
-                    if ( certificateTemplateDownloadableUrl.success ) {
-                        projectDetails.data.certificate.templateUrl = certificateTemplateDownloadableUrl.data[0].url;
-                    }
-            } 
+            // if ( projectDetails.data.certificate &&
+            //      projectDetails.data.certificate.templateUrl &&
+            //      projectDetails.data.certificate.templateUrl !== "" 
+            // ) {
+            //     let certificateTemplateDownloadableUrl =
+            //         await coreService.getDownloadableUrl(
+            //             {
+            //                 filePaths: [projectDetails.data.certificate.templateUrl]
+            //             }
+            //         );
+            //         if ( certificateTemplateDownloadableUrl.success ) {
+            //             projectDetails.data.certificate.templateUrl = certificateTemplateDownloadableUrl.data[0].url;
+            //         }
+            // } 
 
             return resolve({
                 success: true,
@@ -1432,7 +1432,7 @@ module.exports = class UserProjectsHelper {
             return resolve({
                 status:
                 error.status ?
-                error.status : HTTP_STATUS_CODE['internal_server_error'].status,
+                error.status : HTTP_STATUS_CODE.internal_server_error.status,
                 success: false,
                 message: error.message,
                 data: []
@@ -1469,7 +1469,7 @@ module.exports = class UserProjectsHelper {
                 if (!projectTemplateData.length > 0) {
                     throw {
                         message: CONSTANTS.apiResponses.SOLUTION_NOT_FOUND,
-                        status: HTTP_STATUS_CODE['bad_request'].status
+                        status: HTTP_STATUS_CODE.bad_request.status
                     }
                 }
 
@@ -1542,7 +1542,7 @@ module.exports = class UserProjectsHelper {
                 return resolve({
                     status:
                         error.status ?
-                            error.status : HTTP_STATUS_CODE['internal_server_error'].status,
+                            error.status : HTTP_STATUS_CODE.internal_server_error.status,
                     success: false,
                     message: error.message,
                     data: {}
@@ -1573,7 +1573,7 @@ module.exports = class UserProjectsHelper {
 
                 //Fetch user profile information by calling sunbird's user read api.
 
-                let userProfile = await userProfileService.profile(userToken, userId);
+                let userProfile = await userService.profile(userToken, userId);
                 if ( userProfile.success && 
                      userProfile.data &&
                      userProfile.data.response
@@ -1639,7 +1639,7 @@ module.exports = class UserProjectsHelper {
                     );
                     if( !programDetails.length > 0 ){
                         throw {
-                            status: HTTP_STATUS_CODE['bad_request'].status,
+                            status: HTTP_STATUS_CODE.bad_request.status,
                             message: CONSTANTS.apiResponses.PROGRAM_NOT_FOUND
                         };
                     } 
@@ -1725,7 +1725,7 @@ module.exports = class UserProjectsHelper {
                 if (!userProject._id) {
                     throw {
                         message: CONSTANTS.apiResponses.USER_PROJECT_NOT_CREATED,
-                        status: HTTP_STATUS_CODE['bad_request'].status
+                        status: HTTP_STATUS_CODE.bad_request.status
                     }
                 }
 
@@ -1745,7 +1745,7 @@ module.exports = class UserProjectsHelper {
                 return resolve({
                     status:
                         error.status ?
-                            error.status : HTTP_STATUS_CODE['internal_server_error'].status,
+                            error.status : HTTP_STATUS_CODE.internal_server_error.status,
                     success: false,
                     message: error.message,
                     data: {}
@@ -1820,7 +1820,7 @@ module.exports = class UserProjectsHelper {
                 if (!projectDocument.length) {
                     throw {
                         message: CONSTANTS.apiResponses.PROJECT_NOT_FOUND,
-                        status: HTTP_STATUS_CODE['bad_request'].status
+                        status: HTTP_STATUS_CODE.bad_request.status
                     }
                 }
 
@@ -1951,7 +1951,7 @@ module.exports = class UserProjectsHelper {
                 return resolve({
                     status:
                         error.status ?
-                            error.status : HTTP_STATUS_CODE['internal_server_error'].status,
+                            error.status : HTTP_STATUS_CODE.internal_server_error.status,
                     success: false,
                     message: error.message,
                     data: {}
@@ -2108,7 +2108,7 @@ module.exports = class UserProjectsHelper {
                 message : error.message,
                 status : 
                 error.status ? 
-                error.status : HTTP_STATUS_CODE['internal_server_error'].status,
+                error.status : HTTP_STATUS_CODE.internal_server_error.status,
                 data : {
                     description : CONSTANTS.common.PROJECT_DESCRIPTION,
                     data : [],
@@ -2165,7 +2165,7 @@ module.exports = class UserProjectsHelper {
                 message : error.message,
                 status : 
                 error.status ? 
-                error.status : HTTP_STATUS_CODE['internal_server_error'].status,
+                error.status : HTTP_STATUS_CODE.internal_server_error.status,
                 data : {
                     description : CONSTANTS.common.PROJECT_DESCRIPTION,
                     data : [],
@@ -2176,33 +2176,33 @@ module.exports = class UserProjectsHelper {
     })
   }
 
-  /**
-   * List of projects.
-   * @method
-   * @name list
-   * @returns {Array} List of projects.
-   */
+//   /**
+//    * List of projects.
+//    * @method
+//    * @name list
+//    * @returns {Array} List of projects.
+//    */
   
-  static list( bodyData ) {
-    return new Promise(async (resolve, reject) => {
-        try {
-            let projects = await projectQueries.projectDocument(
-                bodyData.query,
-                bodyData.projection,
-                bodyData.skipFields
-            );
+//   static list( bodyData ) {
+//     return new Promise(async (resolve, reject) => {
+//         try {
+//             let projects = await projectQueries.projectDocument(
+//                 bodyData.query,
+//                 bodyData.projection,
+//                 bodyData.skipFields
+//             );
 
-            return resolve({
-                success : true,
-                message : CONSTANTS.apiResponses.PROJECTS_FETCHED,
-                result : projects
-            });
+//             return resolve({
+//                 success : true,
+//                 message : CONSTANTS.apiResponses.PROJECTS_FETCHED,
+//                 result : projects
+//             });
             
-        } catch (error) {
-            return reject(error);
-        }
-    });
-  }
+//         } catch (error) {
+//             return reject(error);
+//         }
+//     });
+//   }
 
   /**
       * Create project from template.
@@ -2235,7 +2235,7 @@ module.exports = class UserProjectsHelper {
                 ) {
                     throw {
                         message: CONSTANTS.apiResponses.PROJECT_TEMPLATE_NOT_FOUND,
-                        status: HTTP_STATUS_CODE['bad_request'].status
+                        status: HTTP_STATUS_CODE.bad_request.status
                     };
                     
                 }
@@ -2331,7 +2331,7 @@ module.exports = class UserProjectsHelper {
                     ) {
                         throw {
                             message: CONSTANTS.apiResponses.ENTITY_TYPE_MIS_MATCHED,
-                            status: HTTP_STATUS_CODE['bad_request'].status
+                            status: HTTP_STATUS_CODE.bad_request.status
                         }
                     }
 
@@ -2360,7 +2360,7 @@ module.exports = class UserProjectsHelper {
                 
                 //Fetch user profile information by calling sunbird's user read api.
                 let addReportInfoToSolution = false;
-                let userProfile = await userProfileService.profile(userToken, userId);
+                let userProfile = await userService.profile(userToken, userId);
                 if ( userProfile.success && 
                      userProfile.data &&
                      userProfile.data.response
@@ -2447,7 +2447,7 @@ module.exports = class UserProjectsHelper {
                 if (!projectDetails.length > 0) {
 
                     throw {
-                        status: HTTP_STATUS_CODE["bad_request"].status,
+                        status: HTTP_STATUS_CODE.bad_request.status,
                         message: CONSTANTS.apiResponses.PROJECT_NOT_FOUND
                     }
                 }
@@ -2719,7 +2719,7 @@ module.exports = class UserProjectsHelper {
                 // callback request structure nested so validating transactionId and osid here instead in validator.
                 if ( transactionId == "" || osid == "" ) {
                     throw {
-                        status: HTTP_STATUS_CODE["bad_request"].status,
+                        status: HTTP_STATUS_CODE.bad_request.status,
                         message: CONSTANTS.apiResponses.TRANSACTION_ID_AND_OSID_REQUIRED
                     }
                 }
@@ -2741,7 +2741,7 @@ module.exports = class UserProjectsHelper {
 
                 if ( projectDetails == null || !Object.keys(projectDetails).length > 0 ) {
                     throw {
-                        status: HTTP_STATUS_CODE["bad_request"].status,
+                        status: HTTP_STATUS_CODE.bad_request.status,
                         message: CONSTANTS.apiResponses.PROJECT_NOT_FOUND
                     }
                 }
@@ -2798,7 +2798,7 @@ module.exports = class UserProjectsHelper {
                 
                 if ( !userProject.length > 0 ) {
                     throw {
-                        status: HTTP_STATUS_CODE["bad_request"].status,
+                        status: HTTP_STATUS_CODE.bad_request.status,
                         message: CONSTANTS.apiResponses.PROJECT_WITH_CERTIFICATE_NOT_FOUND
                     }
                 }
@@ -2882,7 +2882,7 @@ module.exports = class UserProjectsHelper {
                 //  if project details not found.
                 if (!userProject.length > 0) {
                     throw {
-                        status: HTTP_STATUS_CODE['bad_request'].status,
+                        status: HTTP_STATUS_CODE.bad_request.status,
                         message: CONSTANTS.apiResponses.USER_PROJECT_NOT_FOUND
                     };
                 }
@@ -2891,7 +2891,7 @@ module.exports = class UserProjectsHelper {
                 };
                 
                 //  fetch user data using userId of project and calling the profile API
-                let userProfileData = await userProfileService.profileReadPrivate(userProject[0].userId);
+                let userProfileData = await userService.profileReadPrivate(userProject[0].userId);
                 if ( userProfileData.success && 
                      userProfileData.data &&
                      userProfileData.data.response &&
@@ -2902,7 +2902,7 @@ module.exports = class UserProjectsHelper {
                     userProject[0].userProfile.lastName = userProfileData.data.response.lastName;
                 } else {
                     throw {
-                        status: HTTP_STATUS_CODE['bad_request'].status,
+                        status: HTTP_STATUS_CODE.bad_request.status,
                         message: CONSTANTS.apiResponses.USER_PROFILE_NOT_FOUND
                     };
                 }
@@ -3086,7 +3086,7 @@ function _projectInformation(project) {
                 success: false,
                 status:
                     error.status ?
-                        error.status : HTTP_STATUS_CODE['internal_server_error'].status
+                        error.status : HTTP_STATUS_CODE.internal_server_error.status
             })
         }
     })
@@ -3123,7 +3123,7 @@ function _attachmentInformation ( attachmentWithSourcePath = [], linkAttachments
 
                 if (!attachmentsUrl.success) {
                     throw {
-                        status: HTTP_STATUS_CODE['bad_request'].status,
+                        status: HTTP_STATUS_CODE.bad_request.status,
                         message: CONSTANTS.apiResponses.ATTACHMENTS_URL_NOT_FOUND
                     }
                 }
@@ -3196,7 +3196,7 @@ function _attachmentInformation ( attachmentWithSourcePath = [], linkAttachments
             success: false,
             status:
                 error.status ?
-                    error.status : HTTP_STATUS_CODE['internal_server_error'].status
+                    error.status : HTTP_STATUS_CODE.internal_server_error.status
         })
     }
 
@@ -3300,7 +3300,7 @@ function _projectCategories(categories) {
 
                 if (!categoryData.length > 0) {
                     throw {
-                        status: HTTP_STATUS_CODE['bad_request'].status,
+                        status: HTTP_STATUS_CODE.bad_request.status,
                         message: CONSTANTS.apiResponses.CATEGORY_NOT_FOUND
                     }
                 }
@@ -3345,7 +3345,7 @@ function _projectCategories(categories) {
                 message: error.message,
                 status:
                     error.status ?
-                        error.status : HTTP_STATUS_CODE['internal_server_error'].status,
+                        error.status : HTTP_STATUS_CODE.internal_server_error.status,
                 success: false,
                 data: {}
             });
@@ -3379,7 +3379,7 @@ function _entitiesInformation(entityIds) {
                 let bodyData = {
                     "id" : locationIds
                 } 
-                let entityData = await userProfileService.locationSearch( bodyData, formatResult = true);
+                let entityData = await userService.locationSearch( bodyData, formatResult = true);
                 if ( entityData.success ) {
                     entityInformations =  entityData.data;
                 }
@@ -3389,7 +3389,7 @@ function _entitiesInformation(entityIds) {
                 let bodyData = {
                     "code" : locationCodes
                 } 
-                let entityData = await userProfileService.locationSearch( bodyData , formatResult = true );
+                let entityData = await userService.locationSearch( bodyData , formatResult = true );
                 if ( entityData.success ) {
                     entityInformations =  entityInformations.concat(entityData.data);
                 }
@@ -3397,7 +3397,7 @@ function _entitiesInformation(entityIds) {
            
             if ( !entityInformations.length > 0 ) {
                 throw {
-                    status: HTTP_STATUS_CODE['bad_request'].status,
+                    status: HTTP_STATUS_CODE.bad_request.status,
                     message: CONSTANTS.apiResponses.ENTITY_NOT_FOUND
                 }
             }
@@ -3415,7 +3415,7 @@ function _entitiesInformation(entityIds) {
             return resolve({
                 status:
                     error.status ?
-                        error.status : HTTP_STATUS_CODE['internal_server_error'].status,
+                        error.status : HTTP_STATUS_CODE.internal_server_error.status,
                 success: false,
                 message: error.message,
                 data: []
@@ -3470,7 +3470,7 @@ function _assessmentDetails(assessmentData) {
 
                 if (!createdAssessment.success) {
                     throw {
-                        status: HTTP_STATUS_CODE['bad_request'].status,
+                        status: HTTP_STATUS_CODE.bad_request.status,
                         message: CONSTANTS.apiResponses.COULD_NOT_CREATE_ASSESSMENT_SOLUTION
                     }
                 }
@@ -3489,7 +3489,7 @@ function _assessmentDetails(assessmentData) {
 
                 if (!assignedAssessmentToUser.success) {
                     throw {
-                        status: HTTP_STATUS_CODE['bad_request'].status,
+                        status: HTTP_STATUS_CODE.bad_request.status,
                         message: CONSTANTS.apiResponses.FAILED_TO_ASSIGNED_ASSESSMENT_TO_USER
                     }
                 }
@@ -3503,7 +3503,7 @@ function _assessmentDetails(assessmentData) {
 
                 if (!entitiesAddedToSolution.success) {
                     throw {
-                        status: HTTP_STATUS_CODE['bad_request'].status,
+                        status: HTTP_STATUS_CODE.bad_request.status,
                         message: CONSTANTS.apiResponses.FAILED_TO_ADD_ENTITY_TO_SOLUTION
                     }
                 }
@@ -3520,7 +3520,7 @@ function _assessmentDetails(assessmentData) {
 
                 if (!solutionUpdated.success) {
                     throw {
-                        status: HTTP_STATUS_CODE['bad_request'].status,
+                        status: HTTP_STATUS_CODE.bad_request.status,
                         message: CONSTANTS.apiResponses.SOLUTION_NOT_UPDATED
                     }
                 }
@@ -3538,7 +3538,7 @@ function _assessmentDetails(assessmentData) {
                 message: error.message,
                 success: false,
                 status: error.status ?
-                    error.status : HTTP_STATUS_CODE['internal_server_error'].status
+                    error.status : HTTP_STATUS_CODE.internal_server_error.status
             });
         }
     })
@@ -3591,7 +3591,7 @@ function _observationDetails(observationData, userRoleAndProfileInformation = {}
 
                 if (!observationCreatedFromTemplate.success) {
                     throw {
-                        status: HTTP_STATUS_CODE['bad_request'].status,
+                        status: HTTP_STATUS_CODE.bad_request.status,
                         message: CONSTANTS.apiResponses.OBSERVATION_NOT_CREATED
                     }
                 }
@@ -3640,7 +3640,7 @@ function _observationDetails(observationData, userRoleAndProfileInformation = {}
                 message: error.message,
                 success: false,
                 status: error.status ?
-                    error.status : HTTP_STATUS_CODE['internal_server_error'].status
+                    error.status : HTTP_STATUS_CODE.internal_server_error.status
             });
         }
     })
@@ -3658,7 +3658,7 @@ function _entitiesMetaInformation(entitiesData) {
     return new Promise(async (resolve, reject) => {
         let entityInformation = []
         for ( let index = 0; index < entitiesData.length; index++ ) {
-            let entityHierarchy =  await userProfileService.getParentEntities( entitiesData[index]._id );
+            let entityHierarchy =  await userService.getParentEntities( entitiesData[index]._id );
             entitiesData[index].metaInformation.hierarchy = entityHierarchy;
             entitiesData[index].metaInformation._id = entitiesData[index]._id;
             entitiesData[index].metaInformation.entityType = entitiesData[index].entityType;
@@ -3720,7 +3720,7 @@ function _projectData(data) {
                 message: error.message,
                 status:
                     error.status ?
-                        error.status : HTTP_STATUS_CODE['internal_server_error'].status,
+                        error.status : HTTP_STATUS_CODE.internal_server_error.status,
                 success: false,
                 data: {}
             });
@@ -3879,7 +3879,7 @@ function _updateUserProfileBasedOnUserRoleInfo(userProfile, userRoleInformation)
                         "id" : locationIds
                     }
 
-                    let entityData = await userProfileService.locationSearch(locationQuery);
+                    let entityData = await userService.locationSearch(locationQuery);
                     if ( entityData.success ) {
                         userLocations = entityData.data;
                     }
@@ -3891,7 +3891,7 @@ function _updateUserProfileBasedOnUserRoleInfo(userProfile, userRoleInformation)
                         "code" : locationCodes
                     }
 
-                    let entityData = await userProfileService.locationSearch(codeQuery);
+                    let entityData = await userService.locationSearch(codeQuery);
                     if ( entityData.success ) {
                         userLocations =  userLocations.concat(entityData.data);
                     }
@@ -3911,8 +3911,8 @@ function _updateUserProfileBasedOnUserRoleInfo(userProfile, userRoleInformation)
 
         } catch (error) {
             return resolve({
-                status: error.status || HTTP_STATUS_CODE['internal_server_error'].status,
-                message: error.message || HTTP_STATUS_CODE['internal_server_error'].message,
+                status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+                message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
                 data : false
             });
         }

@@ -28,8 +28,9 @@ module.exports = (req) => {
             req.checkBody("entities").exists().withMessage("required entities to be added");
         },
         join : function () {
-            req.checkParams("_id").exists().withMessage("required program id");
-            req.checkParams("_id").isMongoId().withMessage("Invalid program ID");
+            req.checkParams("_id")
+                .exists().withMessage("required program id")
+                .isMongoId().withMessage("Invalid program ID");        
             req.checkBody("userRoleInformation").exists().withMessage("required userRoleInformation to be added");
         },
     }

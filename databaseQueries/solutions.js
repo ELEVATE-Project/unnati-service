@@ -69,40 +69,29 @@ module.exports= class Solutions{
     * @returns {String} - message.
     */
 
-   static updateSolutionDocument(query= {}, updateObject= {}) {
+   static updateSolutionDocument(query= {}, updateObject= {}, returnData = {new:false}) {
     return new Promise(async (resolve, reject) => {
         try {
 
             if (Object.keys(query).length == 0) {
-                throw new Error(messageConstants.apiResponses.UPDATE_QUERY_REQUIRED)
+                throw new Error(CONSTANTS.apiResponses.UPDATE_QUERY_REQUIRED)
             }
 
             if (Object.keys(updateObject).length == 0) {
-                throw new Error (messageConstants.apiResponses.UPDATE_OBJECT_REQUIRED)
+                throw new Error (CONSTANTS.apiResponses.UPDATE_OBJECT_REQUIRED)
             }
 
-            let updateResponse = await database.models.solutions.updateOne
+            let updateResponse = await database.models.solutions.findOneAndUpdate
             (
                 query,
-                updateObject
-            )
-            
-            if (updateResponse.nModified == 0) {
-                throw new Error(CONSTANTS.apiResponses.FAILED_TO_UPDATE)
-            }
+                updateObject,
+                returnData
+            ).lean()
 
-            return resolve({
-                success: true,
-                message: CONSTANTS.apiResponses.UPDATED_DOCUMENT_SUCCESSFULLY,
-                data: true
-            });
+            return resolve(updateResponse);
 
         } catch (error) {
-            return resolve({
-                success: false,
-                message: error.message,
-                data: false
-            });
+            return reject(error);
         }
     });
     }

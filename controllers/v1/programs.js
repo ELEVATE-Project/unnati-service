@@ -36,10 +36,7 @@ module.exports = class  Programs extends Abstract{
             true
           );
           
-          return resolve({
-            message : CONSTANTS.apiResponses.PROGRAMS_CREATED,
-            result : _.pick(programCreationData,["_id"])
-          });
+          return resolve(programCreationData)
   
         }
         catch (error) {
@@ -102,7 +99,6 @@ module.exports = class  Programs extends Abstract{
           true
         );
         
-        programUpdationData.result = programUpdationData.data;
         return resolve(programUpdationData);
 
       }
@@ -132,8 +128,6 @@ module.exports = class  Programs extends Abstract{
           let programData = await programsHelper.details(
             req.params._id
           );
-  
-          programData["result"] = programData.data;
       
           return resolve(programData);
           

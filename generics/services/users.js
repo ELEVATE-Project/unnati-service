@@ -224,9 +224,55 @@ const profileReadPrivate = function (userId) {
         }
     })
 }
+
+
+
+/**
+  * get subEntities of matching type by recursion.
+  * @method
+  * @name getSubEntitiesBasedOnEntityType
+  * @param parentIds {Array} - Array of entity Ids- for which we are finding sub entities of given entityType
+  * @param entityType {string} - EntityType.
+  * @returns {Array} - Sub entities matching the type .
+*/
+
+async function getSubEntitiesBasedOnEntityType( parentIds, entityType, result ) {
+
+    if( !parentIds.length > 0 ){
+        return result;
+    }
+    let bodyData={
+        "parentId" : parentIds
+    };
+
+    let entityDetails = await locationSearch(bodyData);
+    if( !entityDetails.success ) {
+        return (result);
+    }
+
+    let entityData = entityDetails.data;
+    let parentEntities = [];
+    entityData.map(entity => {
+    if( entity.type == entityType ) {
+        result.push(entity.id)
+    } else {
+        parentEntities.push(entity.id)
+    }
+    });
+    
+    if( parentEntities.length > 0 ){
+        await getSubEntitiesBasedOnEntityType(parentEntities,entityType,result)
+    } 
+    
+    let uniqueEntities = _.uniq(result);
+    return uniqueEntities;    
+}
+
+
 module.exports = {
     profile : profile,
     locationSearch : locationSearch,
     getParentEntities : getParentEntities,
-    profileReadPrivate : profileReadPrivate
+    profileReadPrivate : profileReadPrivate,
+    getSubEntitiesBasedOnEntityType : getSubEntitiesBasedOnEntityType
 };
