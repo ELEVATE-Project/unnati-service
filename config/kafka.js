@@ -17,44 +17,44 @@ const CERTIFICATE_TOPIC = process.env.PROJECT_SUBMISSION_TOPIC;
   * @name connect
 */
 
-const connect = function() {
+const connect = function () {
 
-    const Producer = kafka.Producer
-    KeyedMessage = kafka.KeyedMessage
-    
-    const client = new kafka.KafkaClient({
-      kafkaHost : process.env.KAFKA_URL
-    });
+  const Producer = kafka.Producer
+  KeyedMessage = kafka.KeyedMessage
 
-    client.on('error', function(error) {
-        console.log("kafka connection error!")
-    });
+  const client = new kafka.KafkaClient({
+    kafkaHost: process.env.KAFKA_URL
+  });
 
-    const producer = new Producer(client)
+  client.on('error', function (error) {
+    console.log("kafka connection error!")
+  });
 
-    producer.on('ready', function () {
-        console.log("Connected to Kafka");
-    });
-   
-    producer.on('error', function (err) {
-        console.log("kafka producer creation error!")
-    })
+  const producer = new Producer(client)
 
-    _sendToKafkaConsumers(
-      SUBMISSION_TOPIC,
-      process.env.KAFKA_URL
-    );
+  producer.on('ready', function () {
+    console.log("Connected to Kafka");
+  });
 
-    //  project certificate details consumer
-    _sendToKafkaConsumers(
-      CERTIFICATE_TOPIC,
-      process.env.KAFKA_URL
-    );
+  producer.on('error', function (err) {
+    console.log("kafka producer creation error!")
+  })
 
-    return {
-      kafkaProducer: producer,
-      kafkaClient: client
-    };
+  _sendToKafkaConsumers(
+    SUBMISSION_TOPIC,
+    process.env.KAFKA_URL
+  );
+
+  //  project certificate details consumer
+  _sendToKafkaConsumers(
+    CERTIFICATE_TOPIC,
+    process.env.KAFKA_URL
+  );
+
+  return {
+    kafkaProducer: producer,
+    kafkaClient: client
+  };
 
 };
 
@@ -66,17 +66,17 @@ const connect = function() {
   * @param {String} host - kafka host
 */
 
-var _sendToKafkaConsumers = function (topic,host) {
+var _sendToKafkaConsumers = function (topic, host) {
 
   if (topic && topic != "") {
 
     let consumer = new kafka.ConsumerGroup(
       {
-          kafkaHost : host,
-          groupId : process.env.KAFKA_GROUP_ID,
-          autoCommit : true
-      },topic 
-    );  
+        kafkaHost: host,
+        groupId: process.env.KAFKA_GROUP_ID,
+        autoCommit: true
+      }, topic
+    );
 
     consumer.on('message', async function (message) {
 
@@ -84,7 +84,7 @@ var _sendToKafkaConsumers = function (topic,host) {
       console.log("Topic Name: ", topic);
       console.log("Message: ", JSON.stringify(message));
       console.log("-------Kafka consumer log ends here------------------");
-  
+
 
       if (message && message.topic === SUBMISSION_TOPIC) {
         submissionsConsumer.messageReceived(message);
@@ -98,10 +98,10 @@ var _sendToKafkaConsumers = function (topic,host) {
 
     consumer.on('error', async function (error) {
 
-      if(error.topics && error.topics[0] === SUBMISSION_TOPIC) {
+      if (error.topics && error.topics[0] === SUBMISSION_TOPIC) {
         submissionsConsumer.errorTriggered(error);
       }
-      if(error.topics && error.topics[0] === CERTIFICATE_TOPIC) {
+      if (error.topics && error.topics[0] === CERTIFICATE_TOPIC) {
         projectCertificateConsumer.errorTriggered(error);
       }
 
