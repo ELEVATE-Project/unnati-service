@@ -33,20 +33,21 @@ module.exports = {
           type : Array,
           index : true
         },
-        roles : [{
-          _id : "ObjectId",
-          code : {
-            type : String,
+        roles : {
+            type : Array,
             index : true
           }
-        }]
+        
       },
       isDeleted: {
         default : false,
         type : Boolean,
         index : true
       },
-      requestForPIIConsent: Boolean,
+      requestForPIIConsent: {
+        type : Boolean,
+        default : true
+      },
       metaInformation: Object,
       rootOrganisations : {
         type : Array,

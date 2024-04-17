@@ -37,11 +37,11 @@ module.exports = class UserProjects extends Abstract {
     }
 
      /**
-    * @api {post} /improvement-project/api/v1/userProjects/sync/:projectId?lastDownloadedAt=:epochTime 
+    * @api {post} /unnati/v1/userProjects/sync/:projectId?lastDownloadedAt=:epochTime 
     * Sync project.
     * @apiVersion 1.0.0
     * @apiGroup User Projects
-    * @apiSampleRequest /improvement-project/api/v1/userProjects/sync/5f731631e8d7cd3b88ac0659?lastDownloadedAt=0125747659358699520
+    * @apiSampleRequest /unnati/v1/userProjects/sync/5f731631e8d7cd3b88ac0659?lastDownloadedAt=0125747659358699520
     * @apiParamExample {json} Request:
     * {
     "title": "Project 1",
@@ -140,8 +140,6 @@ module.exports = class UserProjects extends Abstract {
                     req.headers.appversion ? req.headers.appversion : ""
                 );
 
-                createdProject.result = createdProject.data;
-
                 return resolve(createdProject);
 
             } catch (error) {
@@ -155,11 +153,11 @@ module.exports = class UserProjects extends Abstract {
     }
 
     /**
-    * @api {post} /improvement-project/api/v1/userProjects/details/:projectId?programId=:programId&solutionId=:solutionId&templateId=:templateId 
+    * @api {post} /unnati/v1/userProjects/details/:projectId?programId=:programId&solutionId=:solutionId&templateId=:templateId 
     * Project Details.
     * @apiVersion 2.0.0
     * @apiGroup User Projects
-    * @apiSampleRequest /improvement-project/api/v1/userProjects/details/5f731631e8d7cd3b88ac0659?programId=5f4e538bdf6dd17bab708173&solutionId=5f8688e7d7f86f040b77f460&templateId=IDEAIMP4
+    * @apiSampleRequest /unnati/v1/userProjects/details/5f731631e8d7cd3b88ac0659?programId=5f4e538bdf6dd17bab708173&solutionId=5f8688e7d7f86f040b77f460&templateId=IDEAIMP4
     * @apiParamExample {json} Request:
     {
         "role" : "HM,DEO",
@@ -290,11 +288,11 @@ module.exports = class UserProjects extends Abstract {
     }
 
    /**
-    * @api {post} /improvement-project/api/v1/userProjects/tasksStatus/:projectId
+    * @api {post} /unnati/v1/userProjects/tasksStatus/:projectId
     * User Project tasks status
     * @apiVersion 1.0.0
     * @apiGroup User Projects
-    * @apiSampleRequest /improvement-project/api/v1/userProjects/tasksStatus/5f731631e8d7cd3b88ac0659
+    * @apiSampleRequest /unnati/v1/userProjects/tasksStatus/5f731631e8d7cd3b88ac0659
     * @apiParamExample {json} Request:
     * {
     *   "taskIds" : [
@@ -357,11 +355,11 @@ module.exports = class UserProjects extends Abstract {
     }
 
      /**
-    * @api {post} /improvement-project/api/v1/userProjects/solutionDetails/:projectId?taskId=:taskId
+    * @api {post} /unnati/v1/userProjects/solutionDetails/:projectId?taskId=:taskId
     * User project solution details
     * @apiVersion 1.0.0
     * @apiGroup User Projects
-    * @apiSampleRequest /improvement-project/api/v1/userProjects/solutionDetails/5fba54dc5bf46b25a926bee5?taskId=347400e7-8a62-4dad-bc24-af7c5bd70ad1
+    * @apiSampleRequest /unnati/v1/userProjects/solutionDetails/5fba54dc5bf46b25a926bee5?taskId=347400e7-8a62-4dad-bc24-af7c5bd70ad1
     * @apiParamExample {json} Request:
     {
         "role" : "HM,DEO",
@@ -434,11 +432,11 @@ module.exports = class UserProjects extends Abstract {
     }
     
     /**
-    * @api {post} /improvement-project/api/v1/userProjects/add
+    * @api {post} /unnati/v1/userProjects/add
     * Add project.
     * @apiVersion 1.0.0
     * @apiGroup User Projects
-    * @apiSampleRequest /improvement-project/api/v1/userProjects/add
+    * @apiSampleRequest /unnati/v1/userProjects/add
     * @apiParamExample {json} Request:
     * {
     "title": "Project 1",
@@ -533,8 +531,6 @@ module.exports = class UserProjects extends Abstract {
                     req.headers.appversion ? req.headers.appversion : ""
                 );
 
-                createdProject.result = createdProject.data;
-
                 return resolve(createdProject);
 
             } catch (error) {
@@ -548,11 +544,11 @@ module.exports = class UserProjects extends Abstract {
     }
 
       /**
-    * @api {get} /improvement-project/api/v1/userProjects/userAssigned?page=:page&limit=:limit&search=:search&filter=:assignedToMe
+    * @api {get} /unnati/v1/userProjects/userAssigned?page=:page&limit=:limit&search=:search&filter=:assignedToMe
     * List of user assigned project.
     * @apiVersion 1.0.0
     * @apiGroup User Projects
-    * @apiSampleRequest /improvement-project/api/v1/userProjects/userAssigned?page=1&limit=10
+    * @apiSampleRequest /unnati/v1/userProjects/userAssigned?page=1&limit=10
     * @apiParamExample {json} Response:
     * {
     "message": "User project fetched successfully",
@@ -606,11 +602,11 @@ module.exports = class UserProjects extends Abstract {
     }
 
      /**
-    * @api {get} /improvement-project/api/v1/userProjects/share/:projectId?tasks=:taskId1,:taskId2
+    * @api {get} /unnati/v1/userProjects/share/:projectId?tasks=:taskId1,:taskId2
     * Share project and task pdf report.
     * @apiVersion 1.0.0
     * @apiGroup User Projects
-    * @apiSampleRequest /improvement-project/api/v1/userProjects/share/6065ced7e9259b7f0b1f5d66?tasks=4d074de7-7059-4d99-9da9-452b0d32e081
+    * @apiSampleRequest /unnati/v1/userProjects/share/6065ced7e9259b7f0b1f5d66?tasks=4d074de7-7059-4d99-9da9-452b0d32e081
      * @apiParamExample {json} Response:
     * {
     * "message": "Report generated succesfully",
@@ -662,10 +658,10 @@ module.exports = class UserProjects extends Abstract {
     }
 
        /**
-    * @api {get} /improvement-project/api/v1/userProjects/importedProjects/:programId
+    * @api {get} /unnati/v1/userProjects/importedProjects/:programId
     * @apiVersion 1.0.0
     * @apiGroup Lists of User Imported Projects
-    * @apiSampleRequest /improvement-project/api/v1/userProjects/importedProjects/60545d541fc23d6d2d44c0c9
+    * @apiSampleRequest /unnati/v1/userProjects/importedProjects/60545d541fc23d6d2d44c0c9
     * @apiParamExample {json} Response:
     {
     "message": "List of imported projects fetched",
@@ -725,13 +721,13 @@ module.exports = class UserProjects extends Abstract {
     }
 
     /**
-   * @api {post} /improvement-project/api/v1/userProjects/list?page=1&limit=3&search=&filter=createdByMe
+   * @api {post} /unnati/v1/userProjects/list?page=1&limit=3&search=&filter=createdByMe
    * Lists of projects.
    * @apiVersion 0.0.1
    * @apiName Lists of projects.
    * @apiGroup Entity Types
    * @apiHeader {String} X-authenticated-user-token Authenticity token
-   * @apiSampleRequest /improvement-project/api/v1/userProjects/list
+   * @apiSampleRequest /unnati/v1/userProjects/list
    * @apiUse successBody
    * @apiUse errorBody
    * @apiParamExample {json} Request-Body:
@@ -863,13 +859,13 @@ module.exports = class UserProjects extends Abstract {
     }
 
 //     /**
-//    * @api {post} /improvement-project/api/v1/userProjects/list
+//    * @api {post} /unnati/v1/userProjects/list
 //    * Lists of projects.
 //    * @apiVersion 0.0.1
 //    * @apiName Lists of projects.
 //    * @apiGroup Entity Types
 //    * @apiHeader {String} X-authenticated-user-token Authenticity token
-//    * @apiSampleRequest /improvement-project/api/v1/userProjects/list
+//    * @apiSampleRequest /unnati/v1/userProjects/list
 //    * @apiUse successBody
 //    * @apiUse errorBody
 //    * @apiParamExample {json} Request-Body:
@@ -916,11 +912,11 @@ module.exports = class UserProjects extends Abstract {
 //     }
 
     /**
-    * @api {post} /improvement-project/api/v1/userProjects/importFromLibrary/:projectTemplateId&isATargetedSolution=false
+    * @api {post} /unnati/v1/userProjects/importFromLibrary/:projectTemplateId&isATargetedSolution=false
     * Import project from library.
     * @apiVersion 1.0.0
     * @apiGroup User Projects
-    * @apiSampleRequest /improvement-project/api/v1/userProjects/importFromLibrary/5f5b32cef16777642d51aaf0
+    * @apiSampleRequest /unnati/v1/userProjects/importFromLibrary/5f5b32cef16777642d51aaf0
     * @apiParamExample {json} Request:
     * {
     * "programId" : "",
@@ -1095,11 +1091,11 @@ module.exports = class UserProjects extends Abstract {
     }
 
     /**
-    * @api {post} /improvement-project/api/v1/userProjects/certificateCallback
+    * @api {post} /unnati/v1/userProjects/certificateCallback
     * Project certificate callback
     * @apiVersion 1.0.0
     * @apiGroup User Projects
-    * @apiSampleRequest /improvement-project/api/v1/userProjects/certificateCallback
+    * @apiSampleRequest /unnati/v1/userProjects/certificateCallback
     * @apiParamExample {json} Request
     *   {
             "event": "sunbird-rc-create",
@@ -1153,11 +1149,11 @@ module.exports = class UserProjects extends Abstract {
     }
 
     /**
-    * @api {get} /improvement-project/api/v1/userProjects/certificates
+    * @api {get} /unnati/v1/userProjects/certificates
     * List of user project with certificate
     * @apiVersion 1.0.0
     * @apiGroup User Projects
-    * @apiSampleRequest /improvement-project/api/v1/userProjects/certificates
+    * @apiSampleRequest /unnati/v1/userProjects/certificates
     * @apiParamExample {json} Response:
     *   {
             "message": "User project fetched successfully",
@@ -1220,11 +1216,11 @@ module.exports = class UserProjects extends Abstract {
     }
 
     /**
-    * @api {post} /improvement-project/api/v1/userProjects/certificateReIssue
+    * @api {post} /unnati/v1/userProjects/certificateReIssue
     * ReIssue project certificate (admin api)
     * @apiVersion 1.0.0
     * @apiGroup User Projects
-    * @apiSampleRequest /improvement-project/api/v1/userProjects/certificateReIssue
+    * @apiSampleRequest /unnati/v1/userProjects/certificateReIssue
     * @apiParamExample {json} Response:
     /**{
             "message": "Successfully generated project certificate",

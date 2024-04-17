@@ -57,6 +57,7 @@
 		"keycloak-auth-utils": "^3.3.0",
 		"lodash": "^4.17.15",
 		"log": "^1.4.0",
+    "md5": "^2.3.0",
 		"mocha": "^6.2.2",
 		"moment-timezone": "^0.5.31",
 		"mongodb": "^3.7.4",

@@ -57,4 +57,28 @@ module.exports= class Programs{
            }
        });
    }
+
+   static findAndUpdate(
+    filterData = "all", 
+    setData ,
+    returnData
+   ){
+    return new Promise(async (resolve, reject) => {
+        try{
+            let queryObject = (filterData != "all") ? filterData : {};
+
+            let updatedData = await database.models.programs.findOneAndUpdate(
+                queryObject,
+                setData,
+                returnData
+            ).lean();
+
+            return resolve(updatedData)
+
+        }catch (error) {
+            return reject(error);
+        }
+    })
+
+   }
 }

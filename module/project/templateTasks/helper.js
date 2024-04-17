@@ -35,14 +35,12 @@ module.exports = class ProjectTemplateTasksHelper {
     ) {
         return new Promise(async (resolve, reject) => {
             try {
-
                 let taskIds = [];
                 let solutionIds = [];
                 let systemId = false;
                 let solutionExists = false;
 
                 csvData.forEach(data => {
-                    
                     let parsedData = UTILS.valueParser(data);
 
                     if( parsedData._SYSTEM_ID ) {
@@ -52,10 +50,10 @@ module.exports = class ProjectTemplateTasksHelper {
                         taskIds.push(parsedData.externalId);
                     }
 
-                    // if ( parsedData.solutionId && parsedData.solutionId !== "" ) {
-                    //     solutionExists = true;
-                    //     solutionIds.push(parsedData.solutionId);
-                    // }
+                    if ( parsedData.solutionId && parsedData.solutionId !== "" ) {
+                        solutionExists = true;
+                        solutionIds.push(parsedData.solutionId);
+                    }
 
                 });
 
@@ -79,7 +77,6 @@ module.exports = class ProjectTemplateTasksHelper {
                         filterData,
                         ["_id","children","externalId","projectTemplateId","parentId", "taskSequence", "hasSubTasks"]
                     );
-
                     if( tasksData.length > 0 ) {
                         tasksData.forEach(task=> {
                             if( systemId ) {
@@ -112,32 +109,30 @@ module.exports = class ProjectTemplateTasksHelper {
                 // }
 
                 let solutionData = {};
+                if ( solutionIds.length > 0 ) {
+                    let solutions = await solutionsQueries.solutionsDocument(
+                        { "_id": { "$in": solutionIds } }
+                    )
 
-                // if ( solutionIds.length > 0 ) {
-                    
-                //     let solutions = 
-                //     await surveyService.listSolutions(solutionIds);
+                    if( !solutions.length > 0) {
+                        throw {
+                            message : CONSTANTS.apiResponses.SOLUTION_NOT_FOUND,
+                            status : HTTP_STATUS_CODE['bad_request'].status
+                        }
+                    }
 
-                //     if( !solutions.success ) {
-                //         throw {
-                //             message : CONSTANTS.apiResponses.SOLUTION_NOT_FOUND,
-                //             status : HTTP_STATUS_CODE['bad_request'].status
-                //         }
-                //     }
+                    if ( 
+                        solutions &&
+                        Object.keys(solutions).length > 0 
+                    ) {
 
-                //     if ( 
-                //         solutions.data &&
-                //         Object.keys(solutions.data).length > 0 
-                //     ) {
-
-                //         solutions.data.forEach(solution => {
-                //             if(!solutionData[solution.externalId]) {
-                //                 solutionData[solution.externalId] = solution;
-                //             }
-                //         });
-                //     }
-                // }
-
+                        solutions.forEach(solution => {
+                            if(!solutionData[solution.externalId]) {
+                                solutionData[solution.externalId] = solution;
+                            }
+                        });
+                    }
+                }
                 return resolve({
                     success : true,
                     data : {
@@ -176,18 +171,17 @@ module.exports = class ProjectTemplateTasksHelper {
     ) {
         return new Promise(async (resolve, reject) => {
             try {
-
                 let parsedData = UTILS.valueParser(data);
 
                 let allValues = {
                     type : parsedData.type
                 };
-
                 let solutionTypes = [
                     CONSTANTS.common.ASSESSMENT,
                     CONSTANTS.common.OBSERVATION,
                     CONSTANTS.common.IMPROVEMENT_PROJECT
                 ]
+
 
                 if ( allValues.type === CONSTANTS.common.CONTENT ) {
 
@@ -197,88 +191,87 @@ module.exports = class ProjectTemplateTasksHelper {
                     allValues.learningResources = learningResources.data;
 
                 } 
-                // else if ( solutionTypes.includes(allValues.type) ) { 
-
-                //     allValues.solutionDetails = {};
-                //     if( parsedData.solutionType && parsedData.solutionType !== "" ) {
-                //         allValues.solutionDetails.type = parsedData.solutionType; 
-                //     } else {
-                //         parsedData.STATUS = 
-                //         CONSTANTS.apiResponses.REQUIRED_SOLUTION_TYPE;
-                //     }
+                else if ( solutionTypes.includes(allValues.type) ) { 
+                    allValues.solutionDetails = {};
+                    if( parsedData.solutionType && parsedData.solutionType !== "" ) {
+                        allValues.solutionDetails.type = parsedData.solutionType; 
+                    } else {
+                        parsedData.STATUS = 
+                        CONSTANTS.apiResponses.REQUIRED_SOLUTION_TYPE;
+                    }
                     
-                //     if ( parsedData.solutionSubType && parsedData.solutionSubType !== "" ) {
-                //         allValues.solutionDetails.subType = parsedData.solutionSubType;
-                //     } else {
-                //         parsedData.STATUS = 
-                //         CONSTANTS.apiResponses.REQUIRED_SOLUTION_SUB_TYPE;
-                //     }
+                    if ( parsedData.solutionSubType && parsedData.solutionSubType !== "" ) {
+                        allValues.solutionDetails.subType = parsedData.solutionSubType;
+                    } else {
+                        parsedData.STATUS = 
+                        CONSTANTS.apiResponses.REQUIRED_SOLUTION_SUB_TYPE;
+                    }
 
-                //     if ( parsedData.solutionId && parsedData.solutionId !== "" ) {
+                    if ( parsedData.solutionId && parsedData.solutionId !== "" ) {
 
-                //         if ( !solutionData[parsedData.solutionId] ) {
-                //             parsedData.STATUS = 
-                //             CONSTANTS.apiResponses.SOLUTION_NOT_FOUND;
-                //         } else {
+                        if ( !solutionData[parsedData.solutionId] ) {
+                            parsedData.STATUS = 
+                            CONSTANTS.apiResponses.SOLUTION_NOT_FOUND;
+                        } else {
 
-                //             if( 
-                //                 solutionData[parsedData.solutionId].type !== 
-                //                 allValues.solutionDetails.type 
-                //             ) {
+                            if( 
+                                solutionData[parsedData.solutionId].type !== 
+                                allValues.solutionDetails.type 
+                            ) {
                                 
-                //                 parsedData.STATUS = 
-                //                 CONSTANTS.apiResponses.SOLUTION_TYPE_MIS_MATCH;
-                //             }
+                                parsedData.STATUS = 
+                                CONSTANTS.apiResponses.SOLUTION_TYPE_MIS_MATCH;
+                            }
 
-                //             if( 
-                //                 solutionData[parsedData.solutionId].subType !== 
-                //                 allValues.solutionDetails.subType
-                //             ) {
-                //                 parsedData.STATUS = 
-                //                 CONSTANTS.apiResponses.SOLUTION_SUB_TYPE_MIS_MATCH;
-                //             }
+                            if( 
+                                solutionData[parsedData.solutionId].subType !== 
+                                allValues.solutionDetails.subType
+                            ) {
+                                parsedData.STATUS = 
+                                CONSTANTS.apiResponses.SOLUTION_SUB_TYPE_MIS_MATCH;
+                            }
 
-                //             if( 
-                //                 template.entityType !== solutionData[parsedData.solutionId].entityType 
-                //             ) {
-                //                 parsedData.STATUS = 
-                //                 CONSTANTS.apiResponses.MIS_MATCHED_PROJECT_AND_TASK_ENTITY_TYPE;
-                //             } else {
+                            if( 
+                                template.entityType !== solutionData[parsedData.solutionId].entityType 
+                            ) {
+                                parsedData.STATUS = 
+                                CONSTANTS.apiResponses.MIS_MATCHED_PROJECT_AND_TASK_ENTITY_TYPE;
+                            } else {
 
-                //                 let projectionFields = _solutionDocumentProjectionFieldsForTask();
-                //                 allValues.solutionDetails["minNoOfSubmissionsRequired"] = CONSTANTS.common.DEFAULT_SUBMISSION_REQUIRED;
+                                let projectionFields = _solutionDocumentProjectionFieldsForTask();
+                                allValues.solutionDetails["minNoOfSubmissionsRequired"] = CONSTANTS.common.DEFAULT_SUBMISSION_REQUIRED;
                                 
-                //                 if (parsedData.minNoOfSubmissionsRequired && parsedData.minNoOfSubmissionsRequired != "" ) {
+                                if (parsedData.minNoOfSubmissionsRequired && parsedData.minNoOfSubmissionsRequired != "" ) {
 
-                //                     // minNoOfSubmissionsRequired present in csv
-                //                     if ( parsedData.minNoOfSubmissionsRequired > CONSTANTS.common.DEFAULT_SUBMISSION_REQUIRED ) {
-                //                         if ( solutionData[parsedData.solutionId].allowMultipleAssessemts ) {
-                //                             allValues.solutionDetails["minNoOfSubmissionsRequired"] = parsedData.minNoOfSubmissionsRequired;
-                //                         } 
-                //                     }
+                                    // minNoOfSubmissionsRequired present in csv
+                                    if ( parsedData.minNoOfSubmissionsRequired > CONSTANTS.common.DEFAULT_SUBMISSION_REQUIRED ) {
+                                        if ( solutionData[parsedData.solutionId].allowMultipleAssessemts ) {
+                                            allValues.solutionDetails["minNoOfSubmissionsRequired"] = parsedData.minNoOfSubmissionsRequired;
+                                        } 
+                                    }
 
-                //                 }else{
-                //                     // minNoOfSubmissionsRequired not present in csv
-                //                     if (solutionData[parsedData.solutionId].minNoOfSubmissionsRequired ) {
-                //                         projectionFields.push("minNoOfSubmissionsRequired");
-                //                     }
-                //                 }
+                                }else{
+                                    // minNoOfSubmissionsRequired not present in csv
+                                    if (solutionData[parsedData.solutionId].minNoOfSubmissionsRequired ) {
+                                        projectionFields.push("minNoOfSubmissionsRequired");
+                                    }
+                                }
 
-                //                 Object.assign(allValues.solutionDetails, _.pick(
-                //                     solutionData[parsedData.solutionId],
-                //                     projectionFields
-                //                 ))
+                                Object.assign(allValues.solutionDetails, _.pick(
+                                    solutionData[parsedData.solutionId],
+                                    projectionFields
+                                ))
 
-                //             }
+                            }
 
-                //         }
+                        }
 
-                //     } else {
-                //         parsedData.STATUS = 
-                //         CONSTANTS.apiResponses.REQUIRED_SOLUTION_ID;
-                //     }
+                    } else {
+                        parsedData.STATUS = 
+                        CONSTANTS.apiResponses.REQUIRED_SOLUTION_ID;
+                    }
 
-                // }
+                }
 
                 allValues.projectTemplateId = template._id;
                 allValues.projectTemplateExternalId = template.externalId;
@@ -303,6 +296,13 @@ module.exports = class ProjectTemplateTasksHelper {
                         }
                     }
                 });
+
+                let solutionDetails = {
+                    solutionId : parsedData.solutionId,
+                    solutionSubType : parsedData.solutionSubType,
+                    solutionType : parsedData.solutionType
+                }
+                allValues.solutionDetails = solutionDetails
 
                 if( !parsedData.STATUS ) {
 
@@ -343,7 +343,12 @@ module.exports = class ProjectTemplateTasksHelper {
                                     children : taskData._id
                                 },
                                 $set : {
-                                    hasSubTasks : true
+                                    hasSubTasks : true,
+                                    solutionDetails : {
+                                        solutionType : parsedData.solutionType,
+                                        solutionId : parsedData.solutionId,
+                                        solutionSubType : parsedData.solutionSubType
+                                    }
                                 }
                             },{
                                 returnOriginal : true
@@ -368,7 +373,12 @@ module.exports = class ProjectTemplateTasksHelper {
                                 },{
                                     $set : {
                                         parentId : parentTask._id,
-                                        visibleIf : visibleIf
+                                        visibleIf : visibleIf,
+                                        solutionDetails : {
+                                            solutionType : parsedData.solutionType,
+                                            solutionId : parsedData.solutionId,
+                                            solutionSubType : parsedData.solutionSubType
+                                        }
                                     }
                                 });
 
@@ -409,7 +419,6 @@ module.exports = class ProjectTemplateTasksHelper {
                         )
                     }
                 }
-
                 return resolve(
                     _.omit(parsedData,["createdBy","updatedBy"])
                 );
@@ -433,7 +442,6 @@ module.exports = class ProjectTemplateTasksHelper {
     static bulkCreate( tasks,projectTemplateId,userId ) {
         return new Promise(async (resolve, reject) => {
             try {
-
                 const fileName = `create-project-template-tasks`;
                 let fileStream = new CSV_FILE_STREAM(fileName);
                 let input = fileStream.initStream();
@@ -450,8 +458,7 @@ module.exports = class ProjectTemplateTasksHelper {
                 await this.extractCsvInformation(
                     tasks,
                     projectTemplateId
-                );
-
+                    );
                 if( !csvData.success ) {
                     return resolve(csvData);
                 }
@@ -465,6 +472,8 @@ module.exports = class ProjectTemplateTasksHelper {
                 for ( let task = 0; task < tasks.length ; task ++ ) {
                     let currentData = UTILS.valueParser(tasks[task]);
                     currentData.createdBy = currentData.updatedBy = userId;
+                    
+
 
                     if ( currentData.isDeletable != "" && currentData.isDeletable === "TRUE" ) {
                         checkMandatoryTask.push(currentData.externalId);
@@ -513,7 +522,6 @@ module.exports = class ProjectTemplateTasksHelper {
                             currentData._SYSTEM_ID = CONSTANTS.apiResponses.PROJECT_TEMPLATE_TASK_EXISTS;
                             input.push(currentData);
                         } else {
-
                             let createdTask = await this.createOrUpdateTask(
                                 currentData,
                                 csvData.data.template,

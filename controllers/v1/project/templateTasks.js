@@ -53,7 +53,6 @@ module.exports = class ProjectTemplateTasks extends Abstract {
     async bulkCreate(req) {
         return new Promise(async (resolve, reject) => {
             try {
-                
                 if ( !req.files || !req.files.projectTemplateTasks ) {
                     return resolve(
                       { 
