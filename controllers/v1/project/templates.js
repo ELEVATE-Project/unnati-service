@@ -35,12 +35,12 @@ module.exports = class ProjectTemplates extends Abstract {
    
 
     /**
-    * @api {post} /improvement-project/api/v1/project/templates/bulkCreate 
+    * @api {post} /project/v1/project/templates/bulkCreate 
     * Bulk Create projects templates.
     * @apiVersion 1.0.0
     * @apiGroup Project Templates
     * @apiParam {File} projectTemplates Mandatory project templates file of type CSV.
-    * @apiSampleRequest /improvement-project/api/v1/project/templates/bulkCreate
+    * @apiSampleRequest /project/v1/project/templates/bulkCreate
     * @apiUse successBody
     * @apiUse errorBody
     */
@@ -59,7 +59,7 @@ module.exports = class ProjectTemplates extends Abstract {
                 if ( !req.files || !req.files.projectTemplates ) {
                     return resolve(
                       {
-                        status : HTTP_STATUS_CODE["bad_request"].status, 
+                        status : HTTP_STATUS_CODE.bad_request.status, 
                         message : CONSTANTS.apiResponses.PROJECT_TEMPLATES_CSV
                       }
                     )
@@ -86,12 +86,12 @@ module.exports = class ProjectTemplates extends Abstract {
     }
 
     /**
-    * @api {post} /improvement-project/api/v1/project/templates/bulkUpdate 
+    * @api {post} /project/v1/project/templates/bulkUpdate 
     * Bulk Update projects templates.
     * @apiVersion 1.0.0
     * @apiGroup Project Templates
     * @apiParam {File} projectTemplates Mandatory project templates file of type CSV.
-    * @apiSampleRequest /improvement-project/api/v1/project/templates/bulkUpdate
+    * @apiSampleRequest /project/v1/project/templates/bulkUpdate
     * @apiUse successBody
     * @apiUse errorBody
     */
@@ -110,7 +110,7 @@ module.exports = class ProjectTemplates extends Abstract {
                 if ( !req.files || !req.files.projectTemplates ) {
                     return resolve(
                       {
-                        status : HTTP_STATUS_CODE["bad_request"].status, 
+                        status : HTTP_STATUS_CODE.bad_request.status, 
                         message : CONSTANTS.apiResponses.PROJECT_TEMPLATES_CSV
                       }
                     )
@@ -137,11 +137,11 @@ module.exports = class ProjectTemplates extends Abstract {
     }
 
      /**
-    * @api {post} /improvement-project/api/v1/project/templates/importProjectTemplate/:projectTemplateExternalId 
+    * @api {post} /project/v1/project/templates/importProjectTemplate/:projectTemplateExternalId 
     * Import templates from existsing project templates.
     * @apiVersion 1.0.0
     * @apiGroup Project Templates
-    * @apiSampleRequest /improvement-project/api/v1/project/templates/importProjectTemplate/template-1
+    * @apiSampleRequest /project/v1/project/templates/importProjectTemplate/template-1
     * @apiParamExample {json} Request: 
     * {
     * "externalId" : "template1",
@@ -196,11 +196,11 @@ module.exports = class ProjectTemplates extends Abstract {
     }
 
      /**
-    * @api {post} /improvement-project/api/v1/project/templates/listByIds
+    * @api {post} /project/v1/project/templates/listByIds
     * List templates based on ids.
     * @apiVersion 1.0.0
     * @apiGroup Project Templates
-    * @apiSampleRequest /improvement-project/api/v1/project/templates/listByIds
+    * @apiSampleRequest /project/v1/project/templates/listByIds
     * @apiParamExample {json} Request: 
     * {
     * "externalIds" : ["IDEAIMP 4"]
@@ -251,11 +251,11 @@ module.exports = class ProjectTemplates extends Abstract {
     }
 
     /**
-    * @api {get} /improvement-project/api/v1/project/templates/details/:templateId
+    * @api {get} /project/v1/project/templates/details/:templateId
     * Project template details.
     * @apiVersion 1.0.0
     * @apiGroup Project Templates
-    * @apiSampleRequest /improvement-project/api/v1/project/templates/details/MAHARASTHA IMPROVEMENT PROJECT TEMPLATE
+    * @apiSampleRequest /project/v1/project/templates/details/MAHARASTHA IMPROVEMENT PROJECT TEMPLATE
     * @apiParamExample {json} Response:
     * {
     "message": "Successfully fetched project template details",
@@ -698,11 +698,11 @@ module.exports = class ProjectTemplates extends Abstract {
     }
 
     /**
-    * @api {post} /improvement-project/api/v1/project/templates/update/:templateId 
+    * @api {post} /project/v1/project/templates/update/:templateId 
     * Update projects template.
     * @apiVersion 1.0.0
     * @apiGroup Project Templates
-    * @apiSampleRequest /improvement-project/api/v1/project/templates/update/6006b5cca1a95727dbcdf648
+    * @apiSampleRequest /project/v1/project/templates/update/6006b5cca1a95727dbcdf648
     * @apiHeader {String} internal-access-token internal access token 
     * @apiHeader {String} X-authenticated-user-token Authenticity token  
     * @apiUse successBody

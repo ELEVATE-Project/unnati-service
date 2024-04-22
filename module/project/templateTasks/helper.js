@@ -97,14 +97,14 @@ module.exports = class ProjectTemplateTasksHelper {
                 if( !projectTemplate.length > 0 ) {
                     throw {
                         message : CONSTANTS.apiResponses.PROJECT_TEMPLATE_NOT_FOUND,
-                        status : HTTP_STATUS_CODE['bad_request'].status
+                        status : HTTP_STATUS_CODE.bad_request.status
                     }
                 }
 
                 // if( solutionExists && !projectTemplate[0].entityType ) {
                 //     throw {
                 //         message : CONSTANTS.apiResponses.ENTITY_TYPE_NOT_FOUND_IN_TEMPLATE,
-                //         status : HTTP_STATUS_CODE['bad_request'].status
+                //         status : HTTP_STATUS_CODE.bad_request.status
                 //     }
                 // }
 
@@ -117,7 +117,7 @@ module.exports = class ProjectTemplateTasksHelper {
                     if( !solutions.length > 0) {
                         throw {
                             message : CONSTANTS.apiResponses.SOLUTION_NOT_FOUND,
-                            status : HTTP_STATUS_CODE['bad_request'].status
+                            status : HTTP_STATUS_CODE.bad_request.status
                         }
                     }
 
@@ -146,7 +146,7 @@ module.exports = class ProjectTemplateTasksHelper {
                return resolve({
                    message : error.message,
                    success : false,
-                   status : error.status ? error.status : HTTP_STATUS_CODE['internal_server_error'].status
+                   status : error.status ? error.status : HTTP_STATUS_CODE.internal_server_error.status
                });
            }
        });

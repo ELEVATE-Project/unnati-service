@@ -16,13 +16,15 @@ const profile = function ( token,userId = "" ) {
             let url = userServiceUrl + CONSTANTS.endpoints.USER_READ_V5;
     
             if( userId !== "" ) {
-                url = url + "/" + userId + "?"  + "fields=organisations,roles,locations,declarations,externalIds"
+                url = url + "/" + userId 
             }
+
 
             const options = {
                 headers : {
-                    "content-type": "application/json",
-                    "x-authenticated-user-token" : token
+                    // "content-type": "application/json",
+                    "X-auth-token" : "bearer " + token,
+                    "internal-access-token": process.env.INTERNAL_ACCESS_TOKEN,
                 }
             };
             
@@ -269,10 +271,68 @@ async function getSubEntitiesBasedOnEntityType( parentIds, entityType, result ) 
 }
 
 
+/**
+  * get user roles data token.
+  * @method
+  * @name getUserRoles
+  * @param {Object} roles - {"roles":"all"} 
+  * @returns {Array} - All user roles
+*/
+const getUserRoles = function (
+    filterData =  "all",
+    projection = "all",
+    skipFields = "none"
+) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let url = userServiceUrl + CONSTANTS.endpoints.LIST_USER_ROLES 
+            const options = {
+                headers : {
+                    "content-type": "application/json",
+                    "internal-access-token": process.env.INTERNAL_ACCESS_TOKEN,
+                },
+                json : {
+                    query : filterData,
+                    projection : projection,
+                    skipFields : skipFields
+                }
+            };
+            request.get(url,options,requestCallback);
+            let result = {
+                success : true
+            };
+            function requestCallback(err, data) { 
+                if (err) {
+                    result.success = false;
+                } else {
+                    let response = JSON.parse(data.body);
+                    if( response.responseCode === HTTP_STATUS_CODE.ok.code ) {
+                        result["data"] = response.result;
+                    } else {
+                        result.success = false;
+                    }
+
+                }   
+                return resolve(result);
+            }
+            setTimeout(function () {
+                return resolve (result = {
+                    success : false
+                 });
+             }, CONSTANTS.common.SERVER_TIME_OUT);
+
+        } catch (error) {
+            return reject(error);
+        }
+    })
+}
+
+
 module.exports = {
     profile : profile,
     locationSearch : locationSearch,
     getParentEntities : getParentEntities,
     profileReadPrivate : profileReadPrivate,
-    getSubEntitiesBasedOnEntityType : getSubEntitiesBasedOnEntityType
+    getSubEntitiesBasedOnEntityType : getSubEntitiesBasedOnEntityType,
+    getUserRoles : getUserRoles
 };

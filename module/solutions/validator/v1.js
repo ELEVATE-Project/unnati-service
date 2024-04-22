@@ -14,6 +14,12 @@ module.exports = (req) => {
             req.checkBody('entityType').exists().withMessage("required entity type");
             req.checkBody('externalId').exists().withMessage("required solution externalId");
             req.checkBody('name').exists().withMessage("required solution name");
+        },
+        addRolesInScope : function() {
+            req.checkBody('roles').exists().withMessage("required solution roles to be added")
+        },
+        removeRolesInScope : function() {
+            req.checkBody('roles').exists().withMessage("required solution roles to remove")
         }
     }
 

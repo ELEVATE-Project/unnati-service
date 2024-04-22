@@ -10,6 +10,7 @@
 const timeZoneDifference = process.env.TIMEZONE_DIFFRENECE_BETWEEN_LOCAL_TIME_AND_UTC;
 const programsQueries = require(DB_QUERY_BASE_PATH + "/programs")
 const userService = require(GENERICS_FILES_PATH + "/services/users")
+const entitiesService = require(GENERICS_FILES_PATH + "/services/entity-management")
 
 /**
  * ProgramsHelper
@@ -47,7 +48,7 @@ module.exports = class ProgramsHelper {
           return `scope.${index}`;
         });
 
-        let programIndex = await database.models.programs.listIndexes();
+        let programIndex = await programsQueries.listIndexesFunc();
         let indexes = programIndex.map((indexedKeys) => {
           return Object.keys(indexedKeys.key)[0];
         });
@@ -148,14 +149,13 @@ module.exports = class ProgramsHelper {
           scopeData = _.omit(scopeData, keysCannotBeAdded);
         }
 
-        let updateProgram = await database.models.programs
-          .findOneAndUpdate(
-            {
-              _id: programId,
-            },
-            { $set: { scope: scopeData } },
-          )
-          .lean();
+        let updateProgram = await programsQueries.findAndUpdate(
+          {
+            _id: programId,
+          },
+          { $set: { scope: scopeData } },
+          {new : true}
+        )
 
         if (!updateProgram._id) {
           throw {
@@ -189,7 +189,7 @@ module.exports = class ProgramsHelper {
    * @returns {JSON} - create program.
    */
 
- static create(data, checkDate = false, userId="") {
+ static create(data, userId="", checkDate = false) {
     return new Promise(async (resolve, reject) => {
       try {
         let programData = {
@@ -223,7 +223,7 @@ module.exports = class ProgramsHelper {
           ...data,
         });
         programData = _.omit(programData, ["scope", "userId"]);
-        let program = await database.models.programs.create(programData);
+        let program = await programsQueries.createProgram(programData);
 
         if (!program._id) {
           throw {
@@ -249,7 +249,10 @@ module.exports = class ProgramsHelper {
           success : true,
           message : CONSTANTS.apiResponses.PROGRAMS_CREATED,
           data : {
-            result : program
+            "_id":program._id
+          },
+          result : {
+            "_id":program._id
           }
         });
       } catch (error) {
@@ -326,10 +329,11 @@ module.exports = class ProgramsHelper {
           success: true,
           message: CONSTANTS.apiResponses.PROGRAMS_UPDATED,
           data: {
-            result : {
-              _id: programId,
-            }
+            _id: programId,
           },
+          result : {
+            _id: programId,
+          }
         });
       } catch (error) {
         return resolve({
@@ -383,7 +387,7 @@ module.exports = class ProgramsHelper {
       }
 
 
-     /**
+  /**
    * Add roles in program.
    * @method
    * @name addRolesInScope
@@ -395,6 +399,7 @@ module.exports = class ProgramsHelper {
   static addRolesInScope(programId, roles) {
     return new Promise(async (resolve, reject) => {
       try {
+
         let programData = await programsQueries.programsDocument(
           {
             _id: programId,
@@ -417,37 +422,29 @@ module.exports = class ProgramsHelper {
 
             let currentRoles = await programsQueries.programsDocument(
               { _id: programId },
+              ['scope.roles']
             )
             currentRoles = currentRoles[0].scope.roles 
 
-            if(currentRoles[0] == CONSTANTS.common.ALL_ROLES){
-              updateQuery["$set"] = {
-                "scope.roles": [ CONSTANTS.common.ALL_ROLES ],
-              }
-            }else{
-              let currentRolesSet = new Set(currentRoles);
-              let rolesSet = new Set(roles);
-              
-              rolesSet.forEach(role => {
-                currentRolesSet.add(role);
-              });
-              
-              currentRoles = Array.from(currentRolesSet);
-              updateQuery["$set"] = {
-                "scope.roles": currentRoles,
-              };
-              // updateQuery["$push"] = { "scope.roles": { $each: roles } }
-            }            
-        }else if(roles === ""){
-            return resolve({
-              status: HTTP_STATUS_CODE.bad_request.status,
-              message: CONSTANTS.apiResponses.INVALID_ROLE_CODE,
+            let currentRolesSet = new Set(currentRoles);
+            let rolesSet = new Set(roles);
+            
+            rolesSet.forEach(role => {
+              if(role != "" && role != "all")
+              currentRolesSet.add(role);
             });
-        }else if (roles === CONSTANTS.common.ALL_ROLES) {
+            
+            currentRoles = Array.from(currentRolesSet);
             updateQuery["$set"] = {
-              "scope.roles": [CONSTANTS.common.ALL_ROLES],
-            }          
-        } 
+              "scope.roles": currentRoles,
+            };              
+                     
+        } else{
+          return resolve({
+            status: HTTP_STATUS_CODE.bad_request.status,
+            message: CONSTANTS.apiResponses.INVALID_ROLE_CODE,
+          });
+        }
 
         let updateProgram = await programsQueries.findAndUpdate(
           {
@@ -468,7 +465,6 @@ module.exports = class ProgramsHelper {
           success: true,
         });
       } catch (error) {
-        console.log(error)
         return resolve({
           success: false,
           status: error.status
@@ -489,89 +485,69 @@ module.exports = class ProgramsHelper {
    * @returns {JSON} - Added entities data.
    */
 
-  static addEntitiesInScope(programId, entities) {
+  static addEntitiesInScope( programId,entities,userToken) {
     return new Promise(async (resolve, reject) => {
       try {
-        let programData = await programsQueries.programsDocument(
-          {
-            _id: programId,
-            scope: { $exists: true },
-            isAPrivateProgram: false,
-          },
-          ["_id", "scope.entities"]
-        );
 
-        if (!programData.length > 0) {
+        let programData = 
+        await programsQueries.programsDocument({ 
+          _id : programId,
+          scope : { $exists : true },
+          isAPrivateProgram : false 
+        },["_id","scope.entityType"]);
+
+        if( !programData.length > 0 ) {
           throw {
-            message: CONSTANTS.apiResponses.PROGRAM_NOT_FOUND,
+            message : CONSTANTS.apiResponses.PROGRAM_NOT_FOUND
           };
         }
 
+        let entitiesData = 
+        await entitiesService.entityDocuments({
+          _id : { $in : entities },
+          entityType : programData[0].scope.entityType
+        },["_id"],userToken);
+
+          
+        if( !entitiesData.success) {
+            throw {
+              message : CONSTANTS.apiResponses.ENTITIES_NOT_FOUND
+            };
+        }
+        entitiesData = entitiesData.data
         let entityIds = [];
-        let bodyData = {};
-        let locationData = UTILS.filterLocationIdandCode(entities);
+        
+        entitiesData.forEach(entity => {
+          entityIds.push(entity._id);
+        });
 
-        if (locationData.ids.length > 0) {
-          bodyData = {
-            id: locationData.ids,
-            type: programData[0].scope.entityType,
-          };
-          let entityData = await userService.locationSearch(bodyData);
-          if (entityData.success) {
-            entityData.data.forEach((entity) => {
-              entityIds.push(entity.id);
-            });
-          }
-        }
+        let updateProgram = await programsQueries.findAndUpdate({
+          _id : programId
+        },{
+          $addToSet : { "scope.entities" : { $each : entityIds } }
+        },{ new : true })
 
-        if (locationData.codes.length > 0) {
-          let filterData = {
-            code: locationData.codes,
-            type: programData[0].scope.entityType,
-          };
-          let entityDetails = await userService.locationSearch(filterData);
-
-          if (entityDetails.success) {
-            entityDetails.data.forEach((entity) => {
-              entityIds.push(entity.externalId);
-            });
-          }
-        }
-
-
-        let updateProgram = await database.models.programs
-          .findOneAndUpdate(
-            {
-              _id: programId,
-            },
-            {
-              $addToSet: { "scope.entities": { $each: entities } },
-            },
-            { new: true }
-          )
-          .lean();
-
-        if (!updateProgram || !updateProgram._id) {
+        if( !updateProgram || !updateProgram._id ) {
           throw {
-            message: CONSTANTS.apiResponses.PROGRAM_NOT_UPDATED,
-          };
+            message : CONSTANTS.apiResponses.PROGRAM_NOT_UPDATED
+          }
         }
 
         return resolve({
-          message: CONSTANTS.apiResponses.ENTITIES_ADDED_IN_PROGRAM,
-          success: true,
+          message : CONSTANTS.apiResponses.ENTITIES_ADDED_IN_PROGRAM,
+          success : true
         });
-      } catch (error) {
+
+      } catch(error) {
         return resolve({
-          success: false,
-          status: error.status
-            ? error.status
-            : HTTP_STATUS_CODE.internal_server_error.status,
-          message: error.message,
-        });
+          success : false,
+          status : error.status ? 
+          error.status : HTTP_STATUS_CODE.internal_server_error.status,
+          message : error.message
+        })
       }
-    });
-  }
+    })
+  } 
 
 
 
@@ -587,16 +563,11 @@ module.exports = class ProgramsHelper {
    static removeRolesInScope(programId, roles) {
     return new Promise(async (resolve, reject) => {
       try {
-        if (!roles.length > 0) {
-          return resolve({
-            status: HTTP_STATUS_CODE.bad_request.status,
-            message: CONSTANTS.apiResponses.INVALID_ROLE_CODE,
-          });
-        }
         let programData = await programsQueries.programsDocument(
           {
             _id: programId,
             scope: { $exists: true },
+            isReusable: false,
             isAPrivateProgram: false,
           },
           ["_id"]
@@ -611,22 +582,28 @@ module.exports = class ProgramsHelper {
 
 
 
-        let updateProgram = await database.models.programs
-          .findOneAndUpdate(
-            {
-              _id: programId,
-            },
-            {
-              $pull: { "scope.roles": { $in: roles } },
-            },
-            { new: true }
-          )
-          .lean();
+        if (Array.isArray(roles) && roles.length > 0) {
+          let updateProgram = await programsQueries
+            .findAndUpdate(
+              {
+                _id: programId,
+              },
+              {
+                $pull: { "scope.roles": { $in: roles } },
+              },
+              { new: true }
+            )
 
-        if (!updateProgram || !updateProgram._id) {
-          throw {
-            message: CONSTANTS.apiResponses.PROGRAM_NOT_UPDATED,
-          };
+          if (!updateProgram || !updateProgram._id) {
+            throw {
+              message: CONSTANTS.apiResponses.PROGRAM_NOT_UPDATED,
+            };
+          }
+        }else{
+          return resolve({
+            status: HTTP_STATUS_CODE.bad_request.status,
+            message: CONSTANTS.apiResponses.INVALID_ROLE_CODE,
+          });
         }
 
         return resolve({
@@ -681,17 +658,16 @@ module.exports = class ProgramsHelper {
           };
         }
 
-        let updateProgram = await database.models.programs
-          .findOneAndUpdate(
-            {
-              _id: programId,
-            },
-            {
-              $pull: { "scope.entities": { $in: entities } },
-            },
-            { new: true }
-          )
-          .lean();
+
+        let updateProgram = await programsQueries.findAndUpdate(
+          {
+            _id: programId,
+          },
+          {
+            $pull: { "scope.entities": { $in: entities } },
+          },
+          { new: true }
+        )
 
         if (!updateProgram || !updateProgram._id) {
           throw {
@@ -876,7 +852,7 @@ module.exports = class ProgramsHelper {
           update["$set"] = programUsersData;
 
           // add record to programUsers collection
-          let joinProgram = await programUsersHelper.update(query, update, {
+          let joinProgram = await programsQueries.findAndUpdate(query, update, {
             new: true,
             upsert: true,
           });
@@ -907,6 +883,9 @@ module.exports = class ProgramsHelper {
             data: {
               _id: joinProgram._id,
             },
+            result : {
+              _id: joinProgram._id,
+            }
           });
        
       } catch (error) {
@@ -941,7 +920,7 @@ module.exports = class ProgramsHelper {
       try {
         let programDocument = [];
 
-        let matchQuery = { status: CONSTANTS.common.ACTIVE };
+        let matchQuery = { status: CONSTANTS.common.ACTIVE_STATUS };
 
         if (Object.keys(filter).length > 0) {
           matchQuery = _.merge(matchQuery, filter);
@@ -1010,15 +989,14 @@ module.exports = class ProgramsHelper {
           projection2
         );
 
-        let programDocuments = await database.models.programs.aggregate(
+        let programDocuments = await programsQueries.getAggregate(
           programDocument
         );
         return resolve({
           success: true,
           message: CONSTANTS.apiResponses.PROGRAM_LIST,
-          data: {
-            result : programDocuments[0]
-          },
+          // data: programDocuments[0],
+          result : programDocuments[0]
         });
       } catch (error) {
         return resolve({
@@ -1029,6 +1007,57 @@ module.exports = class ProgramsHelper {
       }
     });
   }
+
+
+         /**
+    * Remove solutions from program.
+    * @method
+    * @name removeSolutions
+    * @param {Array} programId - Program id. 
+    * @param {Array} solutionIds - Program id. 
+    * @returns {Array} Update program.
+    */
+
+         static removeSolutions(userToken="",programId,solutionIds) {
+          return new Promise(async (resolve, reject) => {
+              try {
+      
+                  let programsData = await programQueries.programsDocument({_id : programId },["_id"]);
+      
+                  if( !programsData.length > 0 ) {
+                    throw {
+                      status : HTTP_STATUS_CODE.bad_request.status,
+                      message : CONSTANTS.apiResponses.PROGRAM_NOT_FOUND
+                    }
+                  }
+      
+                  let updateSolutionIds = solutionIds.map(solutionId => ObjectId(solutionId));
+      
+                  let updateSolution = 
+                  await programQueries.findAndUpdate({
+                    _id : programId
+                  },{
+                    $pull : {
+                      components : { $in : updateSolutionIds }
+                    }
+                  });
+      
+                  return resolve({
+                      success: true,
+                      message: CONSTANTS.apiResponses.PROGRAM_UPDATED_SUCCESSFULLY,
+                      data: updateSolution
+                  });
+      
+              } catch (error) {
+                  return resolve({
+                      status : error.status ? error.status : HTTP_STATUS_CODE.internal_server_error.status,
+                      success: false,
+                      message: error.message,
+                      data: false
+                  });
+              }
+          });
+         }
 
   
 

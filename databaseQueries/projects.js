@@ -68,7 +68,7 @@ module.exports = class Projects {
    * @returns {Array} - Project data.
    */
 
-    static getAggregate(aggregateData) {
+    static getAggregate(aggregateData=[]) {
         return new Promise(async (resolve, reject) => {
         
             try {
@@ -96,7 +96,7 @@ module.exports = class Projects {
         
             try {
               
-              let projectDocument = await database.models.projects.findOneAndUpdate(findQuery,UpdateObject, returnData);
+              let projectDocument = await database.models.projects.findOneAndUpdate(findQuery,UpdateObject, returnData).lean()
               return resolve(projectDocument);
 
             } catch (error) {
