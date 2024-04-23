@@ -576,7 +576,7 @@ module.exports = class ProjectTemplatesHelper {
                 await projectTemplateQueries.templateDocument({
                     status : CONSTANTS.common.PUBLISHED,
                     externalId : templateId,
-                    isReusable : false
+                    isReusable : true
                 });
                 
                 if ( !projectTemplateData.length > 0 ) {
