@@ -361,34 +361,6 @@ module.exports = class ProjectTemplatesHelper {
                                 }
                             }
 
-                            // <- Dirty fix . Not required
-                            // const kafkaMessage = 
-                            // await kafkaProducersHelper.pushProjectToKafka({
-                            //     internal : false,
-                            //     text : 
-                            //     templateData.categories.length === 1 ?  
-                            //     `A new project has been added under ${templateData.categories[0].name} category in library.` : 
-                            //     `A new project has been added in library`,
-                            //     type : "information",
-                            //     action : "mapping",
-                            //     payload : {
-                            //         project_id: createdTemplate._id
-                            //     },
-                            //     is_read : false,
-                            //     internal : false,
-                            //     title : "New project Available!",
-                            //     created_at : new Date(),
-                            //     appType : process.env.IMPROVEMENT_PROJECT_APP_TYPE,
-                            //     inApp:false,
-                            //     push: true,
-                            //     pushToTopic: true,
-                            //     topicName : process.env.NODE_ENV + "-" + process.env.IMPROVEMENT_PROJECT_APP_NAME + process.env.TOPIC_FOR_ALL_USERS
-                            // });
-
-                            // if (kafkaMessage.status !== CONSTANTS.common.SUCCESS) {
-                            //     currentData["_SYSTEM_ID"] = CONSTANTS.apiResponses.COULD_NOT_PUSHED_TO_KAFKA;
-                            // }
-
                         }
 
                     }
@@ -469,8 +441,7 @@ module.exports = class ProjectTemplatesHelper {
                                 
                             let templateData = await this.templateData(
                                 _.omit(currentData,["_SYSTEM_ID"]),
-                                csvInformation.data,
-                                userId
+                                csvInformation.data
                             );
 
                             if(template[0].isReusable === false) {
@@ -568,17 +539,15 @@ module.exports = class ProjectTemplatesHelper {
       * @returns {Object} imported templates data.
      */
 
-    static importProjectTemplate( templateId,userId,userToken,solutionId,updateData = {} ) {
+    static importProjectTemplate( templateId,userId,userToken,solutionId="",updateData = {} ) {
         return new Promise(async (resolve, reject) => {
             try {
-
                 let projectTemplateData = 
                 await projectTemplateQueries.templateDocument({
                     status : CONSTANTS.common.PUBLISHED,
                     externalId : templateId,
                     isReusable : true
                 });
-                
                 if ( !projectTemplateData.length > 0 ) {
                     throw new Error(CONSTANTS.apiResponses.PROJECT_TEMPLATE_NOT_FOUND)
                 }
@@ -587,44 +556,45 @@ module.exports = class ProjectTemplatesHelper {
                 newProjectTemplate.externalId = 
                 projectTemplateData[0].externalId +"-"+ UTILS.epochTime();
                 newProjectTemplate.createdBy = newProjectTemplate.updatedBy = userId;
+                let solutionData 
+                if(solutionId){
+                    solutionData = await solutionsQueries.solutionsDocument({"_id":ObjectId(solutionId)});
+                    // if( !solutionData.length >0 ) {
+                    //     throw {
+                    //         message : CONSTANTS.apiResponses.SOLUTION_NOT_FOUND,
+                    //         status : HTTP_STATUS_CODE.bad_request.status
+                    //     }
+                    // }
+                    if(solutionData.length >0 && solutionData[0].type !== CONSTANTS.common.IMPROVEMENT_PROJECT ) {
+                        throw {
+                            message : CONSTANTS.apiResponses.IMPROVEMENT_PROJECT_SOLUTION_NOT_FOUND,
+                            status : HTTP_STATUS_CODE.bad_request.status
+                        }
+                    }
+                    if(  solutionData.length >0 && solutionData[0].projectTemplateId ) {
+                        throw {
+                            message : CONSTANTS.apiResponses.PROJECT_TEMPLATE_EXISTS_IN_SOLUTION,
+                            status : HTTP_STATUS_CODE.bad_request.status
+                        }
+                    }
+                    if( solutionData.length >0 &&
+                        projectTemplateData[0].entityType &&  
+                        projectTemplateData[0].entityType !== "" &&
+                        projectTemplateData[0].entityType !== solutionData[0].entityType
+                    ) {
+                        throw {
+                            message : CONSTANTS.apiResponses.ENTITY_TYPE_MIS_MATCHED,
+                            status : HTTP_STATUS_CODE.bad_request.status
+                        }
+                    }
+                    if(solutionData.length >0){
+                        newProjectTemplate.solutionId = solutionData[0]._id;
+                        newProjectTemplate.solutionExternalId = solutionData[0].externalId;
+                        newProjectTemplate.programId = solutionData[0].programId;
+                        newProjectTemplate.programExternalId = solutionData[0].programExternalId;
+                    }
+                }
 
-                let solutionData = 
-                await solutionsQueries.solutionsDocument({"_id":ObjectId(solutionId)});
-                if( !solutionData.length >0 ) {
-                    throw {
-                        message : CONSTANTS.apiResponses.SOLUTION_NOT_FOUND,
-                        status : HTTP_STATUS_CODE.bad_request.status
-                    }
-                }
-                if( solutionData[0].type !== CONSTANTS.common.IMPROVEMENT_PROJECT ) {
-                    throw {
-                        message : CONSTANTS.apiResponses.IMPROVEMENT_PROJECT_SOLUTION_NOT_FOUND,
-                        status : HTTP_STATUS_CODE.bad_request.status
-                    }
-                }
-
-                if( solutionData[0].projectTemplateId ) {
-                    throw {
-                        message : CONSTANTS.apiResponses.PROJECT_TEMPLATE_EXISTS_IN_SOLUTION,
-                        status : HTTP_STATUS_CODE.bad_request.status
-                    }
-                }
-
-                if( 
-                    projectTemplateData[0].entityType &&  
-                    projectTemplateData[0].entityType !== "" &&
-                    projectTemplateData[0].entityType !== solutionData[0].entityType
-                ) {
-                    throw {
-                        message : CONSTANTS.apiResponses.ENTITY_TYPE_MIS_MATCHED,
-                        status : HTTP_STATUS_CODE.bad_request.status
-                    }
-                }
- 
-                newProjectTemplate.solutionId = solutionData[0]._id;
-                newProjectTemplate.solutionExternalId = solutionData[0].externalId;
-                newProjectTemplate.programId = solutionData[0].programId;
-                newProjectTemplate.programExternalId = solutionData[0].programExternalId;
 
 
                 newProjectTemplate.parentTemplateId = projectTemplateData[0]._id;
@@ -646,11 +616,11 @@ module.exports = class ProjectTemplatesHelper {
 
                 newProjectTemplate.isReusable = false;
 
+
                 let duplicateTemplateDocument = 
                 await projectTemplateQueries.createTemplate(
                   _.omit(newProjectTemplate, ["_id"])
                 );
-
                 if ( !duplicateTemplateDocument._id ) {
                     throw new Error(CONSTANTS.apiResponses.PROJECT_TEMPLATES_NOT_CREATED)
                 }
@@ -664,13 +634,15 @@ module.exports = class ProjectTemplatesHelper {
                     );
                 }
 
-                await solutionsQueries.updateSolutionDocument(
-                    {"_id" : solutionId},
-                    {
-                        projectTemplateId : duplicateTemplateDocument._id,
-                        name : duplicateTemplateDocument.title
-                    }
-                );  
+                if(solutionId){
+                    await solutionsQueries.updateSolutionDocument(
+                        {"_id" : solutionId},
+                        {
+                            projectTemplateId : duplicateTemplateDocument._id,
+                            name : duplicateTemplateDocument.title
+                        }
+                    );  
+                }
                 
                 await this.ratings(
                     projectTemplateData[0]._id,
@@ -696,7 +668,7 @@ module.exports = class ProjectTemplatesHelper {
                     data: {}
                 });
             }
-    })
+        })
     }
 
      /**
@@ -854,7 +826,7 @@ module.exports = class ProjectTemplatesHelper {
                         newProjectTemplateTask.externalId = taskData.externalId +"-"+ UTILS.epochTime();
 
                         let duplicateTemplateTask = 
-                            await database.models.projectTemplateTasks.create(
+                            await projectTemplateTaskQueries.createTemplateTask(
                               _.omit(newProjectTemplateTask, ["_id"])
                             );
 
@@ -889,7 +861,7 @@ module.exports = class ProjectTemplatesHelper {
                                         newProjectTemplateChildTask.externalId = childTaskData.externalId +"-"+ UTILS.epochTime();
                                         
                                         let duplicateChildTemplateTask = 
-                                            await database.models.projectTemplateTasks.create(
+                                            await projectTemplateTaskQueries.createTemplateTask(
                                               _.omit(newProjectTemplateChildTask, ["_id"])
                                             );
 

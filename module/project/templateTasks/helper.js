@@ -525,8 +525,7 @@ module.exports = class ProjectTemplateTasksHelper {
                             let createdTask = await this.createOrUpdateTask(
                                 currentData,
                                 csvData.data.template,
-                                csvData.data.solutionData,
-                                csvData.data.observationData
+                                csvData.data.solutionData
                             );
 
                             if ( createdTask._SYSTEM_ID != "" ) {

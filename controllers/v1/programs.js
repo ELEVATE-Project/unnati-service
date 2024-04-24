@@ -175,15 +175,62 @@ module.exports = class  Programs extends Abstract{
     * @apiGroup Programs
     * @apiParamExample {json} Request-Body:
     * @apiHeader {String} X-authenticated-user-token Authenticity token
-    * @apiSampleRequest /project/v1/programs/details/5ffbf8909259097d48017bbf
+    * @apiSampleRequest /project/v1/programs/details/66254d3dd07c5713b46d17c1
     * @apiUse successBody
     * @apiUse errorBody
     * @apiParamExample {json} Response:
     * {
-          "message": "Programs fetched successfully",
-          "status": 200
-      }
-    */
+        "message": "Programs fetched successfully",
+        "status": 200,
+        "result": {
+            "_id": "66254d3dd07c5713b46d17c1",
+            "scope": {
+                "entityType": "state",
+                "entities": [
+                    "bc75cc99-9205-463e-a722-5326857838f8",
+                    "8ac1efe9-0415-4313-89ef-884e1c8eee34",
+                    "5f33c3d85f637784791cd830"
+                ],
+                "roles": [
+                    "HM",
+                    "BEO"
+                ]
+            },
+            "resourceType": [
+                "program"
+            ],
+            "language": [
+                "English",
+                "Kannada",
+                "telugu"
+            ],
+            "keywords": [],
+            "concepts": [],
+            "components": [
+                "5b98fa069f664f7e1ae7498c"
+            ],
+            "isAPrivateProgram": false,
+            "isDeleted": false,
+            "requestForPIIConsent": true,
+            "rootOrganisations": [],
+            "createdFor": [],
+            "deleted": false,
+            "status": "active",
+            "owner": "2",
+            "createdBy": "2",
+            "updatedBy": "2",
+            "externalId": "PROGID01",
+            "name": "DCPCR School Development Index 2018-19",
+            "description": "DCPCR School Development Index 2018-19",
+            "imageCompression": {
+                "quality": 10
+            },
+            "updatedAt": "2024-04-23T19:45:34.196Z",
+            "createdAt": "2024-04-21T17:30:37.519Z",
+            "__v": 0
+        }
+    }
+  */
 
 
   /**
@@ -219,7 +266,7 @@ module.exports = class  Programs extends Abstract{
     /**
     * @api {post} /project/v1/programs/addRolesInScope/:programId Add roles in programs
     * @apiVersion 1.0.0
-    * @apiName 
+    * @apiName addRolesInScope
     * @apiGroup Programs
     * @apiParamExample {json} Request-Body:
     * {
@@ -269,7 +316,7 @@ module.exports = class  Programs extends Abstract{
 
    /**
     * @api {post} /project/v1/programs/addEntitiesInScope/:programId Add entities in programs
-    * @apiName 
+    * @apiName addEntitiesInScope
     * @apiGroup Programs
     * @apiParamExample {json} Request-Body:
     * {
@@ -320,9 +367,9 @@ module.exports = class  Programs extends Abstract{
 
 
     /**
-    * @api {post} /project/v1/programs/removeRolesInScope/:programId Add roles in programs
+    * @api {post} /project/v1/programs/removeRolesInScope/:programId Remove roles in programs
     * @apiVersion 1.0.0
-    * @apiName 
+    * @apiName removeRolesInScope
     * @apiGroup Programs
     * @apiParamExample {json} Request-Body:
     * {
@@ -375,12 +422,12 @@ module.exports = class  Programs extends Abstract{
      /**
     * @api {post} /project/v1/programs/removeEntitiesInScope/:programId remove entities from programs
     * @apiVersion 1.0.0
-    * @apiName 
+    * @apiName removeEntitiesInScope
     * @apiGroup Programs
     * @apiParamExample {json} Request-Body:
     * {
-      "entities" : ["5f33c3d85f637784791cd830"]
-    }
+        "entities" : ["5f33c3d85f637784791cd830"]
+      }
     * @apiHeader {String} X-authenticated-user-token Authenticity token
     * @apiSampleRequest /project/v1/programs/removeEntitiesInScope/5ffbf8909259097d48017bbf
     * @apiUse successBody
@@ -392,7 +439,7 @@ module.exports = class  Programs extends Abstract{
       }
     */
 
-     /**
+    /**
    * Remove entities in program scope
    * @method
    * @name removeEntitiesInScope
@@ -430,8 +477,8 @@ module.exports = class  Programs extends Abstract{
   * @apiGroup Programs
   * @apiParamExample {json} Request-Body:
   * {
-    "entities" : ["5f33c3d85f637784791cd830"]
-  }
+      "entities" : ["5f33c3d85f637784791cd830"]
+    }
   * @apiHeader {String} X-authenticated-user-token Authenticity token
   * @apiSampleRequest /project/v1/programs/list?page=1&limit=10&search=PROGRAM01
   * @apiUse successBody
@@ -521,7 +568,7 @@ module.exports = class  Programs extends Abstract{
           let programJoin = await programsHelper.join(
             req.params._id,
             req.body,
-            req.userDetails.userId,
+            req.userDetails.userInformation.userId,
             req.userDetails.userToken,
             req.headers["x-app-id"]  ? 
             req.headers["x-app-id"]  : 

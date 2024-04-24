@@ -44,71 +44,72 @@ module.exports = class UserProjects extends Abstract {
     * @apiSampleRequest /project/v1/userProjects/sync/5f731631e8d7cd3b88ac0659?lastDownloadedAt=0125747659358699520
     * @apiParamExample {json} Request:
     * {
-    "title": "Project 1",
-    "description": "Project 1 description",
-    "tasks": [
-        {
-            "_id": "289d9558-b98f-41cf-81d3-92486f114a49",
-            "name": "Task 1",
-            "description": "Task 1 description",
-            "status": "notStarted/inProgress/completed",
-            "isACustomTask": false,
-            "startDate": "2020-09-29T09:08:41.667Z",
-            "endDate": "2020-09-29T09:08:41.667Z",
-            "lastModifiedAt": "2020-09-29T09:08:41.667Z",
-            "type": "single/multiple",
-            “isDeleted” : false,
-             “attachments” : [
-               {
-                 "name" : "download(2).jpeg",
-                 "type" : "image/jpeg",
-                  "sourcePath" : "projectId/userId/imageName"
-               }
-             ],
-             “remarks” : “Tasks completed”,
-             “assignee” : “Aman”,
-            "children": [
+        "title": "Project 1",
+        "description": "Project 1 description",
+        "tasks": [
+            {
+                "_id": "289d9558-b98f-41cf-81d3-92486f114a49",
+                "name": "Task 1",
+                "description": "Task 1 description",
+                "status": "notStarted/inProgress/completed",
+                "isACustomTask": false,
+                "startDate": "2020-09-29T09:08:41.667Z",
+                "endDate": "2020-09-29T09:08:41.667Z",
+                "lastModifiedAt": "2020-09-29T09:08:41.667Z",
+                "type": "single/multiple",
+                “isDeleted” : false,
+                “attachments” : [
                 {
-                    "_id": "289d9558-b98f-41cf-81d3-92486f114a50",
-                    "name": "Task 2",
-                    "description": "Task 2 description",
-                    "status": "notStarted/inProgress/completed",
-                    "children": [],
-                    "isACustomTask": false,
-                    "startDate": "2020-09-29T09:08:41.667Z",
-                    "endDate": "2020-09-29T09:08:41.667Z",
-                    "lastModifiedAt": "2020-09-29T09:08:41.667Z",
-                    "type": "single/multiple”,
-                    “isDeleted” : false
+                    "name" : "download(2).jpeg",
+                    "type" : "image/jpeg",
+                    "sourcePath" : "projectId/userId/imageName"
                 }
-            ]
+                ],
+                “remarks” : “Tasks completed”,
+                “assignee” : “Aman”,
+                "children": [
+                    {
+                        "_id": "289d9558-b98f-41cf-81d3-92486f114a50",
+                        "name": "Task 2",
+                        "description": "Task 2 description",
+                        "status": "notStarted/inProgress/completed",
+                        "children": [],
+                        "isACustomTask": false,
+                        "startDate": "2020-09-29T09:08:41.667Z",
+                        "endDate": "2020-09-29T09:08:41.667Z",
+                        "lastModifiedAt": "2020-09-29T09:08:41.667Z",
+                        "type": "single/multiple”,
+                        “isDeleted” : false
+                    }
+                ]
+            }
+        ],
+    
+        "programId": "",
+        "programName": "New Project Program",
+        "entityId" : “5beaa888af0065f0e0a10515”,
+        "categories": [
+            {
+                "value": "5f102331665bee6a740714e8",
+                "label": "teacher"
+            },
+            {
+                "value": "",
+                "label": "other"
+            }
+        ],
+        "status": "notStarted/inProgress/completed",
+        “lastDownloadedAt” : "2020-09-29T09:08:41.667Z",
+        "payload": {
+            "_id": "289d9558-b98f-41cf-81d3-92486f114a51"
         }
-    ],
-    "programId": "",
-    "programName": "New Project Program",
-    "entityId" : “5beaa888af0065f0e0a10515”,
-    "categories": [
-        {
-            "value": "5f102331665bee6a740714e8",
-            "label": "teacher"
-        },
-        {
-            "value": "",
-            "label": "other"
-        }
-    ],
-    "status": "notStarted/inProgress/completed",
-    “lastDownloadedAt” : "2020-09-29T09:08:41.667Z",
-    "payload": {
-        "_id": "289d9558-b98f-41cf-81d3-92486f114a51"
-    }}
+    }
     * @apiParamExample {json} Response:
     * {
     * "message": "Project updated successfully",
     * "status": 200,
     * "result" : {
     *   "programId" : "5fb669f223575a2f0cef3b33"
-    * }
     * }
     * @apiUse successBody
     * @apiUse errorBody
@@ -455,69 +456,70 @@ module.exports = class UserProjects extends Abstract {
     * @apiSampleRequest /project/v1/userProjects/add
     * @apiParamExample {json} Request:
     * {
-    "title": "Project 1",
-    "description": "Project 1 description",
-    "tasks": [
-        {
-            "_id": "289d9558-b98f-41cf-81d3-92486f114a49",
-            "name": "Task 1",
-            "description": "Task 1 description",
-            "status": "notStarted/inProgress/completed",
-            "startDate": "2020-09-29T09:08:41.667Z",
-            "endDate": "2020-09-29T09:08:41.667Z",
-            "lastModifiedAt": "2020-09-29T09:08:41.667Z",
-            "type": "single/multiple",
-            “isDeleted” : false,
-             “remarks” : “Tasks completed”,
-             “assignee” : “Aman”,
-            "children": [
-                {
-                    "_id": "289d9558-b98f-41cf-81d3-92486f114a50",
-                    "name": "Task 2",
-                    "description": "Task 2 description",
-                    "status": "notStarted/inProgress/completed",
-                    "children": [],
-                    "startDate": "2020-09-29T09:08:41.667Z",
-                    "endDate": "2020-09-29T09:08:41.667Z",
-                    "lastModifiedAt": "2020-09-29T09:08:41.667Z",
-                    "type": "single/multiple”,
-                    “isDeleted” : false
-                }
-            ]
-        }
-    ],
-    "programId": "",
-    "programName": "New Project Program",
-    "entityId" : “5beaa888af0065f0e0a10515”,
-    "categories": [
-        {
-            "value": "5f102331665bee6a740714e8",
-            "label": "teacher"
+        "title": "Project 1",
+        "description": "Project 1 description",
+        "tasks": [
+            {
+                "_id": "289d9558-b98f-41cf-81d3-92486f114a49",
+                "name": "Task 1",
+                "description": "Task 1 description",
+                "status": "notStarted/inProgress/completed",
+                "startDate": "2020-09-29T09:08:41.667Z",
+                "endDate": "2020-09-29T09:08:41.667Z",
+                "lastModifiedAt": "2020-09-29T09:08:41.667Z",
+                "type": "single/multiple",
+                “isDeleted” : false,
+                “remarks” : “Tasks completed”,
+                “assignee” : “Aman”,
+                "children": [
+                    {
+                        "_id": "289d9558-b98f-41cf-81d3-92486f114a50",
+                        "name": "Task 2",
+                        "description": "Task 2 description",
+                        "status": "notStarted/inProgress/completed",
+                        "children": [],
+                        "startDate": "2020-09-29T09:08:41.667Z",
+                        "endDate": "2020-09-29T09:08:41.667Z",
+                        "lastModifiedAt": "2020-09-29T09:08:41.667Z",
+                        "type": "single/multiple”,
+                        “isDeleted” : false
+                    }
+                ]
+            }
+        ],
+        "programId": "",
+        "programName": "New Project Program",
+        "entityId" : “5beaa888af0065f0e0a10515”,
+        "categories": [
+            {
+                "value": "5f102331665bee6a740714e8",
+                "label": "teacher"
+            },
+            {
+                "value": "",
+                "label": "other"
+            }
+        ],
+        "status": "notStarted/inProgress/completed",
+        “lastDownloadedAt” : "2020-09-29T09:08:41.667Z",
+        "payload": {
+            "_id": "289d9558-b98f-41cf-81d3-92486f114a51"
         },
-        {
-            "value": "",
-            "label": "other"
+        "profileInformation" : {
+            "role" : "HM,DEO",
+            "state" : "236f5cff-c9af-4366-b0b6-253a1789766a",
+            "district" : "1dcbc362-ec4c-4559-9081-e0c2864c2931",
+            "school" : "c5726207-4f9f-4f45-91f1-3e9e8e84d824"
         }
-    ],
-    "status": "notStarted/inProgress/completed",
-    “lastDownloadedAt” : "2020-09-29T09:08:41.667Z",
-    "payload": {
-        "_id": "289d9558-b98f-41cf-81d3-92486f114a51"
-    },
-    "profileInformation" : {
-        "role" : "HM,DEO",
-   		"state" : "236f5cff-c9af-4366-b0b6-253a1789766a",
-        "district" : "1dcbc362-ec4c-4559-9081-e0c2864c2931",
-        "school" : "c5726207-4f9f-4f45-91f1-3e9e8e84d824"
-    }}
+    }
     * @apiParamExample {json} Response:
     * {
-    * "message": "Project created successfully",
-    * "status": 200,
-    * "result" : {
-    *   "programId" : "5fb669f223575a2f0cef3b33"
-    *   "projectId" : "5f102331665bee6a740714e8"
-    * }
+    *   "message": "Project created successfully",
+    *   "status": 200,
+    *   "result" : {
+    *       "programId" : "5fb669f223575a2f0cef3b33"
+    *       "projectId" : "5f102331665bee6a740714e8"
+    *   }
     * }
     * @apiUse successBody
     * @apiUse errorBody
@@ -748,10 +750,10 @@ module.exports = class UserProjects extends Abstract {
    * @apiUse errorBody
    * @apiParamExample {json} Request-Body:
    * {
-    "query" : {
-        "code" : "HM"
-    },
-    "projection" : ["_id","code"]
+        "query" : {
+            "code" : "HM"
+        },
+        "projection" : ["_id","code"]
     }
     * @apiParamExample {json} Response: 
     {
@@ -874,58 +876,7 @@ module.exports = class UserProjects extends Abstract {
         });
     }
 
-    /**
-   * @api {post} /project/v1/userProjects/list
-   * Lists of projects.
-   * @apiVersion 0.0.1
-   * @apiName Lists of projects.
-   * @apiGroup Entity Types
-   * @apiHeader {String} X-authenticated-user-token Authenticity token
-   * @apiSampleRequest /project/v1/userProjects/list
-   * @apiUse successBody
-   * @apiUse errorBody
-   * @apiParamExample {json} Request-Body:
-   * {
-    "query" : {
-        "code" : "HM"
-    },
-    "projection" : ["_id","code"]
-    }
-   * @apiParamExample {json} Response: 
-   * {
-   * "message": "Project fetched successfully",
-   * "status": 200,
-   * "result" : [
-   *  {
-   * "_id": "5d15a959e9185967a6d5e8a6",
-   *  "title": "Come See Our School!- Parent Mela"
-   }]
-  }
-   */
 
-  /**
-   * Lists of projects.
-   * @method
-   * @name list
-   * @returns {JSON} List projects.
-  */
-
-    async list(req) {
-      return new Promise(async (resolve, reject) => {
-        try {
-
-          let projects = await userProjectsHelper.list(req.body);
-          return resolve(projects);
-
-        } catch (error) {
-          return reject({
-            status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-            message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-            errorObject: error
-          });
-        }
-      });
-    }
 
     /**
     * @api {post} /project/v1/userProjects/importFromLibrary/:projectTemplateId&isATargetedSolution=false
@@ -935,136 +886,137 @@ module.exports = class UserProjects extends Abstract {
     * @apiSampleRequest /project/v1/userProjects/importFromLibrary/5f5b32cef16777642d51aaf0
     * @apiParamExample {json} Request:
     * {
-    * "programId" : "",
-    * "programName" : "My Program",
-    * "rating" : 2
-    * }
+        "programId" : "",
+        "programName" : "My Program",
+        "rating" : 2
+    }
     * @apiParamExample {json} Response:
     * {
-    "message": "Successfully fetched projects",
-    "status": 200,
-    "result": {
-        "userId": "01c04166-a65e-4e92-a87b-a9e4194e771d",
-        "isDeleted": false,
-        "categories": [
-            {
-                "_id": "5f102331665bee6a740714eb",
-                "externalId": "community",
-                "name": "Community"
-            }
-        ],
-        "createdBy": "01c04166-a65e-4e92-a87b-a9e4194e771d",
-        "tasks": [
-            {
-                "_id": "61d6690d-82cb-4db2-8191-8dd945c5e742",
-                "isDeleted": false,
-                "isDeletable": false,
-                "taskSequence": [],
-                "children": [
-                    {
-                        "_id": "b5068cef-eefc-4f43-8a29-ab9c2268f451",
-                        "isDeleted": false,
-                        "isDeletable": false,
-                        "taskSequence": [],
-                        "children": [],
-                        "visibleIf": [
-                            {
-                                "operator": "===",
-                                "_id": "5f72f9998925ec7c60f79a91",
-                                "value": "started"
-                            }
-                        ],
-                        "deleted": false,
-                        "type": "single",
-                        "projectTemplateId": "5f5b32cef16777642d51aaf0",
-                        "name": "Sub task 1",
-                        "externalId": "Sub-task-1",
-                        "description": "Sub-Task-1-Description",
-                        "updatedAt": "2020-09-29T09:08:41.681Z",
-                        "createdAt": "2020-09-29T09:08:41.675Z",
-                        "__v": 0,
-                        "status": "notStarted"
-                    },
-                    {
-                        "_id": "988ef20f-267f-4bed-9a38-9d7dc6a320e9",
-                        "isDeleted": false,
-                        "isDeletable": false,
-                        "taskSequence": [],
-                        "children": [],
-                        "visibleIf": [
-                            {
-                                "operator": "===",
-                                "_id": "5f72f9998925ec7c60f79a91",
-                                "value": "started"
-                            }
-                        ],
-                        "deleted": false,
-                        "type": "single",
-                        "projectTemplateId": "5f5b32cef16777642d51aaf0",
-                        "name": "Sub task 2",
-                        "externalId": "Sub-task-2",
-                        "description": "Sub-Task-2-Description",
-                        "updatedAt": "2020-09-29T09:08:41.693Z",
-                        "createdAt": "2020-09-29T09:08:41.689Z",
-                        "__v": 0,
-                        "status": "notStarted"
-                    }
-                ],
-                "visibleIf": [],
-                "deleted": false,
-                "type": "multiple",
-                "projectTemplateId": "5f5b32cef16777642d51aaf0",
-                "name": "Task 1",
-                "externalId": "task-1",
-                "description": "Task-1 Description",
-                "updatedAt": "2020-09-29T09:08:41.691Z",
-                "createdAt": "2020-09-29T09:08:41.612Z",
-                "__v": 0,
-                "status": "notStarted"
+        "message": "Successfully fetched projects",
+        "status": 200,
+        "result": {
+            "userId": "01c04166-a65e-4e92-a87b-a9e4194e771d",
+            "isDeleted": false,
+            "categories": [
+                {
+                    "_id": "5f102331665bee6a740714eb",
+                    "externalId": "community",
+                    "name": "Community"
+                }
+            ],
+            "createdBy": "01c04166-a65e-4e92-a87b-a9e4194e771d",
+            "tasks": [
+                {
+                    "_id": "61d6690d-82cb-4db2-8191-8dd945c5e742",
+                    "isDeleted": false,
+                    "isDeletable": false,
+                    "taskSequence": [],
+                    "children": [
+                        {
+                            "_id": "b5068cef-eefc-4f43-8a29-ab9c2268f451",
+                            "isDeleted": false,
+                            "isDeletable": false,
+                            "taskSequence": [],
+                            "children": [],
+                            "visibleIf": [
+                                {
+                                    "operator": "===",
+                                    "_id": "5f72f9998925ec7c60f79a91",
+                                    "value": "started"
+                                }
+                            ],
+                            "deleted": false,
+                            "type": "single",
+                            "projectTemplateId": "5f5b32cef16777642d51aaf0",
+                            "name": "Sub task 1",
+                            "externalId": "Sub-task-1",
+                            "description": "Sub-Task-1-Description",
+                            "updatedAt": "2020-09-29T09:08:41.681Z",
+                            "createdAt": "2020-09-29T09:08:41.675Z",
+                            "__v": 0,
+                            "status": "notStarted"
+                        },
+                        {
+                            "_id": "988ef20f-267f-4bed-9a38-9d7dc6a320e9",
+                            "isDeleted": false,
+                            "isDeletable": false,
+                            "taskSequence": [],
+                            "children": [],
+                            "visibleIf": [
+                                {
+                                    "operator": "===",
+                                    "_id": "5f72f9998925ec7c60f79a91",
+                                    "value": "started"
+                                }
+                            ],
+                            "deleted": false,
+                            "type": "single",
+                            "projectTemplateId": "5f5b32cef16777642d51aaf0",
+                            "name": "Sub task 2",
+                            "externalId": "Sub-task-2",
+                            "description": "Sub-Task-2-Description",
+                            "updatedAt": "2020-09-29T09:08:41.693Z",
+                            "createdAt": "2020-09-29T09:08:41.689Z",
+                            "__v": 0,
+                            "status": "notStarted"
+                        }
+                    ],
+                    "visibleIf": [],
+                    "deleted": false,
+                    "type": "multiple",
+                    "projectTemplateId": "5f5b32cef16777642d51aaf0",
+                    "name": "Task 1",
+                    "externalId": "task-1",
+                    "description": "Task-1 Description",
+                    "updatedAt": "2020-09-29T09:08:41.691Z",
+                    "createdAt": "2020-09-29T09:08:41.612Z",
+                    "__v": 0,
+                    "status": "notStarted"
+                },
+                {
+                    "_id": "289d9558-b98f-41cf-81d3-92486f114a49",
+                    "isDeleted": false,
+                    "isDeletable": false,
+                    "taskSequence": [],
+                    "children": [],
+                    "visibleIf": [],
+                    "deleted": false,
+                    "type": "single",
+                    "projectTemplateId": "5f5b32cef16777642d51aaf0",
+                    "name": "Task 12",
+                    "externalId": "Task-12",
+                    "description": "Task-1 Description",
+                    "updatedAt": "2020-09-29T09:08:41.667Z",
+                    "createdAt": "2020-09-29T09:08:41.667Z",
+                    "__v": 0,
+                    "status": "notStarted"
+                }
+            ],
+            "updatedBy": "01c04166-a65e-4e92-a87b-a9e4194e771d",
+            "_id": "5f731d68920a8c3e092e6e4c",
+            "deleted": false,
+            "name": "Test-2",
+            "description": "improving school library",
+            "status": "notStarted",
+            "updatedAt": "2020-09-29T11:41:28.656Z",
+            "createdAt": "2020-09-11T08:18:22.077Z",
+            "__v": 0,
+            "solutionInformation": {
+                "externalId": "01c04166-a65e-4e92-a87b-a9e4194e771d-1601379673400"
             },
-            {
-                "_id": "289d9558-b98f-41cf-81d3-92486f114a49",
-                "isDeleted": false,
-                "isDeletable": false,
-                "taskSequence": [],
-                "children": [],
-                "visibleIf": [],
-                "deleted": false,
-                "type": "single",
-                "projectTemplateId": "5f5b32cef16777642d51aaf0",
-                "name": "Task 12",
-                "externalId": "Task-12",
-                "description": "Task-1 Description",
-                "updatedAt": "2020-09-29T09:08:41.667Z",
-                "createdAt": "2020-09-29T09:08:41.667Z",
-                "__v": 0,
-                "status": "notStarted"
-            }
-        ],
-        "updatedBy": "01c04166-a65e-4e92-a87b-a9e4194e771d",
-        "_id": "5f731d68920a8c3e092e6e4c",
-        "deleted": false,
-        "name": "Test-2",
-        "description": "improving school library",
-        "status": "notStarted",
-        "updatedAt": "2020-09-29T11:41:28.656Z",
-        "createdAt": "2020-09-11T08:18:22.077Z",
-        "__v": 0,
-        "solutionInformation": {
-            "externalId": "01c04166-a65e-4e92-a87b-a9e4194e771d-1601379673400"
-        },
-        "programInformation": {
-            "externalId": "My Program-1601379673400",
-            "name": "My Program"
-        },
-        "taskReport": {},
-        "entityInformation": {},
-        "rationale": "sample",
-        "primaryAudience": [
-            "teachers",
-            "head master"
-        ]
-    }}
+            "programInformation": {
+                "externalId": "My Program-1601379673400",
+                "name": "My Program"
+            },
+            "taskReport": {},
+            "entityInformation": {},
+            "rationale": "sample",
+            "primaryAudience": [
+                "teachers",
+                "head master"
+            ]
+        }
+    }
     * @apiUse successBody
     * @apiUse errorBody
     */

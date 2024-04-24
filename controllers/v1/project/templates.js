@@ -150,11 +150,11 @@ module.exports = class ProjectTemplates extends Abstract {
     * }
     * @apiParamExample {json} Response:
     * {
-    "message": "Successfully created duplicate project templates",
-    "status": 200,
-    "result": {
-        "_id": "5f2402f570d11462f8e9a591"
-    }
+        "message": "Successfully created duplicate project templates",
+        "status": 200,
+        "result": {
+            "_id": "5f2402f570d11462f8e9a591"
+        }
     }
     * @apiUse successBody
     * @apiUse errorBody

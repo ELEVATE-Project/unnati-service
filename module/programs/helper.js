@@ -309,7 +309,7 @@ module.exports = class ProgramsHelper {
           { new: true }
         )
 
-        if (!program) {
+        if (!program || !program._id) {
           throw {
             message: CONSTANTS.apiResponses.PROGRAM_NOT_UPDATED,
           };
@@ -370,9 +370,9 @@ module.exports = class ProgramsHelper {
             return resolve({
               message: CONSTANTS.apiResponses.PROGRAMS_FETCHED,
               success: true,
-              data: {
-                result: programData[0]
-                }
+              data: programData[0],
+              result : programData[0]
+                
             });
           } catch (error) {
             return resolve({
@@ -838,8 +838,8 @@ module.exports = class ProgramsHelper {
 
           //create or update query
           const query = {
-            programId: programId,
-            userId: userId,
+            _id: programId,
+            owner: userId,
           };
           //if a resource is started
           if (data.isResource) {
@@ -864,7 +864,7 @@ module.exports = class ProgramsHelper {
             };
           }
 
-          let joinProgramDetails = joinProgram.toObject();
+          let joinProgramDetails = joinProgram
 
           if (pushProgramUsersDetailsToKafka) {
             joinProgramDetails.programName = programData[0].name;
@@ -995,7 +995,7 @@ module.exports = class ProgramsHelper {
         return resolve({
           success: true,
           message: CONSTANTS.apiResponses.PROGRAM_LIST,
-          // data: programDocuments[0],
+          data: programDocuments[0],
           result : programDocuments[0]
         });
       } catch (error) {
@@ -1009,7 +1009,7 @@ module.exports = class ProgramsHelper {
   }
 
 
-         /**
+    /**
     * Remove solutions from program.
     * @method
     * @name removeSolutions

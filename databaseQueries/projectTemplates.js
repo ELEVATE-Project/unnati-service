@@ -55,7 +55,6 @@ module.exports = class ProjectTemplates {
             try {
                 let queryObject = (filterData != "all") ? filterData : {};
                 let projection = {}
-           
                 if (fieldsArray != "all") {
                     fieldsArray.forEach(field => {
                         projection[field] = 1;

@@ -16,7 +16,6 @@ const programQueries = require(DB_QUERY_BASE_PATH + "/programs")
 const userService = require(GENERICS_FILES_PATH + "/services/users")
 const validateEntity = process.env.VALIDATE_ENTITIES
 const appsPortalBaseUrl = process.env.APP_PORTAL_BASE_URL + "/"
-const entitiesHelper = require(MODULES_BASE_PATH + "/entities/helper")
 const projectQueries = require(DB_QUERY_BASE_PATH + "/projects")
 const filesHelpers = require(MODULES_BASE_PATH + "/files/helper")
 const observationQueries = require(DB_QUERY_BASE_PATH + "/observations")
@@ -341,7 +340,7 @@ static _createSolutionData(
             let entityData = await entitiesService.entityDocuments(bodyData,"all",userToken);
             if (entityData.success) {
               entityData.data.forEach((entity) => {
-                entityIds.push(entity.id);
+                entityIds.push(entity._id);
               });
             }
           }
@@ -749,9 +748,7 @@ static _createSolutionData(
         try {
           let queryData = await this.queryBasedOnRoleAndLocation(
             bodyData,
-            type,
-            subType,
-            programId
+            type
           );
 
           if (!queryData.success) {
@@ -1096,6 +1093,7 @@ static _createSolutionData(
 
 
           filterQuery.status = CONSTANTS.common.ACTIVE_STATUS;
+          filterQuery.type = type
   
           if (data.filter && Object.keys(data.filter).length > 0) {
             let solutionsSkipped = [];
@@ -1217,7 +1215,7 @@ static _createSolutionData(
    * @returns {JSON} - Details of solution based on role and location.
    */
 
-    static detailsBasedOnRoleAndLocation(solutionId, bodyData, type = "") {
+    static detailsBasedOnRoleAndLocation(solutionId, bodyData, type = "", isAPrivateSolution="") {
       return new Promise(async (resolve, reject) => {
         try {
           let queryData = await this.queryBasedOnRoleAndLocation(bodyData, type);
@@ -1287,7 +1285,8 @@ static _createSolutionData(
   static createProgramAndSolution(
     userId,
     data,
-    createADuplicateSolution = ""
+    userToken,
+    createADuplicateSolution = "",
   ) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -1405,7 +1404,7 @@ static _createSolutionData(
             bodyData = {
               id: locationData.ids,
             };
-            let entityData = await entitiesService.entityDocuments(bodyData);
+            let entityData = await entitiesService.entityDocuments(bodyData,"all",userToken);
 
             if (!entityData.success) {
               return resolve({
@@ -1416,7 +1415,7 @@ static _createSolutionData(
             }
 
             entityData.data.forEach((entity) => {
-              entitiesData.push(entity.id);
+              entitiesData.push(entity._id);
             });
 
             solutionDataToBeUpdated["entityType"] = entityData.data[0].type;
@@ -1424,20 +1423,20 @@ static _createSolutionData(
 
           if (locationData.codes.length > 0) {
             let filterData = {
-              code: locationData.codes,
+              "registryDetails.code": {$in : locationData.codes},
             };
-            let entityDetails = await entitiesService.entityDocuments(filterData);
-            let entityDocuments = entityDetails.data;
-            if (!entityDetails.success || !entityDocuments.length > 0) {
+            let entityDetails = await entitiesService.entityDocuments(filterData,"all",userToken);
+            if (!entityDetails.success || !entityDetails.data || !entityDetails.data.length > 0) {
               return resolve({
                 status: HTTP_STATUS_CODE.bad_request.status,
                 message: CONSTANTS.apiResponses.ENTITY_NOT_FOUND,
                 result: {},
               });
             }
+            let entityDocuments = entityDetails.data;
 
             entityDocuments.forEach((entity) => {
-              entitiesData.push(entity.id);
+              entitiesData.push(entity._id);
             });
 
             solutionDataToBeUpdated["entityType"] = CONSTANTS.common.SCHOOL;
@@ -2691,31 +2690,31 @@ static _generateLink(appsPortalBaseUrl, prefix, solutionLink, solutionType) {
 
                   });
 
-                  if( templateFilePath.length > 0 ) {
+                  // if( templateFilePath.length > 0 ) {
 
-                      let certificateTemplateDownloadableUrl = 
-                          await this.getDownloadableUrl(
-                              {
-                                  filePaths: templateFilePath
-                              }
-                      );
-                      if ( !certificateTemplateDownloadableUrl.success ) {
-                          throw {
-                              message:  CONSTANTS.apiResponses.DOWNLOADABLE_URL_NOT_FOUND
-                          };
-                      }
-                      // map downloadable templateUrl to corresponding project data
-                      data.forEach(projectData => {
-                          if (projectData.certificate) {
-                              var itemFromUrlArray = certificateTemplateDownloadableUrl.data.find(item=> item.filePath == projectData.certificate.templateUrl);
-                                  if (itemFromUrlArray) {
-                                      projectData.certificate.templateUrl = itemFromUrlArray.url;
-                                  }
-                              }
-                          }
+                  //     let certificateTemplateDownloadableUrl = 
+                  //         await this.getDownloadableUrl(
+                  //             {
+                  //                 filePaths: templateFilePath
+                  //             }
+                  //     );
+                  //     if ( !certificateTemplateDownloadableUrl.success ) {
+                  //         throw {
+                  //             message:  CONSTANTS.apiResponses.DOWNLOADABLE_URL_NOT_FOUND
+                  //         };
+                  //     }
+                  //     // map downloadable templateUrl to corresponding project data
+                  //     data.forEach(projectData => {
+                  //         if (projectData.certificate) {
+                  //             var itemFromUrlArray = certificateTemplateDownloadableUrl.data.find(item=> item.filePath == projectData.certificate.templateUrl);
+                  //                 if (itemFromUrlArray) {
+                  //                     projectData.certificate.templateUrl = itemFromUrlArray.url;
+                  //                 }
+                  //             }
+                  //         }
                           
-                      )
-                  }
+                  //     )
+                  // }
 
               }
           }
@@ -2895,8 +2894,10 @@ static _generateLink(appsPortalBaseUrl, prefix, solutionLink, solutionType) {
               solutionType,
               "",
               "",
-              CONSTANTS.common.DEFAULT_PAGE_SIZE,
-              CONSTANTS.common.DEFAULT_PAGE_NO,
+              // CONSTANTS.common.DEFAULT_PAGE_SIZE,
+              pageSize,
+              // CONSTANTS.common.DEFAULT_PAGE_NO,
+              pageNo,
               search
             ); 
           }
@@ -2970,7 +2971,7 @@ static _generateLink(appsPortalBaseUrl, prefix, solutionLink, solutionType) {
    static privateProgramAndSolutionDetails(
     solutionData,
     userId = "",
-    userToken = ""
+    userToken
   ) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -3002,6 +3003,7 @@ static _generateLink(appsPortalBaseUrl, prefix, solutionLink, solutionType) {
           let solutionAndProgramCreation = await this.createProgramAndSolution(
             userId,
             programAndSolutionData,
+            userToken,
             true // create duplicate solution
           );
 
@@ -3186,7 +3188,6 @@ static _generateLink(appsPortalBaseUrl, prefix, solutionLink, solutionType) {
 
             let checkTargetedProjectExist =
               await projectQueries.projectDocument(
-                userToken,
                 findQuery,
                 ["_id"]
               );
