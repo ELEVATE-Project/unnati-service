@@ -61,127 +61,165 @@ let enviromentVariables = {
     "optional" : false,
     "default" : "ON"
   },
-  "CLOUD_STORAGE" : {
-    "message" : "Enable/Disable cloud services",
+  // "CLOUD_STORAGE" : {
+  //   "message" : "Enable/Disable cloud services",
+  //   "optional" : false
+  // },
+  // "GCP_PATH" : {
+  //   "message" : "Required Gcp path",
+  //   "optional" : true,
+  //   "requiredIf" : {
+  //     "key": "CLOUD_STORAGE",
+  //     "operator": "EQUALS",
+  //     "value" : "GC"
+  //   }
+  // },
+  // "DEFAULT_GCP_BUCKET_NAME" : {
+  //   "message" : "Required Gcp bucket name",
+  //   "optional" : true,
+  //   "requiredIf" : {
+  //     "key": "CLOUD_STORAGE",
+  //     "operator": "EQUALS",
+  //     "value" : "GC"
+  //   }
+  // },
+  // "AZURE_ACCOUNT_NAME" : {
+  //   "message" : "Required Azure Account name",
+  //   "optional" : true,
+  //   "requiredIf" : {
+  //     "key": "CLOUD_STORAGE",
+  //     "operator": "EQUALS",
+  //     "value" : "AZURE"
+  //   }
+  // },
+  // "AZURE_ACCOUNT_KEY" : {
+  //   "message" : "Required Azure Account key",
+  //   "optional" : true,
+  //   "requiredIf" : {
+  //     "key": "CLOUD_STORAGE",
+  //     "operator": "EQUALS",
+  //     "value" : "AZURE"
+  //   }
+  // },
+  // "AWS_ACCESS_KEY_ID" : {
+  //   "message" : "Required Aws access key id",
+  //   "optional" : true,
+  //   "requiredIf" : {
+  //     "key": "CLOUD_STORAGE",
+  //     "operator": "EQUALS",
+  //     "value" : "AWS"
+  //   }
+  // }, 
+  // "AWS_SECRET_ACCESS_KEY" : {
+  //   "message" : "Required Aws secret access key",
+  //   "optional" : true,
+  //   "requiredIf" : {
+  //     "key": "CLOUD_STORAGE",
+  //     "operator": "EQUALS",
+  //     "value" : "AWS"
+  //   }
+  // }, 
+  // "DEFAULT_AWS_BUCKET_NAME" : {
+  //   "message" : "Required Aws bucket name",
+  //   "optional" : true,
+  //   "requiredIf" : {
+  //     "key": "CLOUD_STORAGE",
+  //     "operator": "EQUALS",
+  //     "value" : "AWS"
+  //   }
+  // }, 
+  // "AWS_BUCKET_REGION" : {
+  //   "message" : "Required Aws bucket region",
+  //   "optional" : true,
+  //   "requiredIf" : {
+  //     "key": "CLOUD_STORAGE",
+  //     "operator": "EQUALS",
+  //     "value" : "AWS"
+  //   }
+  // },
+  // "OCI_ACCESS_KEY_ID" : {
+  //   "message" : "Required oracle access key id",
+  //   "optional" : true,
+  //   "requiredIf" : {
+  //     "key": "CLOUD_STORAGE",
+  //     "operator": "EQUALS",
+  //     "value" : "OCI"
+  //   }
+  // }, 
+  // "OCI_SECRET_ACCESS_KEY" : {
+  //   "message" : "Required Oracle secret access key",
+  //   "optional" : true,
+  //   "requiredIf" : {
+  //     "key": "CLOUD_STORAGE",
+  //     "operator": "EQUALS",
+  //     "value" : "OCI"
+  //   }
+  // }, 
+  // "OCI_BUCKET_NAME" : {
+  //   "message" : "Required Oracle bucket name",
+  //   "optional" : true,
+  //   "requiredIf" : {
+  //     "key": "CLOUD_STORAGE",
+  //     "operator": "EQUALS",
+  //     "value" : "OCI"
+  //   }
+  // }, 
+  // "OCI_BUCKET_REGION" : {
+  //   "message" : "Required Oracle bucket region",
+  //   "optional" : true,
+  //   "requiredIf" : {
+  //     "key": "CLOUD_STORAGE",
+  //     "operator": "EQUALS",
+  //     "value" : "OCI"
+  //   }
+  // }, 
+  // "OCI_BUCKET_ENDPOINT" : {
+  //   "message" : "Required Oracle bucket endpoint",
+  //   "optional" : true,
+  //   "requiredIf" : {
+  //     "key": "CLOUD_STORAGE",
+  //     "operator": "EQUALS",
+  //     "value" : "OCI"
+  //   }
+  // },
+
+
+
+
+  "CLOUD_STORAGE_PROVIDER" : {
+    "message" : "Require cloud storage provider",
     "optional" : false
   },
-  "GCP_PATH" : {
-    "message" : "Required Gcp path",
-    "optional" : true,
-    "requiredIf" : {
-      "key": "CLOUD_STORAGE",
-      "operator": "EQUALS",
-      "value" : "GC"
-    }
+  "CLOUD_STORAGE_BUCKETNAME" : {
+    "message" : "Require client storage bucket name",
+    "optional" : false
   },
-  "DEFAULT_GCP_BUCKET_NAME" : {
-    "message" : "Required Gcp bucket name",
-    "optional" : true,
-    "requiredIf" : {
-      "key": "CLOUD_STORAGE",
-      "operator": "EQUALS",
-      "value" : "GC"
-    }
+  "CLOUD_STORAGE_SECRET" : {
+    "message" : "Require client storage provider identity",
+    "optional" : false
   },
-  "AZURE_ACCOUNT_NAME" : {
-    "message" : "Required Azure Account name",
-    "optional" : true,
-    "requiredIf" : {
-      "key": "CLOUD_STORAGE",
-      "operator": "EQUALS",
-      "value" : "AZURE"
-    }
+  "CLOUD_STORAGE_REGION" : {
+    "message" : "Require client region",
+    "optional" : false
   },
-  "AZURE_ACCOUNT_KEY" : {
-    "message" : "Required Azure Account key",
-    "optional" : true,
-    "requiredIf" : {
-      "key": "CLOUD_STORAGE",
-      "operator": "EQUALS",
-      "value" : "AZURE"
-    }
+  "CLOUD_ENDPOINT" : {
+    "message" : "Require client endpoint",
+    "optional" : false
   },
-  "AWS_ACCESS_KEY_ID" : {
-    "message" : "Required Aws access key id",
-    "optional" : true,
-    "requiredIf" : {
-      "key": "CLOUD_STORAGE",
-      "operator": "EQUALS",
-      "value" : "AWS"
-    }
-  }, 
-  "AWS_SECRET_ACCESS_KEY" : {
-    "message" : "Required Aws secret access key",
-    "optional" : true,
-    "requiredIf" : {
-      "key": "CLOUD_STORAGE",
-      "operator": "EQUALS",
-      "value" : "AWS"
-    }
-  }, 
-  "DEFAULT_AWS_BUCKET_NAME" : {
-    "message" : "Required Aws bucket name",
-    "optional" : true,
-    "requiredIf" : {
-      "key": "CLOUD_STORAGE",
-      "operator": "EQUALS",
-      "value" : "AWS"
-    }
-  }, 
-  "AWS_BUCKET_REGION" : {
-    "message" : "Required Aws bucket region",
-    "optional" : true,
-    "requiredIf" : {
-      "key": "CLOUD_STORAGE",
-      "operator": "EQUALS",
-      "value" : "AWS"
-    }
+  "CLOUD_STORAGE_ACCOUNTNAME" : {
+    "message" : "Require client storage account name",
+    "optional" : false
   },
-  "OCI_ACCESS_KEY_ID" : {
-    "message" : "Required oracle access key id",
-    "optional" : true,
-    "requiredIf" : {
-      "key": "CLOUD_STORAGE",
-      "operator": "EQUALS",
-      "value" : "OCI"
-    }
-  }, 
-  "OCI_SECRET_ACCESS_KEY" : {
-    "message" : "Required Oracle secret access key",
-    "optional" : true,
-    "requiredIf" : {
-      "key": "CLOUD_STORAGE",
-      "operator": "EQUALS",
-      "value" : "OCI"
-    }
-  }, 
-  "OCI_BUCKET_NAME" : {
-    "message" : "Required Oracle bucket name",
-    "optional" : true,
-    "requiredIf" : {
-      "key": "CLOUD_STORAGE",
-      "operator": "EQUALS",
-      "value" : "OCI"
-    }
-  }, 
-  "OCI_BUCKET_REGION" : {
-    "message" : "Required Oracle bucket region",
-    "optional" : true,
-    "requiredIf" : {
-      "key": "CLOUD_STORAGE",
-      "operator": "EQUALS",
-      "value" : "OCI"
-    }
-  }, 
-  "OCI_BUCKET_ENDPOINT" : {
-    "message" : "Required Oracle bucket endpoint",
-    "optional" : true,
-    "requiredIf" : {
-      "key": "CLOUD_STORAGE",
-      "operator": "EQUALS",
-      "value" : "OCI"
-    }
-  }
+  "CLOUD_STORAGE_BUCKET_TYPE" : {
+    "message" : "Require client storage bucket type",
+    "optional" : false
+  },
+  "PUBLIC_ASSET_BUCKETNAME" : {
+    "message" : "Require public asset bucket name",
+    "optional" : false
+  },
+
+  
 }
 
 let success = true;

@@ -69,5 +69,13 @@ module.exports = {
     "CREATE_SURVEY": "/create-survey/",
     "SUBMISSION_STATUS_COMPLETED" : "completed",
     "EXPIRED": "expired",
-    "STARTED":"started"
+    "STARTED":"started",
+    "AWS_SERVICE": "AWS",
+    "NO_OF_MINUTES": 30,
+    "NO_OF_EXPIRY_TIME": 60,
+    "WRITE_PERMISSION": "w",
+    "READ_PERMISSION": "r",
+    "PUBLIC" : "public",
+    "PRIVATE" : "private",
+    "UPLOAD_FILE":"project/cloud-services/elevate-project/v1/files/upload"
 };
