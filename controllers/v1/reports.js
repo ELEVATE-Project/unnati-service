@@ -6,20 +6,19 @@
  */
 
 // Dependencies
-const reportsHelper = require(MODULES_BASE_PATH + "/reports/helper");
+const reportsHelper = require(MODULES_BASE_PATH + '/reports/helper')
 
 /**
-   * Reports
-   * @class
-*/
+ * Reports
+ * @class
+ */
 
 module.exports = class Reports {
+	static get name() {
+		return 'reports'
+	}
 
-    static get name() {
-        return "reports";
-    }
-
-    /**
+	/**
     * @api {get} /improvement-project/api/v1/reports/entity/:_id?requestPdf=:requestPdf&programId=:programId&reportType=:reportType
     * Entity Report.
     * @apiVersion 1.0.0
@@ -58,47 +57,43 @@ module.exports = class Reports {
     * @apiUse errorBody
     */
 
-    /**
-      * Entity Report
-      * @method
-      * @name entity
-      * @param {Object} req - request data.
-      * @param {String} req.params._id - Entity id.
-      * @returns {JSON} enity report details.
-     */
-    async entity(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
+	/**
+	 * Entity Report
+	 * @method
+	 * @name entity
+	 * @param {Object} req - request data.
+	 * @param {String} req.params._id - Entity id.
+	 * @returns {JSON} enity report details.
+	 */
+	async entity(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				const entityReports = await reportsHelper.entity(
+					req.params._id,
+					req.userDetails.userInformation.userId,
+					req.userDetails.userToken,
+					req.userDetails.userInformation.userName,
+					req.query.reportType,
+					req.query.programId ? req.query.programId : '',
+					req.query.requestPdf ? (req.query.requestPdf.toLowerCase() == 'true' ? true : false) : false,
+					req.headers['x-app-ver']
+				)
 
-                const entityReports = await reportsHelper.entity(
-                    req.params._id,
-                    req.userDetails.userInformation.userId,
-                    req.userDetails.userToken,
-                    req.userDetails.userInformation.userName,
-                    req.query.reportType,
-                    req.query.programId ? req.query.programId : "",
-                    req.query.requestPdf ? (req.query.requestPdf).toLowerCase() =="true" ? true :false : false,
-                    req.headers['x-app-ver']
-                );
-                
-                return resolve({
-                    message: entityReports.message,
-                    result: entityReports.data
-                });
+				return resolve({
+					message: entityReports.message,
+					result: entityReports.data,
+				})
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-            } catch (error) {
-                return reject({
-                    status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-                    message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
-
-    
-
-    /**
+	/**
     * @api {post} /improvement-project/api/v1/reports/getProgramsByEntity/:_id
     * Get programs by entity.
     * @apiVersion 1.0.0
@@ -134,43 +129,40 @@ module.exports = class Reports {
     * @apiUse errorBody
     */
 
-    /**
-      * Get programs by entity
-      * @method
-      * @name getProgramsByEntity
-      * @param {Object} req - request data.
-      * @param {String} req.params._id - Entity id.
-      * @returns {JSON} enity report details.
-    */
-    async getProgramsByEntity(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
+	/**
+	 * Get programs by entity
+	 * @method
+	 * @name getProgramsByEntity
+	 * @param {Object} req - request data.
+	 * @param {String} req.params._id - Entity id.
+	 * @returns {JSON} enity report details.
+	 */
+	async getProgramsByEntity(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				const entities = await reportsHelper.getProgramsByEntity(
+					req.userDetails.userInformation.userId,
+					req.params._id,
+					req.pageSize,
+					req.pageNo,
+					req.searchText,
+					req.body.role
+				)
 
-                const entities = await reportsHelper.getProgramsByEntity(
-                    req.userDetails.userInformation.userId,
-                    req.params._id,
-                    req.pageSize,
-                    req.pageNo,
-                    req.searchText,
-                    req.body.role
-                );
-                
-                return resolve({
-                    message: entities.message,
-                    result: entities.data
-                });
-
-            } catch (error) {
-                return reject({
-                    status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-                    message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
-
-    /**
+				return resolve({
+					message: entities.message,
+					result: entities.data,
+				})
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
+	/**
     * @api {get} /improvement-project/api/v1/reports/detailView/:_id?requestPdf=:requestPdf&programId=:programId&reportType=:reportType
     * Get detail view report
     * @apiVersion 1.0.0
@@ -207,38 +199,36 @@ module.exports = class Reports {
      }
     */
 
-    /**
-      * Get details view report data
-      * @method
-      * @name detailView
-      * @param {Object} req - request data.
-      * @param {String} req.params._id - Entity id.
-      * @returns {JSON} view report chart data
-    */
-    async detailView(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
-
-                const entities = await reportsHelper.detailView(
-                    req.userDetails.userInformation.userId,
-                    req.userDetails.userToken,
-                    req.query.reportType,
-                    req.params._id,
-                    req.query.programId ? req.query.programId : "",
-                    req.query.requestPdf ? (req.query.requestPdf).toLowerCase() =="true" ? true :false : false,
-                );
-                return resolve({
-                    message: entities.message,
-                    result: entities.data
-                });
-
-            } catch (error) {
-                return reject({
-                    status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-                    message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
+	/**
+	 * Get details view report data
+	 * @method
+	 * @name detailView
+	 * @param {Object} req - request data.
+	 * @param {String} req.params._id - Entity id.
+	 * @returns {JSON} view report chart data
+	 */
+	async detailView(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				const entities = await reportsHelper.detailView(
+					req.userDetails.userInformation.userId,
+					req.userDetails.userToken,
+					req.query.reportType,
+					req.params._id,
+					req.query.programId ? req.query.programId : '',
+					req.query.requestPdf ? (req.query.requestPdf.toLowerCase() == 'true' ? true : false) : false
+				)
+				return resolve({
+					message: entities.message,
+					result: entities.data,
+				})
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 }
