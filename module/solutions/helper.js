@@ -6,7 +6,7 @@
  */
 
 const { filter } = require("lodash");
-const { ObjectId, ObjectID } = require("mongodb");
+const { ObjectId } = require("mongodb");
 
 // Dependencies
 

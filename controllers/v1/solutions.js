@@ -213,7 +213,7 @@ module.exports = class Solutions extends Abstract {
     /**
     * @api {post} /project/v1/solutions/list?page=:page&limit=:limit&search=:search
     * @apiVersion 1.0.0
-    * @apiName Add roles in solutions
+    * @apiName list solutions
     * @apiGroup Solutions
     * @apiParamExample {json} Request-Body:
     {
@@ -281,7 +281,7 @@ module.exports = class Solutions extends Abstract {
     /**
     * @api {post} /project/v1/solutions/addRolesInScope/:solutionId Add roles in solutions
     * @apiVersion 1.0.0
-    * @apiName Add roles in solutions
+    * @apiName add roles in scope
     * @apiGroup Solutions
     * @apiParamExample {json} Request-Body:
     * {
@@ -405,7 +405,7 @@ module.exports = class Solutions extends Abstract {
        /**
     * @api {post} /project/v1/solutions/removeRolesInScope/:solutionId Remove roles from solutions scope
     * @apiVersion 1.0.0
-    * @apiName 
+    * @apiName remove roles in scope
     * @apiGroup Solutions
     * @apiParamExample {json} Request-Body:
     * {
@@ -468,7 +468,7 @@ module.exports = class Solutions extends Abstract {
   * {
     "message": "Solution Link generated successfully",
     "status": 200,
-    "result": "https://dev.sunbirded.org/manage-learn/create-observation/38cd93bdb87489c3890fe0ab00e7d406"
+    "result": "https://dev.sunbirded.org/manage-learn/create-project/38cd93bdb87489c3890fe0ab00e7d406"
     }
   */
 
@@ -690,7 +690,7 @@ module.exports = class Solutions extends Abstract {
   * {
   *   "role" : "HM,DEO",
       "entities" : "[236f5cff-c9af-4366-b0b6-253a1789766a"],
-      "entityType" : "1dcbc362-ec4c-4559-9081-e0c2864c2931",
+      "entityType" : "block",
     }
   * @apiParamExample {json} Response:
   * {
@@ -744,7 +744,7 @@ module.exports = class Solutions extends Abstract {
     * {
         "role" : "HM,DEO",
    		  "entities" : "[236f5cff-c9af-4366-b0b6-253a1789766a]",
-        "entityType" : "1dcbc362-ec4c-4559-9081-e0c2864c2931",
+        "entityType" : "block",
       }
     * @apiHeader {String} X-authenticated-user-token Authenticity token
     * @apiSampleRequest /project/v1/solutions/forUserRoleAndLocation?type=assessment&page=1&limit=5
@@ -896,10 +896,12 @@ module.exports = class Solutions extends Abstract {
   * @apiUse errorBody
   * @apiParamExample {json} Request:
   * {
-  *   "role" : "HM,DEO",
-      "state" : "236f5cff-c9af-4366-b0b6-253a1789766a",
-      "district" : "1dcbc362-ec4c-4559-9081-e0c2864c2931",
-      "school" : "c5726207-4f9f-4f45-91f1-3e9e8e84d824"
+       "entityType" : "block",
+        "entities" : [
+            "5fd1b52ab53a6416aaeefc80",
+            "5fd098e2e049735a86b748ac"
+        ],
+        "roles" : "BEO"
     }
   * @apiParamExample {json} Response:
   * {
@@ -913,9 +915,9 @@ module.exports = class Solutions extends Abstract {
   */
 
    /**
-   * verify Solution
+   * isTargetedBasedOnUserProfile
    * @method
-   * @name verifySolution
+   * @name isTargetedBasedOnUserProfile
    * @param {Object} req - requested data.
    * @param {String} req.params._id - solution id
    * @returns {Array}

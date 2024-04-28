@@ -149,9 +149,9 @@ module.exports = class ProjectTemplateTasks extends Abstract {
     * @apiUse errorBody
     * @apiParamExample {json} Response:
     * {
-    *  "status": 200,
+        "status": 200,
         "message": "template task updated successfully"
-    }
+      }
     */
 
       /**
@@ -168,7 +168,7 @@ module.exports = class ProjectTemplateTasks extends Abstract {
                 let projectTemplateTask = await projectTemplateTasksHelper.update(
                   req.params._id, 
                   req.body, 
-                  req.userDetails.id
+                  req.userDetails.userInformation.userId
                 );
 
                 projectTemplateTask.result = projectTemplateTask.data;

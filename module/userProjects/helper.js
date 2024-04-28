@@ -1053,8 +1053,8 @@ module.exports = class UserProjectsHelper {
 
 
 
-      /**
-   * update registry in entities.
+    /**
+   * fetch registry in entities.
    * @method
    * @name listByLocationIds
    * @param {Object} locationIds - locationIds
@@ -1535,7 +1535,7 @@ module.exports = class UserProjectsHelper {
                     await projectTemplateQueries.templateDocument({
                         status: CONSTANTS.common.PUBLISHED,
                         _id: templateId,
-                        // isReusable: false
+                        isReusable: true
                     }, "all",
                         [
                             "ratings",

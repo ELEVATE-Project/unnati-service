@@ -476,9 +476,6 @@ module.exports = class  Programs extends Abstract{
   * @apiName 
   * @apiGroup Programs
   * @apiParamExample {json} Request-Body:
-  * {
-      "entities" : ["5f33c3d85f637784791cd830"]
-    }
   * @apiHeader {String} X-authenticated-user-token Authenticity token
   * @apiSampleRequest /project/v1/programs/list?page=1&limit=10&search=PROGRAM01
   * @apiUse successBody
@@ -546,9 +543,44 @@ module.exports = class  Programs extends Abstract{
     * @apiHeader {String} X-authenticated-user-token Authenticity token
     * @apiHeader {String} X-App-Ver Appversion
     * @apiSampleRequest /project/v1/programs/join/5ffbf8909259097d48017bbf
+    * {
+        "externalId" : "PROGID01",
+        "name" : "DCPCR School Development Index 2018-19",
+        "description" : "DCPCR School Development Index 2018-19",
+        "isDeleted" : false,
+        "resourceType" : [ 
+            "program"
+        ],
+        "language" : [ 
+            "English"
+        ],
+        "keywords" : [],
+        "concepts" : [],
+        "userId":"a082787f-8f8f-42f2-a706-35457ca6f1fd",
+        "imageCompression" : {
+            "quality" : 10
+        },
+        "components" : [ 
+            "5b98fa069f664f7e1ae7498c"
+        ],
+        "scope" : {
+            "entityType" : "state",
+            "entities" : ["bc75cc99-9205-463e-a722-5326857838f8","8ac1efe9-0415-4313-89ef-884e1c8eee34"],
+            "roles" : ["HM"]
+        },
+        "requestForPIIConsent" : true
+      }
+
     * @apiUse successBody
     * @apiUse errorBody
     * @apiParamExample {json} Response:
+    *{
+      "message": "You have joined this program successfully",
+      "status": 200,
+      "result": {
+        "_id" : "5ffbf8909259097d48017bbf"
+      }
+    }
     * 
     */
 
