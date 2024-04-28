@@ -5,20 +5,17 @@
  * Description : Solution related helper functionality.
  */
 
-const { filter } = require("lodash");
-const { ObjectId, ObjectID } = require("mongodb");
+const { ObjectId } = require("mongodb");
 
 // Dependencies
 
 const solutionsQueries = require(DB_QUERY_BASE_PATH + "/solutions");
 const programsHelper = require(MODULES_BASE_PATH + "/programs/helper")
 const programQueries = require(DB_QUERY_BASE_PATH + "/programs")
-const userService = require(GENERICS_FILES_PATH + "/services/users")
 const validateEntity = process.env.VALIDATE_ENTITIES
 const appsPortalBaseUrl = process.env.APP_PORTAL_BASE_URL + "/"
 const projectQueries = require(DB_QUERY_BASE_PATH + "/projects")
 const filesHelpers = require(MODULES_BASE_PATH + "/files/helper")
-const observationQueries = require(DB_QUERY_BASE_PATH + "/observations")
 const entitiesService = require(GENERICS_FILES_PATH + "/services/entity-management")
 
 /**

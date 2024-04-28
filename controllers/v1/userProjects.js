@@ -6,7 +6,6 @@
  */
 
 // Dependencies
-const csv = require('csvtojson');
 const userProjectsHelper = require(MODULES_BASE_PATH + "/userProjects/helper");
 
  /**
