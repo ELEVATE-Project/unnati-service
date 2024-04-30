@@ -13,7 +13,7 @@ const inputValidator = require(PROJECT_ROOT_DIRECTORY + "/generics/middleware/va
 
 module.exports = function (app) {
   
-  const applicationBaseUrl = process.env.APPLICATION_BASE_URL || '/unnati/';
+  const applicationBaseUrl = process.env.APPLICATION_BASE_URL || '/project/';
   app.use(applicationBaseUrl, authenticator);
   app.use(applicationBaseUrl, pagination);
 
