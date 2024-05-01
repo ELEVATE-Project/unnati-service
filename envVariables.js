@@ -61,10 +61,7 @@ let enviromentVariables = {
     "optional" : false,
     "default" : "ON"
   },
-
-
-
-
+  // cloud service variables
   "CLOUD_STORAGE_PROVIDER" : {
     "message" : "Require cloud storage provider",
     "optional" : false
@@ -77,25 +74,30 @@ let enviromentVariables = {
     "message" : "Require client storage provider identity",
     "optional" : false
   },
-  "CLOUD_STORAGE_REGION" : {
-    "message" : "Require client region",
-    "optional" : false
-  },
-  "CLOUD_ENDPOINT" : {
-    "message" : "Require client endpoint",
-    "optional" : false
-  },
   "CLOUD_STORAGE_ACCOUNTNAME" : {
     "message" : "Require client storage account name",
     "optional" : false
   },
-  "CLOUD_STORAGE_BUCKET_TYPE" : {
-    "message" : "Require client storage bucket type",
-    "optional" : false
+
+
+
+  "ALLOWED_HOST": {
+    "message": 'Required CORS allowed host',
+    "optional": true,
+    "default": '*',
   },
-  "PUBLIC_ASSET_BUCKETNAME" : {
-    "message" : "Require public asset bucket name",
-    "optional" : false
+
+
+
+  "DOWNLOADABLE_URL_EXPIRY_IN_SECONDS": {
+    "message": 'Required downloadable url expiration time',
+    "optional": true,
+    "default": 300,
+  },
+  "PRESIGNED_URL_EXPIRY_IN_SECONDS": {
+    "message": 'Required presigned url expiration time',
+    "optional": true,
+    "default": 300,
   },
 
   

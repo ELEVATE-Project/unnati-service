@@ -44,37 +44,39 @@ module.exports = class FilesHelper {
         };
 
         for (let pointerToPayload = 0; pointerToPayload < payloadIds.length; pointerToPayload++) {
-        let payloadId = payloadIds[pointerToPayload];
-        let folderPath =
-            "project/" +
-            payloadId +
-            "/" +
-            userId +
-            "/" +
-            UTILS.generateUniqueId() +
-            "/";
-        let imagePayload = await filesHelpers.preSignedUrls(
-            payloadData[payloadId].files,
-            bucketName,
-            cloudStorage,
-            folderPath,
-            '',   //expireIn PARAMS
-            '',   //permission PARAMS
-        );
+          let payloadId = payloadIds[pointerToPayload];
+          // Generate unique folderPath to all the file names in payloadData
+          let folderPath =
+              "project/" +
+              payloadId +
+              "/" +
+              userId +
+              "/" +
+              UTILS.generateUniqueId() +
+              "/";
+          // Call preSignedUrls helper file to get the signedUrl
+          let imagePayload = await filesHelpers.preSignedUrls(
+              payloadData[payloadId].files,
+              bucketName,
+              cloudStorage,
+              folderPath,
+              process.env.PRESIGNED_URL_EXPIRY_IN_SECONDS,   //expireIn PARAMS
+              '',   //permission PARAMS
+          );
 
-        if (!imagePayload.success) {
-            return resolve({
-            status: HTTP_STATUS_CODE.bad_request.status,
-            message: CONSTANTS.apiResponses.FAILED_PRE_SIGNED_URL,
-            result: {},
-            });
-        }
+          if (!imagePayload.success) {
+              return resolve({
+              status: HTTP_STATUS_CODE.bad_request.status,
+              message: CONSTANTS.apiResponses.FAILED_PRE_SIGNED_URL,
+              result: {},
+              });
+          }
 
-        if (!result[payloadId]) {
-            result[payloadId] = {};
-        }
+          if (!result[payloadId]) {
+              result[payloadId] = {};
+          }
 
-        result[payloadId]["files"] = imagePayload.result;
+          result[payloadId]["files"] = imagePayload.result;
         }
         
 
@@ -99,13 +101,14 @@ module.exports = class FilesHelper {
   static getDownloadableUrl(payloadData) {
     return new Promise(async (resolve, reject) => {
       try {
+        // if bucktType is private call preSignedUrls function with read permission 
         if(bucktType === CONSTANTS.common.PRIVATE){
             let downloadableUrl = await filesHelpers.preSignedUrls(
                 payloadData,
                 bucketName,
                 cloudStorage,
                 "",
-                "",   //expireIn PARAMS
+                process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS,   //expireIn PARAMS
                 CONSTANTS.common.READ_PERMISSION,   //permission PARAMS
                 true        //true if filePath is passed
             );
@@ -124,11 +127,12 @@ module.exports = class FilesHelper {
             });
             
         }
+        // if bucketType is public go with the normal flow of calling getDownloadableUrl function
         let downloadableUrl = await filesHelpers.getDownloadableUrl(
           payloadData,
           bucketName,
           cloudStorage,
-          CONSTANTS.common.READ_PERMISSION
+          process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS
         );
         if (!downloadableUrl.success) {
           return resolve({
@@ -156,57 +160,7 @@ module.exports = class FilesHelper {
     });
   }
 
-  /**
-   * upload file to the Cloud .
-   * @method
-   * @name upload
-   * @param {Buffer} payloadData    - Binary value of file.
-   * @param {String} folderPath         - folderPath.
-   * @param {String} fileName           - fileName.
-   * @returns {JSON}                    -  path and downloadUrl of the file.
-   */
-
-  static upload(localFilePath,folderPath) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        // Use fs.promises.readFile to read the file content asynchronously
-        let binaryDataOfFile = await fs.promises.readFile(localFilePath);
-
-        let uploadFile = await filesHelpers.upload(
-          folderPath,
-          bucketName,
-          binaryDataOfFile
-        );
-       // Use fs.promises.unlink to remove the file asynchronously
-        await fs.promises.unlink(localFilePath);
-       
-        if (!uploadFile.success) {
-          return resolve({
-            status: HTTP_STATUS_CODE.bad_request.status,
-            message: CONSTANTS.apiResponses.FAILED_TO_UPLOAD,
-            result: {},
-          });
-        }
-
-        return resolve({
-          status: HTTP_STATUS_CODE.ok.status,
-          message: CONSTANTS.apiResponses.CLOUD_SERVICE_SUCCESS_MESSAGE,
-          result: uploadFile.result,
-        });
-      } catch (error) {
-       
-        return reject({
-          status:
-            error.status || HTTP_STATUS_CODE.internal_server_error.status,
-
-          message:
-            error.message || HTTP_STATUS_CODE.internal_server_error.message,
-
-          errorObject: error,
-        });
-      }
-    });
-  }
+  
 
  
   

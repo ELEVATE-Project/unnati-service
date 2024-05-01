@@ -37,8 +37,8 @@ module.exports = class FilesHelper {
   ) {
     return new Promise(async (resolve, reject) => {
       try {
-        let noOfMinutes = CONSTANTS.common.NO_OF_MINUTES;
-        let linkExpireTime = CONSTANTS.common.NO_OF_EXPIRY_TIME * noOfMinutes;
+        let noOfMinutes = process.env.NO_OF_MINUTES;
+        let linkExpireTime = process.env.NO_OF_EXPIRY_TIME * noOfMinutes;
 
         // Override cloud storage provider name if provided explicitly.
         if (storageName !== "") {
@@ -51,7 +51,8 @@ module.exports = class FilesHelper {
 
         if (Array.isArray(filePath) && filePath.length > 0) {
           let result = [];
-
+          
+          // This loop helps in getting the downloadable url for all the uploaded files
           await Promise.all(
             filePath.map(async (element) => {
               let response = {};
@@ -127,8 +128,8 @@ module.exports = class FilesHelper {
         if (!Array.isArray(fileNames) || fileNames.length < 1) {
           throw new Error("File names not given.");
         }
-        let noOfMinutes = CONSTANTS.common.NO_OF_MINUTES;
-        let linkExpireTime = CONSTANTS.common.NO_OF_EXPIRY_TIME * noOfMinutes;
+        let noOfMinutes = process.env.NO_OF_MINUTES;
+        let linkExpireTime = process.env.NO_OF_EXPIRY_TIME * noOfMinutes;
         // Override cloud storage provider name if provided explicitly.
         if (storageName !== "") {
           cloudStorage = storageName;
@@ -189,37 +190,7 @@ module.exports = class FilesHelper {
       }
     });
   }
- /**
-   * Upload and get Download Url for a file.
-   * @method
-   * @name upload
-   * @param {String} folderPath                         -folderPath where file will be stored
-   * @param {String} bucket                             - name of the bucket
-   * @param {Buffer} data                                - Binary Value of file to upload.
-   * @returns {JSON}                                    - Path and download Url for the file
-   */
-  static upload(folderPath, bucket, data) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        await cloudClient.upload(
-          bucket, // bucket name
-          folderPath, // file path
-          data //file content
-        );
-
-        // Return success response with the upload path and download URLs
-        return resolve({
-          success: true,
-        });
-      } catch (error) {
-        return reject({
-          success: false,
-          message: CONSTANTS.apiResponses.FAILED_TO_UPLOAD,
-          error: error,
-        });
-      }
-    });
-  }
+ 
 
   /**
    * Unzip file
