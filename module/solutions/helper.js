@@ -5,10 +5,6 @@
  * Description : Solution related helper functionality.
  */
 
-<<<<<<< HEAD
-const { filter } = require("lodash");
-=======
->>>>>>> project-template-creation-changes
 const { ObjectId } = require("mongodb");
 
 // Dependencies
