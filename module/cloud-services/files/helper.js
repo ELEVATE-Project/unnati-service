@@ -8,12 +8,11 @@
 
 // Dependencies
 
-let filesHelpers = require(MODULES_BASE_PATH + "/files/helper");
-const cloudStorage = process.env.CLOUD_STORAGE_PROVIDER;
-const bucketName = process.env.CLOUD_STORAGE_BUCKETNAME;
+let filesHelpers = require(MODULES_BASE_PATH + '/files/helper')
+const cloudStorage = process.env.CLOUD_STORAGE_PROVIDER
+const bucketName = process.env.CLOUD_STORAGE_BUCKETNAME
 const bucktType = process.env.CLOUD_STORAGE_BUCKET_TYPE
-const fs = require("fs");
-
+const fs = require('fs')
 
 /**
  * FilesHelper
@@ -21,147 +20,130 @@ const fs = require("fs");
  */
 
 module.exports = class FilesHelper {
-  /**
-   * Get all signed urls.
-   * @method
-   * @name preSignedUrls
-   * @param {Array} payloadData       - payload for files data.
-   * @param {String} referenceType    - reference type
-   * @param {String} userId           - Logged in user id.
-   * @param {String} templateId       - certificateTemplateId.
-   * @param {Boolean} serviceUpload     - serive Upload  {true/false}
-   * @returns {Array}                 - consists of all signed urls files.
-   */
+	/**
+	 * Get all signed urls.
+	 * @method
+	 * @name preSignedUrls
+	 * @param {Array} payloadData       - payload for files data.
+	 * @param {String} referenceType    - reference type
+	 * @param {String} userId           - Logged in user id.
+	 * @param {String} templateId       - certificateTemplateId.
+	 * @param {Boolean} serviceUpload     - serive Upload  {true/false}
+	 * @returns {Array}                 - consists of all signed urls files.
+	 */
 
-  static preSignedUrls(payloadData, userId = "") {
+	static preSignedUrls(payloadData, userId = '') {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let payloadIds = Object.keys(payloadData)
 
-    return new Promise(async (resolve, reject) => {
-      try {
-        let payloadIds = Object.keys(payloadData);
+				let result = {
+					[payloadIds[0]]: {},
+				}
 
-        let result = {
-          [payloadIds[0]]: {},
-        };
+				for (let pointerToPayload = 0; pointerToPayload < payloadIds.length; pointerToPayload++) {
+					let payloadId = payloadIds[pointerToPayload]
+					// Generate unique folderPath to all the file names in payloadData
+					let folderPath = 'project/' + payloadId + '/' + userId + '/' + UTILS.generateUniqueId() + '/'
+					// Call preSignedUrls helper file to get the signedUrl
+					let imagePayload = await filesHelpers.preSignedUrls(
+						payloadData[payloadId].files,
+						bucketName,
+						cloudStorage,
+						folderPath,
+						process.env.PRESIGNED_URL_EXPIRY_IN_SECONDS, //expireIn PARAMS
+						'' //permission PARAMS
+					)
 
-        for (let pointerToPayload = 0; pointerToPayload < payloadIds.length; pointerToPayload++) {
-          let payloadId = payloadIds[pointerToPayload];
-          // Generate unique folderPath to all the file names in payloadData
-          let folderPath =
-              "project/" +
-              payloadId +
-              "/" +
-              userId +
-              "/" +
-              UTILS.generateUniqueId() +
-              "/";
-          // Call preSignedUrls helper file to get the signedUrl
-          let imagePayload = await filesHelpers.preSignedUrls(
-              payloadData[payloadId].files,
-              bucketName,
-              cloudStorage,
-              folderPath,
-              process.env.PRESIGNED_URL_EXPIRY_IN_SECONDS,   //expireIn PARAMS
-              '',   //permission PARAMS
-          );
+					if (!imagePayload.success) {
+						return resolve({
+							status: HTTP_STATUS_CODE.bad_request.status,
+							message: CONSTANTS.apiResponses.FAILED_PRE_SIGNED_URL,
+							result: {},
+						})
+					}
 
-          if (!imagePayload.success) {
-              return resolve({
-              status: HTTP_STATUS_CODE.bad_request.status,
-              message: CONSTANTS.apiResponses.FAILED_PRE_SIGNED_URL,
-              result: {},
-              });
-          }
+					if (!result[payloadId]) {
+						result[payloadId] = {}
+					}
 
-          if (!result[payloadId]) {
-              result[payloadId] = {};
-          }
+					result[payloadId]['files'] = imagePayload.result
+				}
 
-          result[payloadId]["files"] = imagePayload.result;
-        }
-        
+				return resolve({
+					message: CONSTANTS.apiResponses.URL_GENERATED,
+					data: result,
+				})
+			} catch (error) {
+				return reject(error)
+			}
+		})
+	}
 
-        return resolve({
-          message: CONSTANTS.apiResponses.URL_GENERATED,
-          data: result,
-        });
-      } catch (error) {
-        return reject(error);
-      }
-    });
-  }
+	/**
+	 * Get Downloadable URL from cloud.
+	 * @method
+	 * @name getDownloadableUrl
+	 * @param {Array} payloadData       - payload for files data.
+	 * @returns {JSON}                  - Response with status and message.
+	 */
 
-  /**
-   * Get Downloadable URL from cloud.
-   * @method
-   * @name getDownloadableUrl
-   * @param {Array} payloadData       - payload for files data.
-   * @returns {JSON}                  - Response with status and message.
-   */
+	static getDownloadableUrl(payloadData) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				// if bucktType is private call preSignedUrls function with read permission
+				if (bucktType === CONSTANTS.common.PRIVATE) {
+					let downloadableUrl = await filesHelpers.preSignedUrls(
+						payloadData,
+						bucketName,
+						cloudStorage,
+						'',
+						process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS, //expireIn PARAMS
+						CONSTANTS.common.READ_PERMISSION, //permission PARAMS
+						true //true if filePath is passed
+					)
 
-  static getDownloadableUrl(payloadData) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        // if bucktType is private call preSignedUrls function with read permission 
-        if(bucktType === CONSTANTS.common.PRIVATE){
-            let downloadableUrl = await filesHelpers.preSignedUrls(
-                payloadData,
-                bucketName,
-                cloudStorage,
-                "",
-                process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS,   //expireIn PARAMS
-                CONSTANTS.common.READ_PERMISSION,   //permission PARAMS
-                true        //true if filePath is passed
-            );
+					if (!downloadableUrl.success) {
+						return resolve({
+							status: HTTP_STATUS_CODE.bad_request.status,
+							message: CONSTANTS.apiResponses.FAILED_TO_CREATE_DOWNLOADABLEURL,
+							result: {},
+						})
+					}
 
-            if (!downloadableUrl.success) {
-                return resolve({
-                    status: HTTP_STATUS_CODE.bad_request.status,
-                    message: CONSTANTS.apiResponses.FAILED_TO_CREATE_DOWNLOADABLEURL,
-                    result: {},
-                  });
-              }
+					return resolve({
+						message: CONSTANTS.apiResponses.CLOUD_SERVICE_SUCCESS_MESSAGE,
+						result: downloadableUrl.result,
+					})
+				}
+				// if bucketType is public go with the normal flow of calling getDownloadableUrl function
+				let downloadableUrl = await filesHelpers.getDownloadableUrl(
+					payloadData,
+					bucketName,
+					cloudStorage,
+					process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS
+				)
+				if (!downloadableUrl.success) {
+					return resolve({
+						status: HTTP_STATUS_CODE.bad_request.status,
+						message: CONSTANTS.apiResponses.FAILED_TO_CREATE_DOWNLOADABLEURL,
+						result: {},
+					})
+				}
 
-            return resolve({
-                message: CONSTANTS.apiResponses.CLOUD_SERVICE_SUCCESS_MESSAGE,
-                result: downloadableUrl.result,
-            });
-            
-        }
-        // if bucketType is public go with the normal flow of calling getDownloadableUrl function
-        let downloadableUrl = await filesHelpers.getDownloadableUrl(
-          payloadData,
-          bucketName,
-          cloudStorage,
-          process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS
-        );
-        if (!downloadableUrl.success) {
-          return resolve({
-            status: HTTP_STATUS_CODE.bad_request.status,
-            message: CONSTANTS.apiResponses.FAILED_TO_CREATE_DOWNLOADABLEURL,
-            result: {},
-          });
-        }
+				return resolve({
+					message: CONSTANTS.apiResponses.CLOUD_SERVICE_SUCCESS_MESSAGE,
+					result: downloadableUrl.result,
+				})
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
 
-        return resolve({
-          message: CONSTANTS.apiResponses.CLOUD_SERVICE_SUCCESS_MESSAGE,
-          result: downloadableUrl.result,
-        });
-      } catch (error) {
-        return reject({
-          status:
-            error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
 
-          message:
-            error.message || HTTP_STATUS_CODE.internal_server_error.message,
-
-          errorObject: error,
-        });
-      }
-    });
-  }
-
-  
-
- 
-  
+					errorObject: error,
+				})
+			}
+		})
+	}
 }

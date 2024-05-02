@@ -6,35 +6,34 @@
  */
 
 // dependencies
-let filesHelpers = require(MODULES_BASE_PATH + "/cloud-services/files/helper");
-const path = require("path");
-const fs = require("fs");
-const moment = require("moment-timezone");
+let filesHelpers = require(MODULES_BASE_PATH + '/cloud-services/files/helper')
+const path = require('path')
+const fs = require('fs')
 /**
  * Files service.
  * @class
  */
 
 module.exports = class Files {
-  /**
-   * @apiDefine errorBody
-   * @apiError {String} status 4XX,5XX
-   * @apiError {String} message Error
-   */
+	/**
+	 * @apiDefine errorBody
+	 * @apiError {String} status 4XX,5XX
+	 * @apiError {String} message Error
+	 */
 
-  /**
-   * @apiDefine successBody
-   * @apiSuccess {String} status 200
-   * @apiSuccess {String} result Data
-   */
+	/**
+	 * @apiDefine successBody
+	 * @apiSuccess {String} status 200
+	 * @apiSuccess {String} result Data
+	 */
 
-  constructor() {}
+	constructor() {}
 
-  static get name() {
-    return "files";
-  }
+	static get name() {
+		return 'files'
+	}
 
-  /**
+	/**
      * @api {post} /project/v1/cloud-services/files/preSignedUrls  
      * Get signed URL.
      * @apiVersion 1.0.0
@@ -77,91 +76,83 @@ module.exports = class Files {
     }
      */
 
-  /**
-   * Get signed urls.
-   * @method
-   * @name preSignedUrls
-   * @param  {Request}  req  request body.
-   * @param  {Array}  req.body.fileNames - list of file names
-   * @param  {String}  req.body.bucket - name of the bucket
-   * @returns {JSON} Response with status and message.
-   */
+	/**
+	 * Get signed urls.
+	 * @method
+	 * @name preSignedUrls
+	 * @param  {Request}  req  request body.
+	 * @param  {Array}  req.body.fileNames - list of file names
+	 * @param  {String}  req.body.bucket - name of the bucket
+	 * @returns {JSON} Response with status and message.
+	 */
 
-  async preSignedUrls(req) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        let signedUrl = await filesHelpers.preSignedUrls(
-          req.body.request,
-          req.userDetails.userInformation.userId
-        );
-        signedUrl["result"] = signedUrl["data"];
-        return resolve(signedUrl);
-      } catch (error) {
-        return reject({
-          status:
-            error.status || HTTP_STATUS_CODE.internal_server_error.status,
+	async preSignedUrls(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let signedUrl = await filesHelpers.preSignedUrls(
+					req.body.request,
+					req.userDetails.userInformation.userId
+				)
+				signedUrl['result'] = signedUrl['data']
+				return resolve(signedUrl)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
 
-          message:
-            error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
 
-          errorObject: error,
-        });
-      }
-    });
-  }
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-  /**
-   * @api {post} /project/v1/cloud-services/files/getDownloadableUrl
-   * Get downloadable URL.
-   * @apiVersion 1.0.0
-   * @apiGroup Gcp
-   * @apiHeader {String} X-authenticated-user-token Authenticity token
-   * @apiParamExample {json} Request:
-   * {
-   *     "filePaths": ["5e1c28a050452374e1cf9841/e97b5582-471c-4649-8401-3cc4249359bb/cdv_photo_117.jpg"]
-   * }
-   * @apiSampleRequest /project/v1/cloud-services/files/getDownloadableUrl
-   * @apiUse successBody
-   * @apiUse errorBody
-   * @apiParamExample {json} Response:
-   * {
-   *  "status": 200,
-   *  "message": "Url's generated successfully",
-   *  "result": [{
-   *  "filePath": "5e1c28a050452374e1cf9841/e97b5582-471c-4649-8401-3cc4249359bb/cdv_photo_117.jpg",
-   *  "url": "https://storage.googleapis.com/download/storage/v1/b/sl-dev-storage/o/5e1c28a050452374e1cf9841%2Fe97b5582-471c-4649-8401-3cc4249359bb%2Fcdv_photo_117.jpg?generation=1579240054787924&alt=media"
-   * }]
-   */
+	/**
+	 * @api {post} /project/v1/cloud-services/files/getDownloadableUrl
+	 * Get downloadable URL.
+	 * @apiVersion 1.0.0
+	 * @apiGroup Gcp
+	 * @apiHeader {String} X-authenticated-user-token Authenticity token
+	 * @apiParamExample {json} Request:
+	 * {
+	 *     "filePaths": ["5e1c28a050452374e1cf9841/e97b5582-471c-4649-8401-3cc4249359bb/cdv_photo_117.jpg"]
+	 * }
+	 * @apiSampleRequest /project/v1/cloud-services/files/getDownloadableUrl
+	 * @apiUse successBody
+	 * @apiUse errorBody
+	 * @apiParamExample {json} Response:
+	 * {
+	 *  "status": 200,
+	 *  "message": "Url's generated successfully",
+	 *  "result": [{
+	 *  "filePath": "5e1c28a050452374e1cf9841/e97b5582-471c-4649-8401-3cc4249359bb/cdv_photo_117.jpg",
+	 *  "url": "https://storage.googleapis.com/download/storage/v1/b/sl-dev-storage/o/5e1c28a050452374e1cf9841%2Fe97b5582-471c-4649-8401-3cc4249359bb%2Fcdv_photo_117.jpg?generation=1579240054787924&alt=media"
+	 * }]
+	 */
 
-  /**
-   * Get Downloadable URL from cloud service.
-   * @method
-   * @name getDownloadableUrl
-   * @param  {Request}  req  request body.
-   * @returns {JSON} Response with status and message.
-   */
+	/**
+	 * Get Downloadable URL from cloud service.
+	 * @method
+	 * @name getDownloadableUrl
+	 * @param  {Request}  req  request body.
+	 * @returns {JSON} Response with status and message.
+	 */
 
-  async getDownloadableUrl(req) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        let downloadableUrl = await filesHelpers.getDownloadableUrl(
-          req.body.filePaths
-        );
+	async getDownloadableUrl(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let downloadableUrl = await filesHelpers.getDownloadableUrl(req.body.filePaths)
 
-        return resolve(downloadableUrl);
-      } catch (error) {
-        return reject({
-          status:
-            error.status || HTTP_STATUS_CODE.internal_server_error.status,
+				return resolve(downloadableUrl)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
 
-          message:
-            error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
 
-          errorObject: error,
-        });
-      }
-    });
-  }
-
-  
-};
+					errorObject: error,
+				})
+			}
+		})
+	}
+}
