@@ -150,7 +150,7 @@ module.exports = class LibraryCategoriesHelper {
 
                 let categoriesUpdated = await projectCategoriesQueries.updateMany(filterQuery,updateData);
 
-                if( !categoriesUpdated.ok ) {
+                if( !categoriesUpdated ) {
                     throw {
                         status : HTTP_STATUS_CODE.bad_request.status,
                         message : CONSTANTS.apiResponses.PROJECT_CATEGORIES_NOT_UPDATED
@@ -282,7 +282,7 @@ module.exports = class LibraryCategoriesHelper {
         return new Promise(async (resolve, reject) => {
             try {
                 let projectCategoriesData = 
-                await database.models.projectCategories.create(categoryData)
+                await projectCategoriesQueries.create(categoryData)
 
                 if( !projectCategoriesData._id ) {
                     throw {

@@ -34,7 +34,6 @@ module.exports= class Solutions{
             try {
                 let queryObject = (filterData != "all") ? filterData : {};
                 let projection = {}
-           
                 if (fieldsArray != "all") {
                     fieldsArray.forEach(field => {
                         projection[field] = 1;
@@ -100,12 +99,12 @@ module.exports= class Solutions{
      /**
    * find solutions
    * @method
-   * @name solutionDocumentsByAggregateQuery
+   * @name getAggregate
    * @param {Array} query - aggregation query.
    * @returns {Array} List of solutions. 
    */
   
-  static solutionDocumentsByAggregateQuery(
+  static getAggregate(
     query = []
   ) {
     return new Promise(async (resolve, reject) => {
@@ -113,7 +112,8 @@ module.exports= class Solutions{
     
             let solutionDocuments = await database.models.solutions.aggregate(
               query
-            );
+            )
+
             
             return resolve(solutionDocuments);
             
@@ -122,4 +122,56 @@ module.exports= class Solutions{
         }
     });
   }
+
+    /**
+   * create solutions
+   * @method
+   * @name createSolution
+   * @param {Object} solutionData - solution data.
+   * @returns {Object} solution object. 
+   */
+    static createSolution(
+        solutionData
+      ) {
+        return new Promise(async (resolve, reject) => {
+            try {
+        
+                let solutionDocument = await database.models.solutions.create(
+                    solutionData
+                );
+                
+                return resolve(solutionDocument);
+                
+            } catch (error) {
+                return reject(error);
+            }
+        });
+      }
+
+
+
+          /**
+     * listIndexes function.
+     * @method
+     * @name listIndexes
+     * @returns {Array} list of indexes.
+     */
+
+
+    static listIndexesFunc(
+        ){
+        return new Promise(async (resolve, reject) => {
+            try{
+
+                let indexData = await database.models.solutions.listIndexes();
+
+                return resolve(indexData)
+
+            }catch (error) {
+                return reject(error);
+            }
+        })
+    
+    }
+
 }

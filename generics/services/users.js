@@ -9,20 +9,22 @@
 const request = require('request');
 const userServiceUrl = process.env.USER_SERVICE_URL;
 
-const profile = function ( token,userId = "" ) {
+const profile = function ( token, userId = "" ) {
     return new Promise(async (resolve, reject) => {
         try {
             
-            let url = userServiceUrl + CONSTANTS.endpoints.USER_READ_V5;
+            let url = userServiceUrl + CONSTANTS.endpoints.USER_READ;
     
             if( userId !== "" ) {
-                url = url + "/" + userId + "?"  + "fields=organisations,roles,locations,declarations,externalIds"
+                url = url + "/" + userId 
             }
+
 
             const options = {
                 headers : {
                     "content-type": "application/json",
-                    "x-authenticated-user-token" : token
+                    "X-auth-token" : "bearer " + token,
+                    "internal-access-token": process.env.INTERNAL_ACCESS_TOKEN,
                 }
             };
             
@@ -69,78 +71,78 @@ const profile = function ( token,userId = "" ) {
   * @returns {Promise} returns a promise.
 */
 
-const locationSearch = function ( filterData, formatResult = false ) {
-  return new Promise(async (resolve, reject) => {
-      try {
+// const locationSearch = function ( filterData, formatResult = false ) {
+//   return new Promise(async (resolve, reject) => {
+//       try {
           
-        let bodyData={};
-        bodyData["request"] = {};
-        bodyData["request"]["filters"] = filterData;
-        const url = 
-        userServiceUrl + CONSTANTS.endpoints.GET_LOCATION_DATA;
-        const options = {
-            headers : {
-                "content-type": "application/json"
-            },
-            json : bodyData
-        };
+//         let bodyData={};
+//         bodyData["request"] = {};
+//         bodyData["request"]["filters"] = filterData;
+//         const url = 
+//         userServiceUrl + CONSTANTS.endpoints.GET_LOCATION_DATA;
+//         const options = {
+//             headers : {
+//                 "content-type": "application/json"
+//             },
+//             json : bodyData
+//         };
 
-        request.post(url,options,requestCallback);
+//         request.post(url,options,requestCallback);
         
-        let result = {
-            success : true
-        };
+//         let result = {
+//             success : true
+//         };
 
-        function requestCallback(err, data) {   
-            if (err) {
-                result.success = false;
-            } else {
-                let response = data.body;
+//         function requestCallback(err, data) {   
+//             if (err) {
+//                 result.success = false;
+//             } else {
+//                 let response = data.body;
                 
-                if( response.responseCode === CONSTANTS.common.OK &&
-                    response.result &&
-                    response.result.response &&
-                    response.result.response.length > 0
-                ) {
-                    if ( formatResult ) {
-                        let entityResult =new Array;
-                        response.result.response.map(entityData => {
-                            let data = {};
-                            data._id = entityData.id;
-                            data.entityType = entityData.type;
-                            data.metaInformation = {};
-                            data.metaInformation.name = entityData.name;
-                            data.metaInformation.externalId = entityData.code
-                            data.registryDetails = {};
-                            data.registryDetails.locationId = entityData.id;
-                            data.registryDetails.code = entityData.code;
-                            entityResult.push(data);
-                        });
-                        result["data"] = entityResult;
-                        result["count"] = response.result.count;
-                    } else {
-                        result["data"] = response.result.response;
-                        result["count"] = response.result.count;
-                    }
+//                 if( response.responseCode === CONSTANTS.common.OK &&
+//                     response.result &&
+//                     response.result.response &&
+//                     response.result.response.length > 0
+//                 ) {
+//                     if ( formatResult ) {
+//                         let entityResult =new Array;
+//                         response.result.response.map(entityData => {
+//                             let data = {};
+//                             data._id = entityData.id;
+//                             data.entityType = entityData.type;
+//                             data.metaInformation = {};
+//                             data.metaInformation.name = entityData.name;
+//                             data.metaInformation.externalId = entityData.code
+//                             data.registryDetails = {};
+//                             data.registryDetails.locationId = entityData.id;
+//                             data.registryDetails.code = entityData.code;
+//                             entityResult.push(data);
+//                         });
+//                         result["data"] = entityResult;
+//                         result["count"] = response.result.count;
+//                     } else {
+//                         result["data"] = response.result.response;
+//                         result["count"] = response.result.count;
+//                     }
                     
-                } else {
-                    result.success = false;
-                }
-            }
-            return resolve(result);
-        }
+//                 } else {
+//                     result.success = false;
+//                 }
+//             }
+//             return resolve(result);
+//         }
 
-        setTimeout(function () {
-            return resolve (result = {
-                success : false
-             });
-        }, CONSTANTS.common.SERVER_TIME_OUT);
+//         setTimeout(function () {
+//             return resolve (result = {
+//                 success : false
+//              });
+//         }, CONSTANTS.common.SERVER_TIME_OUT);
 
-      } catch (error) {
-          return reject(error);
-      }
-  })
-}
+//       } catch (error) {
+//           return reject(error);
+//       }
+//   })
+// }
 /**
   * get Parent Entities of an entity.
   * @method
@@ -149,33 +151,33 @@ const locationSearch = function ( filterData, formatResult = false ) {
   * @returns {Array} - parent entities.
 */
 
-async function getParentEntities( entityId, iteration = 0, parentEntities ) {
+// async function getParentEntities( entityId, iteration = 0, parentEntities ) {
 
-    if ( iteration == 0 ) {
-        parentEntities = [];
-    }
+//     if ( iteration == 0 ) {
+//         parentEntities = [];
+//     }
 
-    let filterQuery = {
-        "id" : entityId
-    };
+//     let filterQuery = {
+//         "id" : entityId
+//     };
 
-    let entityDetails = await locationSearch(filterQuery);
-    if ( !entityDetails.success ) {
-        return parentEntities;
-    } else {
+//     let entityDetails = await locationSearch(filterQuery);
+//     if ( !entityDetails.success ) {
+//         return parentEntities;
+//     } else {
         
-        let entityData = entityDetails.data[0];
-        if ( iteration > 0 ) parentEntities.push(entityData);
-        if ( entityData.parentId ) {
-            iteration = iteration + 1;
-            entityId = entityData.parentId;
-            await getParentEntities(entityId, iteration, parentEntities);
-        }
-    }
+//         let entityData = entityDetails.data[0];
+//         if ( iteration > 0 ) parentEntities.push(entityData);
+//         if ( entityData.parentId ) {
+//             iteration = iteration + 1;
+//             entityId = entityData.parentId;
+//             await getParentEntities(entityId, iteration, parentEntities);
+//         }
+//     }
 
-    return parentEntities;
+//     return parentEntities;
 
-}
+// }
 
 /**
   * get user profileData without token.
@@ -236,43 +238,101 @@ const profileReadPrivate = function (userId) {
   * @returns {Array} - Sub entities matching the type .
 */
 
-async function getSubEntitiesBasedOnEntityType( parentIds, entityType, result ) {
+// async function getSubEntitiesBasedOnEntityType( parentIds, entityType, result ) {
 
-    if( !parentIds.length > 0 ){
-        return result;
-    }
-    let bodyData={
-        "parentId" : parentIds
-    };
+//     if( !parentIds.length > 0 ){
+//         return result;
+//     }
+//     let bodyData={
+//         "parentId" : parentIds
+//     };
 
-    let entityDetails = await locationSearch(bodyData);
-    if( !entityDetails.success ) {
-        return (result);
-    }
+//     let entityDetails = await locationSearch(bodyData);
+//     if( !entityDetails.success ) {
+//         return (result);
+//     }
 
-    let entityData = entityDetails.data;
-    let parentEntities = [];
-    entityData.map(entity => {
-    if( entity.type == entityType ) {
-        result.push(entity.id)
-    } else {
-        parentEntities.push(entity.id)
-    }
-    });
+//     let entityData = entityDetails.data;
+//     let parentEntities = [];
+//     entityData.map(entity => {
+//     if( entity.type == entityType ) {
+//         result.push(entity.id)
+//     } else {
+//         parentEntities.push(entity.id)
+//     }
+//     });
     
-    if( parentEntities.length > 0 ){
-        await getSubEntitiesBasedOnEntityType(parentEntities,entityType,result)
-    } 
+//     if( parentEntities.length > 0 ){
+//         await getSubEntitiesBasedOnEntityType(parentEntities,entityType,result)
+//     } 
     
-    let uniqueEntities = _.uniq(result);
-    return uniqueEntities;    
+//     let uniqueEntities = _.uniq(result);
+//     return uniqueEntities;    
+// }
+
+
+/**
+  * get user roles data token.
+  * @method
+  * @name getUserRoles
+  * @param {Object} roles - {"roles":"all"} 
+  * @returns {Array} - All user roles
+*/
+const getUserRoles = function (
+    filterData =  "all",
+    projection = "all",
+    skipFields = "none"
+) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let url = userServiceUrl + CONSTANTS.endpoints.LIST_USER_ROLES 
+            const options = {
+                headers : {
+                    "content-type": "application/json",
+                    "internal-access-token": process.env.INTERNAL_ACCESS_TOKEN,
+                },
+                json : {
+                    query : filterData,
+                    projection : projection,
+                    skipFields : skipFields
+                }
+            };
+            request.get(url,options,requestCallback);
+            let result = {
+                success : true
+            };
+            function requestCallback(err, data) { 
+                if (err) {
+                    result.success = false;
+                } else {
+                    let response = JSON.parse(data.body);
+                    if( response.responseCode === HTTP_STATUS_CODE.ok.code ) {
+                        result["data"] = response.result;
+                    } else {
+                        result.success = false;
+                    }
+
+                }   
+                return resolve(result);
+            }
+            setTimeout(function () {
+                return resolve (result = {
+                    success : false
+                 });
+             }, CONSTANTS.common.SERVER_TIME_OUT);
+
+        } catch (error) {
+            return reject(error);
+        }
+    })
 }
 
 
 module.exports = {
     profile : profile,
-    locationSearch : locationSearch,
-    getParentEntities : getParentEntities,
+    // locationSearch : locationSearch,
+    // getParentEntities : getParentEntities,
     profileReadPrivate : profileReadPrivate,
-    getSubEntitiesBasedOnEntityType : getSubEntitiesBasedOnEntityType
+    // getSubEntitiesBasedOnEntityType : getSubEntitiesBasedOnEntityType,
+    getUserRoles : getUserRoles
 };

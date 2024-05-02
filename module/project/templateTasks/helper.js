@@ -11,9 +11,7 @@
 */
 
 // Dependencies
-const projectTemplatesHelper = require(MODULES_BASE_PATH + "/project/templates/helper");
 const learningResourcesHelper = require(MODULES_BASE_PATH + "/learningResources/helper");
-const surveyService = require(GENERICS_FILES_PATH + "/services/survey");
 const projectTemplateTaskQueries = require(DB_QUERY_BASE_PATH + "/projectTemplateTask");
 const projectTemplateQueries = require(DB_QUERY_BASE_PATH + "/projectTemplates");
 const solutionsQueries = require(DB_QUERY_BASE_PATH + "/solutions");
@@ -97,14 +95,14 @@ module.exports = class ProjectTemplateTasksHelper {
                 if( !projectTemplate.length > 0 ) {
                     throw {
                         message : CONSTANTS.apiResponses.PROJECT_TEMPLATE_NOT_FOUND,
-                        status : HTTP_STATUS_CODE['bad_request'].status
+                        status : HTTP_STATUS_CODE.bad_request.status
                     }
                 }
 
                 // if( solutionExists && !projectTemplate[0].entityType ) {
                 //     throw {
                 //         message : CONSTANTS.apiResponses.ENTITY_TYPE_NOT_FOUND_IN_TEMPLATE,
-                //         status : HTTP_STATUS_CODE['bad_request'].status
+                //         status : HTTP_STATUS_CODE.bad_request.status
                 //     }
                 // }
 
@@ -117,7 +115,7 @@ module.exports = class ProjectTemplateTasksHelper {
                     if( !solutions.length > 0) {
                         throw {
                             message : CONSTANTS.apiResponses.SOLUTION_NOT_FOUND,
-                            status : HTTP_STATUS_CODE['bad_request'].status
+                            status : HTTP_STATUS_CODE.bad_request.status
                         }
                     }
 
@@ -146,7 +144,7 @@ module.exports = class ProjectTemplateTasksHelper {
                return resolve({
                    message : error.message,
                    success : false,
-                   status : error.status ? error.status : HTTP_STATUS_CODE['internal_server_error'].status
+                   status : error.status ? error.status : HTTP_STATUS_CODE.internal_server_error.status
                });
            }
        });
@@ -525,8 +523,7 @@ module.exports = class ProjectTemplateTasksHelper {
                             let createdTask = await this.createOrUpdateTask(
                                 currentData,
                                 csvData.data.template,
-                                csvData.data.solutionData,
-                                csvData.data.observationData
+                                csvData.data.solutionData
                             );
 
                             if ( createdTask._SYSTEM_ID != "" ) {

@@ -21,9 +21,53 @@ module.exports = class  Programs extends Abstract{
 
    /**
    * Create program.
+   * @api {post} /project/v1/programs/create
+    * @apiVersion 1.0.0
+    * @apiName 
+    * @apiGroup Programs
+    * @apiHeader {String} X-authenticated-user-token Authenticity token
    * @method
    * @name create
    * @param {Object} req - requested data.
+   * @apiParamExample {json} Request-Body:
+   * {
+      "externalId" : "PROGID01",
+      "name" : "DCPCR School Development Index 2018-19",
+      "description" : "DCPCR School Development Index 2018-19",
+      "isDeleted" : false,
+      "resourceType" : [ 
+          "program"
+      ],
+      "language" : [ 
+          "English"
+      ],
+      "keywords" : [],
+      "concepts" : [],
+      "userId":"a082787f-8f8f-42f2-a706-35457ca6f1fd",
+      "imageCompression" : {
+          "quality" : 10
+      },
+      "components" : [ 
+          "5b98fa069f664f7e1ae7498c"
+      ],
+      "scope" : {
+          "entityType" : "state",
+          "entities" : ["bc75cc99-9205-463e-a722-5326857838f8","8ac1efe9-0415-4313-89ef-884e1c8eee34","5f33c3d85f637784791cd830"],
+          "roles" : ["HM"]
+      },
+      "requestForPIIConsent" : true
+    }
+
+    * @apiParamExample {json} Response:
+    {
+      "message": "Program created successfully",
+      "status": 200,
+      "result": {
+          "_id": "5ff09aa4a43c952a32279234"
+      }
+    }
+
+
    * @returns {JSON} - created program document.
    */
 
@@ -32,8 +76,8 @@ module.exports = class  Programs extends Abstract{
         try {
           let programCreationData = await programsHelper.create(
             req.body,
-            req.userDetails.userId,
-            true
+            req.userDetails.userInformation.userId,
+            true                                                                      //this is true for when its called via API calls
           );
           
           return resolve(programCreationData)
@@ -52,9 +96,11 @@ module.exports = class  Programs extends Abstract{
 
   /**
    * Update program.
+   * @api {post} /project/v1/programs/update/:programId
    * @method
    * @name update
    * @param {Object} req - requested data.
+   * @apiHeader {String} X-authenticated-user-token Authenticity token
    * @apiParamExample {json} Request-Body:
    * {
       "externalId" : "PROGID01",
@@ -82,7 +128,17 @@ module.exports = class  Programs extends Abstract{
           "roles" : ["HM","BEO"]
       },
       "requestForPIIConsent" : true
-  }
+    }
+
+    * @apiParamExample {json} Response:
+    {
+        "message": "Program updated successfully",
+        "status": 200,
+        "result": {
+            "_id": "5ff09aa4a43c952a32279234"
+        }
+    }
+
 
    * @param {Object} 
    * @returns {JSON} - 
@@ -95,8 +151,8 @@ module.exports = class  Programs extends Abstract{
         let programUpdationData = await programsHelper.update(
           req.params._id,
           req.body,
-          req.userDetails.userId,
-          true
+          req.userDetails.userInformation.userId,
+          true                                                                      //this is true for when its called via API calls
         );
         
         return resolve(programUpdationData);
@@ -112,6 +168,71 @@ module.exports = class  Programs extends Abstract{
     })
   }
 
+    /**
+    * @api {post} /project/v1/programs/details/:programId
+    * @apiVersion 1.0.0
+    * @apiName 
+    * @apiGroup Programs
+    * @apiParamExample {json} Request-Body:
+    * @apiHeader {String} X-authenticated-user-token Authenticity token
+    * @apiSampleRequest /project/v1/programs/details/66254d3dd07c5713b46d17c1
+    * @apiUse successBody
+    * @apiUse errorBody
+    * @apiParamExample {json} Response:
+    * {
+        "message": "Programs fetched successfully",
+        "status": 200,
+        "result": {
+            "_id": "66254d3dd07c5713b46d17c1",
+            "scope": {
+                "entityType": "state",
+                "entities": [
+                    "bc75cc99-9205-463e-a722-5326857838f8",
+                    "8ac1efe9-0415-4313-89ef-884e1c8eee34",
+                    "5f33c3d85f637784791cd830"
+                ],
+                "roles": [
+                    "HM",
+                    "BEO"
+                ]
+            },
+            "resourceType": [
+                "program"
+            ],
+            "language": [
+                "English",
+                "Kannada",
+                "telugu"
+            ],
+            "keywords": [],
+            "concepts": [],
+            "components": [
+                "5b98fa069f664f7e1ae7498c"
+            ],
+            "isAPrivateProgram": false,
+            "isDeleted": false,
+            "requestForPIIConsent": true,
+            "rootOrganisations": [],
+            "createdFor": [],
+            "deleted": false,
+            "status": "active",
+            "owner": "2",
+            "createdBy": "2",
+            "updatedBy": "2",
+            "externalId": "PROGID01",
+            "name": "DCPCR School Development Index 2018-19",
+            "description": "DCPCR School Development Index 2018-19",
+            "imageCompression": {
+                "quality": 10
+            },
+            "updatedAt": "2024-04-23T19:45:34.196Z",
+            "createdAt": "2024-04-21T17:30:37.519Z",
+            "__v": 0
+        }
+    }
+  */
+
+
   /**
    * Details of the program
    * @method
@@ -121,10 +242,10 @@ module.exports = class  Programs extends Abstract{
    * @returns {Array} Program scope roles.
    */
 
-      async details(req) {
+    async details(req) {
       return new Promise(async (resolve, reject) => {
         try {
-  
+
           let programData = await programsHelper.details(
             req.params._id
           );
@@ -142,16 +263,17 @@ module.exports = class  Programs extends Abstract{
     }
 
 
-       /**
-    * @api {post} /unnati/v1/programs/addRolesInScope/:programId Add roles in programs
-    * @apiName 
+    /**
+    * @api {post} /project/v1/programs/addRolesInScope/:programId Add roles in programs
+    * @apiVersion 1.0.0
+    * @apiName addRolesInScope
     * @apiGroup Programs
     * @apiParamExample {json} Request-Body:
     * {
     * "roles" : ["DEO","SPD"]
     }
     * @apiHeader {String} X-authenticated-user-token Authenticity token
-    * @apiSampleRequest /unnati/v1/programs/addRolesInScope/5ffbf8909259097d48017bbf
+    * @apiSampleRequest /project/v1/programs/addRolesInScope/5ffbf8909259097d48017bbf
     * @apiUse successBody
     * @apiUse errorBody
     * @apiParamExample {json} Response:
@@ -171,37 +293,37 @@ module.exports = class  Programs extends Abstract{
    * @returns {Array} Program scope roles.
    */
 
-  async addRolesInScope(req) {
-    return new Promise(async (resolve, reject) => {
-      try {
-
-        let programUpdated = await programsHelper.addRolesInScope(
-          req.params._id,
-          req.body.roles
-        );
-    
-        return resolve(programUpdated);
-
-      } catch (error) {
-        return reject({
-          status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-          message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-          errorObject: error
-        });
-      }
-    });
-  }
+     async addRolesInScope(req) {
+      return new Promise(async (resolve, reject) => {
+        try {
+  
+          let programUpdated = await programsHelper.addRolesInScope(
+            req.params._id,
+            req.body.roles
+          );
+      
+          return resolve(programUpdated);
+  
+        } catch (error) {
+          return reject({
+            status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+            message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+            errorObject: error
+          });
+        }
+      });
+    }
 
    /**
-    * @api {post} /unnati/v1/programs/addEntitiesInScope/:programId Add roles in programs
-    * @apiName 
+    * @api {post} /project/v1/programs/addEntitiesInScope/:programId Add entities in programs
+    * @apiName addEntitiesInScope
     * @apiGroup Programs
     * @apiParamExample {json} Request-Body:
     * {
       "entities" : ["5f33c3d85f637784791cd830"]
     }
     * @apiHeader {String} X-authenticated-user-token Authenticity token
-    * @apiSampleRequest /unnati/v1/programs/addEntitiesInScope/5ffbf8909259097d48017bbf
+    * @apiSampleRequest /project/v1/programs/addEntitiesInScope/5ffbf8909259097d48017bbf
     * @apiUse successBody
     * @apiUse errorBody
     * @apiParamExample {json} Response:
@@ -227,7 +349,8 @@ module.exports = class  Programs extends Abstract{
   
           let programUpdated = await programsHelper.addEntitiesInScope(
             req.params._id,
-            req.body.entities
+            req.body.entities,
+            req.userDetails.userToken
           );
       
           return resolve(programUpdated);
@@ -243,17 +366,17 @@ module.exports = class  Programs extends Abstract{
     }
 
 
-       /**
-    * @api {post} /unnati/v1/programs/removeRolesInScope/:programId Add roles in programs
+    /**
+    * @api {post} /project/v1/programs/removeRolesInScope/:programId Remove roles in programs
     * @apiVersion 1.0.0
-    * @apiName 
+    * @apiName removeRolesInScope
     * @apiGroup Programs
     * @apiParamExample {json} Request-Body:
     * {
     * "roles" : ["DEO","SPD"]
     }
     * @apiHeader {String} X-authenticated-user-token Authenticity token
-    * @apiSampleRequest /unnati/v1/programs/removeRolesInScope/5ffbf8909259097d48017bbf
+    * @apiSampleRequest /project/v1/programs/removeRolesInScope/5ffbf8909259097d48017bbf
     * @apiUse successBody
     * @apiUse errorBody
     * @apiParamExample {json} Response:
@@ -263,7 +386,7 @@ module.exports = class  Programs extends Abstract{
       }
     */
 
-     /**
+  /**
    * Remove roles in program scope
    * @method
    * @name removeRolesInScope
@@ -297,16 +420,16 @@ module.exports = class  Programs extends Abstract{
 
 
      /**
-    * @api {post} /unnati/v1/programs/removeEntitiesInScope/:programId Add roles in programs
+    * @api {post} /project/v1/programs/removeEntitiesInScope/:programId remove entities from programs
     * @apiVersion 1.0.0
-    * @apiName 
+    * @apiName removeEntitiesInScope
     * @apiGroup Programs
     * @apiParamExample {json} Request-Body:
     * {
-      "entities" : ["5f33c3d85f637784791cd830"]
-    }
+        "entities" : ["5f33c3d85f637784791cd830"]
+      }
     * @apiHeader {String} X-authenticated-user-token Authenticity token
-    * @apiSampleRequest /unnati/v1/programs/removeEntitiesInScope/5ffbf8909259097d48017bbf
+    * @apiSampleRequest /project/v1/programs/removeEntitiesInScope/5ffbf8909259097d48017bbf
     * @apiUse successBody
     * @apiUse errorBody
     * @apiParamExample {json} Response:
@@ -316,7 +439,7 @@ module.exports = class  Programs extends Abstract{
       }
     */
 
-     /**
+    /**
    * Remove entities in program scope
    * @method
    * @name removeEntitiesInScope
@@ -347,7 +470,33 @@ module.exports = class  Programs extends Abstract{
     });
   }
 
-
+  /**
+  * @api {post} /project/v1/programs/list?page=:page&limit=:limit&search=:search
+  * @apiVersion 1.0.0
+  * @apiName 
+  * @apiGroup Programs
+  * @apiParamExample {json} Request-Body:
+  * @apiHeader {String} X-authenticated-user-token Authenticity token
+  * @apiSampleRequest /project/v1/programs/list?page=1&limit=10&search=PROGRAM01
+  * @apiUse successBody
+  * @apiUse errorBody
+  * @apiParamExample {json} Response:
+  {
+      "message": "Program lists fetched successfully",
+      "status": 200,
+      "result": {
+          "data": [
+              {
+                  "_id": "5beaaaa6af0065f0e0a10605",
+                  "externalId": "APPLE-ASSESSMENT-PROGRAM",
+                  "description": "Apple Program 2018",
+                  "isAPrivateProgram": false
+              }
+          ],
+          "count": 1
+      }
+  }
+  */
 
    /**
    * List programs.
@@ -370,8 +519,6 @@ module.exports = class  Programs extends Abstract{
         req.searchText
       );
 
-      listOfPrograms["result"] = listOfPrograms.data;
-
       return resolve(listOfPrograms);
 
     } catch (error) {
@@ -383,5 +530,98 @@ module.exports = class  Programs extends Abstract{
     }
   });
 }
+
+
+
+
+
+ /**
+    * @api {get} /project/v1/programs/join/:programId 
+    * @apiVersion 1.0.0
+    * @apiName Program Join
+    * @apiGroup Programs
+    * @apiHeader {String} X-authenticated-user-token Authenticity token
+    * @apiHeader {String} X-App-Ver Appversion
+    * @apiSampleRequest /project/v1/programs/join/5ffbf8909259097d48017bbf
+    * {
+      "externalId" : "PROGID01",
+      "name" : "DCPCR School Development Index 2018-19",
+      "description" : "DCPCR School Development Index 2018-19",
+      "isDeleted" : false,
+      "resourceType" : [ 
+          "program"
+      ],
+      "language" : [ 
+          "English"
+      ],
+      "keywords" : [],
+      "concepts" : [],
+      "userId":"a082787f-8f8f-42f2-a706-35457ca6f1fd",
+      "imageCompression" : {
+          "quality" : 10
+      },
+      "components" : [ 
+          "5b98fa069f664f7e1ae7498c"
+      ],
+      "scope" : {
+          "entityType" : "state",
+          "entities" : ["bc75cc99-9205-463e-a722-5326857838f8","8ac1efe9-0415-4313-89ef-884e1c8eee34"],
+          "roles" : ["HM"]
+      },
+      "requestForPIIConsent" : true
+}
+
+    * @apiUse successBody
+    * @apiUse errorBody
+    * @apiParamExample {json} Response:
+    *  {
+          "message": "You have joined the program successfully",
+          "status": 200,
+          "result": {
+            "_id" : "5ffbf8909259097d48017bbf"
+          }
+      }
+    * 
+    */
+
+     /**
+   * join program
+   * @method
+   * @name join
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - program id.
+   * @returns {Object} Program join status.
+  */
+
+     async join(req) {
+      return new Promise(async (resolve, reject) => {
+        try {
+  
+          let programJoin = await programsHelper.join(
+            req.params._id,
+            req.body,
+            req.userDetails.userInformation.userId,
+            req.userDetails.userToken,
+            req.headers["x-app-id"]  ? 
+            req.headers["x-app-id"]  : 
+            req.headers.appname ? req.headers.appname : "",
+            req.headers["x-app-ver"] ? 
+            req.headers["x-app-ver"] : 
+            req.headers.appversion ? req.headers.appversion : "",
+            req.headers["internal-access-token"] ? 
+            true : 
+            req.headers.internalAccessToken ? true : false
+          );    
+          return resolve(programJoin);
+          
+        } catch (error) {
+          return reject({
+            status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+            message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+            errorObject: error
+          });
+        }
+      });
+    }
         
 }

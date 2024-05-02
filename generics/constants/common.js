@@ -63,10 +63,11 @@ module.exports = {
     "START_DATE" : "startDate",
     "SCHOOL":"school",
     "INSTITUTIONAL" : "institutional",
-    "PREFIX_FOR_SOLUTION_LINK": "elevate-unnati",
+    "PREFIX_FOR_SOLUTION_LINK": "project",
     "CREATE_OBSERVATION": "/create-observation/",
     "CREATE_PROJECT": "/create-project/",
     "CREATE_SURVEY": "/create-survey/",
     "SUBMISSION_STATUS_COMPLETED" : "completed",
     "EXPIRED": "expired",
+    "STARTED":"started"
 };

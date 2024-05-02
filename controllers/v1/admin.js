@@ -8,16 +8,44 @@
 // Dependencies
 const adminHelper = require(MODULES_BASE_PATH + "/admin/helper");
 
-/**
-   * Reports
-   * @admin
-*/
-
 module.exports = class Admin {
 
     static get name() {
         return "admin";
     }
+
+  /**
+  * @api {post} /project/v1/admin/createIndex/:_collectionName 
+  * @apiVersion 1.0.0
+  * @apiName createIndex
+  * @apiGroup Admin
+  * @apiParamExample {json} Request-Body:
+    {
+        "keys": [
+            "scope.entities"
+        ]
+    }
+  * @apiHeader {String} X-authenticated-user-token Authenticity token
+  * @apiSampleRequest /project/v1/admin/createIndex/solutions
+  * @apiUse successBody
+  * @apiUse errorBody
+  * @apiParamExample {json} Response:
+    {
+        "message": "Keys indexed successfully",
+        "status": 200
+    }
+  */
+
+
+  /**
+   * Indexing specified keys in a model
+   * @method
+   * @name createIndex
+   * @param {Object} req - requested data.
+   * @param {String} req.params._id - collection name.
+   * @param {Array} req.body.keys - keys to be indexed.
+   * @returns {Object} success/failure message.
+   */
 
     async createIndex(req) {
       return new Promise(async (resolve, reject) => {
@@ -25,12 +53,12 @@ module.exports = class Admin {
           let collection = req.params._id;
           let keys = req.body.keys;
 
-          const fieldIndexed = await adminHelper.createIndex(
+          const isIndexed = await adminHelper.createIndex(
             collection,
             keys
           ) 
 
-          return resolve(fieldIndexed)
+          return resolve(isIndexed)
   
 
         } catch (error) {

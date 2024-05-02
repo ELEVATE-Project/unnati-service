@@ -46,7 +46,7 @@ module.exports = {
     PROJECT_AND_TASK_REPORT : "/v1/improvement-project/projectAndTaskReport",
     FILES_DOWNLOADABLE_URL: "/v1/cloud-services/files/getDownloadableUrl",
     OBSERVATION_DETAILS : "/v1/observations/details",
-    USER_READ_V5 : "/v5/user/read",
+    USER_READ : "/v1/user/read",
     GET_LOCATION_DATA : "/v1/location/search",
     CERTIFICATE_CREATE : "/api/v1/ProjectCertificate",
     PROJECT_CERTIFICATE_API_CALLBACK : "/v1/userProjects/certificateCallback",
@@ -54,4 +54,7 @@ module.exports = {
     GET_CERTIFICATE_KID : "/api/v1/PublicKey/search",
     PROGRAM_JOIN: "/v1/programs/join",
     IS_TARGETED_BASED_ON_USER_PROFILE : "/v1/solutions/isTargetedBasedOnUserProfile",
+    FIND_ENTITY_DOCUMENTS : "/v1/entities/find",
+    FIND_ENTITY_TYPE_DOCUMENTS : "/v1/entityTypes/find"
+
 };
