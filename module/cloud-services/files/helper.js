@@ -51,7 +51,9 @@ module.exports = class FilesHelper {
 						bucketName,
 						cloudStorage,
 						folderPath,
-						process.env.PRESIGNED_URL_EXPIRY_IN_SECONDS, //expireIn PARAMS
+						typeof process.env.PRESIGNED_URL_EXPIRY_IN_SECONDS === 'string'
+							? parseInt(process.env.PRESIGNED_URL_EXPIRY_IN_SECONDS)
+							: process.env.PRESIGNED_URL_EXPIRY_IN_SECONDS, //expireIn PARAMS
 						'' //permission PARAMS
 					)
 
@@ -98,7 +100,9 @@ module.exports = class FilesHelper {
 						bucketName,
 						cloudStorage,
 						'',
-						process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS, //expireIn PARAMS
+						typeof process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS === 'string'
+							? parseInt(process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS)
+							: process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS, //expireIn PARAMS
 						CONSTANTS.common.READ_PERMISSION, //permission PARAMS
 						true //true if filePath is passed
 					)
@@ -121,7 +125,9 @@ module.exports = class FilesHelper {
 					payloadData,
 					bucketName,
 					cloudStorage,
-					process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS
+					typeof process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS === 'string'
+						? parseInt(process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS)
+						: process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS
 				)
 				if (!downloadableUrl.success) {
 					return resolve({

@@ -36,7 +36,10 @@ module.exports = class FilesHelper {
 				}
 				// Override expireIn if env variable is present.
 				if (expireIn !== '') {
-					expireIn = process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS
+					expireIn =
+						typeof process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS === 'string'
+							? parseInt(process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS)
+							: process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS
 				}
 
 				if (Array.isArray(filePath) && filePath.length > 0) {
@@ -130,7 +133,10 @@ module.exports = class FilesHelper {
 				}
 				// Override expireIn if env variable is present.
 				if (expireIn !== '') {
-					expireIn = process.env.PRESIGNED_URL_EXPIRY_IN_SECONDS
+					expireIn =
+						typeof process.env.PRESIGNED_URL_EXPIRY_IN_SECONDS === 'string'
+							? parseInt(process.env.PRESIGNED_URL_EXPIRY_IN_SECONDS)
+							: process.env.PRESIGNED_URL_EXPIRY_IN_SECONDS
 				}
 
 				// Create an array of promises for signed URLs
