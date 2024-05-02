@@ -544,6 +544,7 @@ module.exports = class  Programs extends Abstract{
     * @apiHeader {String} X-App-Ver Appversion
     * @apiSampleRequest /project/v1/programs/join/5ffbf8909259097d48017bbf
     * {
+<<<<<<< HEAD
         "externalId" : "PROGID01",
         "name" : "DCPCR School Development Index 2018-19",
         "description" : "DCPCR School Development Index 2018-19",
@@ -570,10 +571,39 @@ module.exports = class  Programs extends Abstract{
         },
         "requestForPIIConsent" : true
       }
+=======
+      "externalId" : "PROGID01",
+      "name" : "DCPCR School Development Index 2018-19",
+      "description" : "DCPCR School Development Index 2018-19",
+      "isDeleted" : false,
+      "resourceType" : [ 
+          "program"
+      ],
+      "language" : [ 
+          "English"
+      ],
+      "keywords" : [],
+      "concepts" : [],
+      "userId":"a082787f-8f8f-42f2-a706-35457ca6f1fd",
+      "imageCompression" : {
+          "quality" : 10
+      },
+      "components" : [ 
+          "5b98fa069f664f7e1ae7498c"
+      ],
+      "scope" : {
+          "entityType" : "state",
+          "entities" : ["bc75cc99-9205-463e-a722-5326857838f8","8ac1efe9-0415-4313-89ef-884e1c8eee34"],
+          "roles" : ["HM"]
+      },
+      "requestForPIIConsent" : true
+}
+>>>>>>> project-template-creation-changes
 
     * @apiUse successBody
     * @apiUse errorBody
     * @apiParamExample {json} Response:
+<<<<<<< HEAD
     *{
       "message": "You have joined this program successfully",
       "status": 200,
@@ -581,6 +611,15 @@ module.exports = class  Programs extends Abstract{
         "_id" : "5ffbf8909259097d48017bbf"
       }
     }
+=======
+    *  {
+          "message": "You have joined the program successfully",
+          "status": 200,
+          "result": {
+            "_id" : "5ffbf8909259097d48017bbf"
+          }
+      }
+>>>>>>> project-template-creation-changes
     * 
     */
 

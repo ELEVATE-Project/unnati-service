@@ -9,7 +9,6 @@
 
 const timeZoneDifference = process.env.TIMEZONE_DIFFRENECE_BETWEEN_LOCAL_TIME_AND_UTC;
 const programsQueries = require(DB_QUERY_BASE_PATH + "/programs")
-const userService = require(GENERICS_FILES_PATH + "/services/users")
 const entitiesService = require(GENERICS_FILES_PATH + "/services/entity-management")
 
 /**

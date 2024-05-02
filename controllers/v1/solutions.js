@@ -281,7 +281,11 @@ module.exports = class Solutions extends Abstract {
     /**
     * @api {post} /project/v1/solutions/addRolesInScope/:solutionId Add roles in solutions
     * @apiVersion 1.0.0
+<<<<<<< HEAD
     * @apiName add roles in scope
+=======
+    * @apiName Add roles in scope
+>>>>>>> project-template-creation-changes
     * @apiGroup Solutions
     * @apiParamExample {json} Request-Body:
     * {
@@ -895,8 +899,13 @@ module.exports = class Solutions extends Abstract {
   * @apiUse successBody
   * @apiUse errorBody
   * @apiParamExample {json} Request:
+<<<<<<< HEAD
   * {
        "entityType" : "block",
+=======
+    * {
+    *   "entityType" : "block",
+>>>>>>> project-template-creation-changes
         "entities" : [
             "5fd1b52ab53a6416aaeefc80",
             "5fd098e2e049735a86b748ac"

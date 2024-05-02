@@ -11,9 +11,7 @@
 */
 
 // Dependencies
-const projectTemplatesHelper = require(MODULES_BASE_PATH + "/project/templates/helper");
 const learningResourcesHelper = require(MODULES_BASE_PATH + "/learningResources/helper");
-const surveyService = require(GENERICS_FILES_PATH + "/services/survey");
 const projectTemplateTaskQueries = require(DB_QUERY_BASE_PATH + "/projectTemplateTask");
 const projectTemplateQueries = require(DB_QUERY_BASE_PATH + "/projectTemplates");
 const solutionsQueries = require(DB_QUERY_BASE_PATH + "/solutions");

@@ -9,7 +9,6 @@
 
 const libraryCategoriesHelper = require(MODULES_BASE_PATH + "/library/categories/helper");
 const projectTemplatesHelper = require(MODULES_BASE_PATH + "/project/templates/helper");
-const projectTemplateTasksHelper = require(MODULES_BASE_PATH + "/project/templateTasks/helper");
 const { v4: uuidv4 } = require('uuid');
 const reportService = require(GENERICS_FILES_PATH + "/services/report");
 const projectQueries = require(DB_QUERY_BASE_PATH + "/projects");
@@ -29,7 +28,6 @@ const programUsersQueries = require(DB_QUERY_BASE_PATH + "/programUsers");
 const solutionsQueries = require(DB_QUERY_BASE_PATH + "/solutions");
 const programQueries = require(DB_QUERY_BASE_PATH + "/programs")
 const entitiesService = require(GENERICS_FILES_PATH + "/services/entity-management")
-const observationsHelper = require(MODULES_BASE_PATH + "/observations/helper")
 /**
     * UserProjectsHelper
     * @class
@@ -1477,12 +1475,12 @@ module.exports = class UserProjectsHelper {
                 userRoleInformation
             );
             
-            let revertStatusorNot = UTILS.revertStatusorNot(appVersion);
-            if ( revertStatusorNot ) {
-                projectDetails.data.status = UTILS.revertProjectStatus(projectDetails.data.status);
-            } else {
-                projectDetails.data.status = UTILS.convertProjectStatus(projectDetails.data.status);
-            }
+            // let revertStatusorNot = UTILS.revertStatusorNot(appVersion);
+            // if ( revertStatusorNot ) {
+            //     projectDetails.data.status = UTILS.revertProjectStatus(projectDetails.data.status);
+            // } else {
+            //     projectDetails.data.status = UTILS.convertProjectStatus(projectDetails.data.status);
+            // }
             // make templateUrl downloadable befor passing to front-end
             // if ( projectDetails.data.certificate &&
             //      projectDetails.data.certificate.templateUrl &&

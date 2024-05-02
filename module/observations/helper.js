@@ -1,3 +1,7 @@
+const observationQueries = require(DB_QUERY_BASE_PATH + "/observations")
+const entitiesService = require(GENERICS_FILES_PATH + "/services/entity-management")
+
+
 module.exports = class observationsHelper {
 /**
       * observation details.
@@ -21,12 +25,12 @@ module.exports = class observationsHelper {
     
                 if(observationDocument[0].entities.length>0) {
     
-                    let entitiesDocument = await this.entityDocuments({
+                    let entitiesDocument = await entitiesService.entityDocuments({
                         _id:{$in:observationDocument[0].entities}
-                    });
+                    },"all",userToken);
     
                     observationDocument[0]["count"] = entitiesDocument.length;
-                    observationDocument[0].entities = entitiesDocument;
+                    observationDocument[0].entities = entitiesDocument.data[0];
                 }
     
                 return resolve(observationDocument[0]);
