@@ -34,7 +34,6 @@ module.exports= class Solutions{
             try {
                 let queryObject = (filterData != "all") ? filterData : {};
                 let projection = {}
-           
                 if (fieldsArray != "all") {
                     fieldsArray.forEach(field => {
                         projection[field] = 1;
@@ -69,41 +68,110 @@ module.exports= class Solutions{
     * @returns {String} - message.
     */
 
-   static updateSolutionDocument(query= {}, updateObject= {}) {
+   static updateSolutionDocument(query= {}, updateObject= {}, returnData = {new:false}) {
     return new Promise(async (resolve, reject) => {
         try {
 
             if (Object.keys(query).length == 0) {
-                throw new Error(messageConstants.apiResponses.UPDATE_QUERY_REQUIRED)
+                throw new Error(CONSTANTS.apiResponses.UPDATE_QUERY_REQUIRED)
             }
 
             if (Object.keys(updateObject).length == 0) {
-                throw new Error (messageConstants.apiResponses.UPDATE_OBJECT_REQUIRED)
+                throw new Error (CONSTANTS.apiResponses.UPDATE_OBJECT_REQUIRED)
             }
 
-            let updateResponse = await database.models.solutions.updateOne
+            let updateResponse = await database.models.solutions.findOneAndUpdate
             (
                 query,
-                updateObject
-            )
-            
-            if (updateResponse.nModified == 0) {
-                throw new Error(CONSTANTS.apiResponses.FAILED_TO_UPDATE)
-            }
+                updateObject,
+                returnData
+            ).lean()
 
-            return resolve({
-                success: true,
-                message: CONSTANTS.apiResponses.UPDATED_DOCUMENT_SUCCESSFULLY,
-                data: true
-            });
+            return resolve(updateResponse);
 
         } catch (error) {
-            return resolve({
-                success: false,
-                message: error.message,
-                data: false
-            });
+            return reject(error);
         }
     });
     }
+
+
+     /**
+   * find solutions
+   * @method
+   * @name getAggregate
+   * @param {Array} query - aggregation query.
+   * @returns {Array} List of solutions. 
+   */
+  
+  static getAggregate(
+    query = []
+  ) {
+    return new Promise(async (resolve, reject) => {
+        try {
+    
+            let solutionDocuments = await database.models.solutions.aggregate(
+              query
+            )
+
+            
+            return resolve(solutionDocuments);
+            
+        } catch (error) {
+            return reject(error);
+        }
+    });
+  }
+
+    /**
+   * create solutions
+   * @method
+   * @name createSolution
+   * @param {Object} solutionData - solution data.
+   * @returns {Object} solution object. 
+   */
+    static createSolution(
+        solutionData
+      ) {
+        return new Promise(async (resolve, reject) => {
+            try {
+        
+                let solutionDocument = await database.models.solutions.create(
+                    solutionData
+                );
+                
+                return resolve(solutionDocument);
+                
+            } catch (error) {
+                return reject(error);
+            }
+        });
+      }
+
+
+
+          /**
+     * listIndexes function.
+     * @method
+     * @name listIndexes
+     * @returns {Array} list of indexes.
+     */
+
+
+    static listIndexesFunc(
+        ){
+        return new Promise(async (resolve, reject) => {
+            try{
+
+                let indexData = await database.models.solutions.listIndexes();
+
+                return resolve(indexData)
+
+            }catch (error) {
+                return reject(error);
+            }
+        })
+    
+    }
+
 }

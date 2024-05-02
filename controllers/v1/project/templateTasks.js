@@ -33,12 +33,12 @@ module.exports = class ProjectTemplateTasks extends Abstract {
     }
 
     /**
-    * @api {post} /improvement-project/api/v1/project/templateTasks/bulkCreate/:projectTemplateId 
+    * @api {post} /project/v1/project/templateTasks/bulkCreate/:projectTemplateId 
     * Bulk create project template tasks.
     * @apiVersion 1.0.0
     * @apiGroup Project Template Tasks
     * @apiParam {File} projectTemplateTasks Mandatory project template tasks file of type CSV.
-    * @apiSampleRequest /improvement-project/api/v1/project/templateTasks/bulkCreate/5f2adc57eb351a5a9c68f403
+    * @apiSampleRequest /project/v1/project/templateTasks/bulkCreate/5f2adc57eb351a5a9c68f403
     * @apiUse successBody
     * @apiUse errorBody
     */
@@ -53,7 +53,6 @@ module.exports = class ProjectTemplateTasks extends Abstract {
     async bulkCreate(req) {
         return new Promise(async (resolve, reject) => {
             try {
-                
                 if ( !req.files || !req.files.projectTemplateTasks ) {
                     return resolve(
                       { 
@@ -85,12 +84,12 @@ module.exports = class ProjectTemplateTasks extends Abstract {
     }
 
      /**
-    * @api {post} /improvement-project/api/v1/project/templateTasks/bulkUpdate/:projectTemplateId 
+    * @api {post} /project/v1/project/templateTasks/bulkUpdate/:projectTemplateId 
     * Bulk update project template tasks.
     * @apiVersion 1.0.0
     * @apiGroup Project Template Tasks
     * @apiParam {File} projectTemplateTasks Mandatory project template tasks file of type CSV.
-    * @apiSampleRequest /improvement-project/api/v1/project/templateTasks/bulkUpdate/5f2adc57eb351a5a9c68f403
+    * @apiSampleRequest /project/v1/project/templateTasks/bulkUpdate/5f2adc57eb351a5a9c68f403
     * @apiUse successBody
     * @apiUse errorBody
     */
@@ -139,11 +138,11 @@ module.exports = class ProjectTemplateTasks extends Abstract {
     }
 
     /**
-    * @api {post} /improvement-project/api/v1/project/templateTasks/update/:taskId 
+    * @api {post} /project/v1/project/templateTasks/update/:taskId 
     * Update projects template.
     * @apiVersion 1.0.0
     * @apiGroup Project Template Tasks
-    * @apiSampleRequest /improvement-project/api/v1/project/templateTasks/update/6006b5cca1a95727dbcdf648
+    * @apiSampleRequest /project/v1/project/templateTasks/update/6006b5cca1a95727dbcdf648
     * @apiHeader {String} internal-access-token internal access token 
     * @apiHeader {String} X-authenticated-user-token Authenticity token  
     * @apiUse successBody
@@ -169,7 +168,7 @@ module.exports = class ProjectTemplateTasks extends Abstract {
                 let projectTemplateTask = await projectTemplateTasksHelper.update(
                   req.params._id, 
                   req.body, 
-                  req.userDetails.id
+                  req.userDetails.userInformation.userId
                 );
 
                 projectTemplateTask.result = projectTemplateTask.data;
