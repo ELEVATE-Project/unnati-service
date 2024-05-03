@@ -149,9 +149,9 @@ module.exports = class ProjectTemplateTasks extends Abstract {
     * @apiUse errorBody
     * @apiParamExample {json} Response:
     * {
-    *  "status": 200,
+        "status": 200,
         "message": "template task updated successfully"
-    }
+      }
     */
 
       /**

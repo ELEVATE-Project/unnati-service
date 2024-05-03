@@ -185,5 +185,10 @@ module.exports = {
     "SURVEYS_FETCHED": "Surveys fetched successfully",
     "TARGETED_OBSERVATION_FETCHED": "Targeted observations fetched successfully",
     "PROGRAM_LIST" : "Program lists fetched successfully",
+    "CLOUD_SERVICE_SUCCESS_MESSAGE" : "Url's generated successfully",
+    "URL_GENERATED" : "Url generated successfully",
+    "FAILED_PRE_SIGNED_URL" : "Failed to generate signed url",
+    "FAILED_TO_UPLOAD": "Failed to upload file",
+    "FAILED_TO_CREATE_DOWNLOADABLEURL" : "Failed to generate downloadableUrl",
 
 };
