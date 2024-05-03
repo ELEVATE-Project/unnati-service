@@ -20,11 +20,11 @@ module.exports = class FilesHelper {
 	 * Get downloadable url
 	 * @method
 	 * @name                        - getDownloadableUrl
-	 * @param {filePath}            - File path.
-	 * @param {String}              - Bucket name
-	 * @param {Array} storageName   - Storage name if provided.
+	 * @param {Array} [filePath]    - File path
+	 * @param {String} bucketName   - Bucket name
+	 * @param {String} storageName  - Storage name if provided.
 	 * @param {Number} expireIn     - Link expire time.
-	 * @return {String}             - Downloadable url link
+	 * @return {Object}             - Object with the payloads and the respective urls
 	 */
 
 	static getDownloadableUrl(filePath, bucketName, storageName = '', expireIn = '') {
@@ -34,12 +34,9 @@ module.exports = class FilesHelper {
 				if (storageName !== '') {
 					cloudStorage = storageName
 				}
-				// Override expireIn if env variable is present.
-				if (expireIn !== '') {
-					expireIn =
-						typeof process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS === 'string'
-							? parseInt(process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS)
-							: process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS
+				// Initialise expireIn with env variable if it is empty.
+				if (expireIn == '') {
+					expireIn = parseInt(process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS)
 				}
 
 				if (Array.isArray(filePath) && filePath.length > 0) {
@@ -97,12 +94,11 @@ module.exports = class FilesHelper {
 	 * @name preSignedUrls
 	 * @param {Array} [fileNames]                         - fileNames.
 	 * @param {String} bucket                             - name of the bucket
-	 * @param {Array} [storageName]                       - Storage name if provided.
+	 * @param {String} storageName                        - Storage name if provided.
 	 * @param {String} folderPath                         - folderPath
 	 * @param {Number} expireIn                           - Link expire time.
 	 * @param {String} permission                         - Action permission
-	 * @param {Boolean} addDruidFileUrlForIngestion       - Add druid injection data to response {true/false}
-	 * @param {Boolean} serviceUpload                     - serive Upload  {true/false}
+	 * @param {Boolean} isFilePathPassed                  - true/false value
 	 * @returns {Array}                                   - consists of all signed urls files.
 	 */
 
@@ -131,12 +127,9 @@ module.exports = class FilesHelper {
 				if (permission !== '') {
 					actionPermission = permission
 				}
-				// Override expireIn if env variable is present.
-				if (expireIn !== '') {
-					expireIn =
-						typeof process.env.PRESIGNED_URL_EXPIRY_IN_SECONDS === 'string'
-							? parseInt(process.env.PRESIGNED_URL_EXPIRY_IN_SECONDS)
-							: process.env.PRESIGNED_URL_EXPIRY_IN_SECONDS
+				// Initialise expireIn with env variable if it is empty.
+				if (expireIn == '') {
+					expireIn = parseInt(process.env.PRESIGNED_URL_EXPIRY_IN_SECONDS)
 				}
 
 				// Create an array of promises for signed URLs

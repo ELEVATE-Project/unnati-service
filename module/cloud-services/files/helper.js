@@ -25,11 +25,8 @@ module.exports = class FilesHelper {
 	 * @method
 	 * @name preSignedUrls
 	 * @param {Array} payloadData       - payload for files data.
-	 * @param {String} referenceType    - reference type
 	 * @param {String} userId           - Logged in user id.
-	 * @param {String} templateId       - certificateTemplateId.
-	 * @param {Boolean} serviceUpload     - serive Upload  {true/false}
-	 * @returns {Array}                 - consists of all signed urls files.
+	 * @returns {Array}                 - consists of all signed urls & filePaths.
 	 */
 
 	static preSignedUrls(payloadData, userId = '') {
@@ -51,9 +48,7 @@ module.exports = class FilesHelper {
 						bucketName,
 						cloudStorage,
 						folderPath,
-						typeof process.env.PRESIGNED_URL_EXPIRY_IN_SECONDS === 'string'
-							? parseInt(process.env.PRESIGNED_URL_EXPIRY_IN_SECONDS)
-							: process.env.PRESIGNED_URL_EXPIRY_IN_SECONDS, //expireIn PARAMS
+						parseInt(process.env.PRESIGNED_URL_EXPIRY_IN_SECONDS), //expireIn PARAMS
 						'' //permission PARAMS
 					)
 
@@ -100,9 +95,7 @@ module.exports = class FilesHelper {
 						bucketName,
 						cloudStorage,
 						'',
-						typeof process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS === 'string'
-							? parseInt(process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS)
-							: process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS, //expireIn PARAMS
+						parseInt(process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS), //expireIn PARAMS
 						CONSTANTS.common.READ_PERMISSION, //permission PARAMS
 						true //true if filePath is passed
 					)
@@ -125,9 +118,7 @@ module.exports = class FilesHelper {
 					payloadData,
 					bucketName,
 					cloudStorage,
-					typeof process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS === 'string'
-						? parseInt(process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS)
-						: process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS
+					parseInt(process.env.DOWNLOADABLE_URL_EXPIRY_IN_SECONDS)
 				)
 				if (!downloadableUrl.success) {
 					return resolve({
@@ -144,9 +135,7 @@ module.exports = class FilesHelper {
 			} catch (error) {
 				return reject({
 					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-
 					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-
 					errorObject: error,
 				})
 			}

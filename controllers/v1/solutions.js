@@ -5,18 +5,18 @@
  * Description : Solution related information.
  */
 // Dependencies
-const solutionsHelper = require(MODULES_BASE_PATH + "/solutions/helper");
+const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper')
 
 module.exports = class Solutions extends Abstract {
-  constructor() {
-    super("solutions");
-  }
+	constructor() {
+		super('solutions')
+	}
 
-  static get name() {
-    return "solutions";
-  }
+	static get name() {
+		return 'solutions'
+	}
 
-  /**
+	/**
 * @api {post} /project/v1/solutions/create Create solution
 * @apiVersion 1.0.0
 * @apiName Create solution
@@ -44,7 +44,7 @@ module.exports = class Solutions extends Abstract {
   }
 */
 
-  /**
+	/**
  * Create solution.
  * @method
  * @name create
@@ -90,30 +90,27 @@ module.exports = class Solutions extends Abstract {
  * @returns {JSON} Created solution data.
  */
 
-  async create(req) {
-    return new Promise(async (resolve, reject) => {
-      try {
+	async create(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let solutionData = await solutionsHelper.createSolution(
+					req.userDetails.userToken,
+					req.body,
+					true //this is true for when its called via API calls
+				)
 
-        let solutionData = await solutionsHelper.createSolution(
-          req.userDetails.userToken,
-          req.body,
-          true                                    //this is true for when its called via API calls
-        );
+				return resolve(solutionData)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-        return resolve(solutionData);
-
-      } catch (error) {
-        return reject({
-          status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-          message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-          errorObject: error
-        });
-      }
-    });
-  } 
-
-
-    /**
+	/**
 * @api {post} /project/v1/solutions/update/:solutionId Update solution
 * @apiVersion 1.0.0
 * @apiName Update solution
@@ -141,8 +138,7 @@ module.exports = class Solutions extends Abstract {
   }
 */
 
-
-   /**
+	/**
    * Update solution.
    * @method
    * @name update
@@ -187,30 +183,28 @@ module.exports = class Solutions extends Abstract {
    * @returns {JSON}
    */
 
-   async update(req) {
-    return new Promise(async (resolve, reject) => {
-      try {
+	async update(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let solutionData = await solutionsHelper.update(
+					req.params._id,
+					req.body,
+					req.userDetails.userInformation.userId,
+					true //this is true for when its called via API calls
+				)
 
-        let solutionData = await solutionsHelper.update(
-          req.params._id, 
-          req.body, 
-          req.userDetails.userInformation.userId,
-          true                                              //this is true for when its called via API calls
-        );
+				return resolve(solutionData)
+			} catch (error) {
+				reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-        return resolve(solutionData);
-      }
-      catch (error) {
-        reject({
-          status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-          message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-          errorObject: error
-        })
-      }
-    })
-  } 
-
-    /**
+	/**
     * @api {post} /project/v1/solutions/list?page=:page&limit=:limit&search=:search
     * @apiVersion 1.0.0
     * @apiName list solutions
@@ -243,54 +237,47 @@ module.exports = class Solutions extends Abstract {
 
     */
 
-   /**
-   * List solutions.
-   * @method
-   * @name list
-   * @param {Object} req - requested data.
-   * @param {String} req.query.type - solution type.
-   * @returns {JSON}
-   */
+	/**
+	 * List solutions.
+	 * @method
+	 * @name list
+	 * @param {Object} req - requested data.
+	 * @param {String} req.query.type - solution type.
+	 * @returns {JSON}
+	 */
 
-   async list(req) {
-    return new Promise(async (resolve, reject) => {
-      try {
+	async list(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let solutionData = await solutionsHelper.list(
+					req.query.type, //mandatory field to be given
+					req.query.subType ? req.query.subType : '',
+					req.body,
+					req.pageNo,
+					req.pageSize,
+					req.searchText
+				)
 
-        let solutionData = await solutionsHelper.list(
-          req.query.type,                   //mandatory field to be given 
-          req.query.subType ? req.query.subType : "",
-          req.body,
-          req.pageNo,
-          req.pageSize,
-          req.searchText
-        );
+				return resolve(solutionData)
+			} catch (error) {
+				reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-        return resolve(solutionData);
-      }
-      catch (error) {
-        reject({
-          status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-          message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-          errorObject: error
-        })
-      }
-    })
-  }
-
-
-    /**
+	/**
     * @api {post} /project/v1/solutions/addRolesInScope/:solutionId Add roles in solutions
     * @apiVersion 1.0.0
-<<<<<<< HEAD
     * @apiName add roles in scope
-=======
-    * @apiName Add roles in scope
->>>>>>> project-template-creation-changes
     * @apiGroup Solutions
     * @apiParamExample {json} Request-Body:
     * {
-    * "roles" : ["DEO","SPD"]
-    }
+        "roles" : ["DEO","SPD"]
+      }
     * @apiHeader {String} X-authenticated-user-token Authenticity token
     * @apiSampleRequest /project/v1/solutions/addRolesInScope/5ffbf8909259097d48017bbf
     * @apiUse successBody
@@ -302,38 +289,33 @@ module.exports = class Solutions extends Abstract {
       }
     */
 
-     /**
-   * Add roles in solution scope
-   * @method
-   * @name addRolesInScope
-   * @param {Object} req - requested data.
-   * @param {String} req.params._id - solution id.
-   * @param {Array} req.body.roles - Roles to be added.
-   * @returns {Array} solution scope roles.
-   */
+	/**
+	 * Add roles in solution scope
+	 * @method
+	 * @name addRolesInScope
+	 * @param {Object} req - requested data.
+	 * @param {String} req.params._id - solution id.
+	 * @param {Array} req.body.roles - Roles to be added.
+	 * @returns {Array} solution scope roles.
+	 */
 
-     async addRolesInScope(req) {
-      return new Promise(async (resolve, reject) => {
-        try {
-  
-          let solutionUpdated = await solutionsHelper.addRolesInScope(
-            req.params._id,
-            req.body.roles
-          );
-      
-          return resolve(solutionUpdated);
-  
-        } catch (error) {
-          return reject({
-            status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-            message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-            errorObject: error
-          });
-        }
-      });
-    }
+	async addRolesInScope(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let solutionUpdated = await solutionsHelper.addRolesInScope(req.params._id, req.body.roles)
 
-     /**
+				return resolve(solutionUpdated)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
+
+	/**
     * @api {post} /project/v1/solutions/detailsBasedOnRoleAndLocation/:solutionId Solution details based on role and location.
     * @apiVersion 1.0.0
     * @apiName Targeted solution details
@@ -375,38 +357,35 @@ module.exports = class Solutions extends Abstract {
     }
     */
 
-     /**
-   * Solution details based on role and location.
-   * @method
-   * @name detailsBasedOnRoleAndLocation
-   * @param {Object} req - requested data.
-   * @returns {JSON} Created solution data.
-   */
+	/**
+	 * Solution details based on role and location.
+	 * @method
+	 * @name detailsBasedOnRoleAndLocation
+	 * @param {Object} req - requested data.
+	 * @returns {JSON} Created solution data.
+	 */
 
-  async detailsBasedOnRoleAndLocation(req) {
-    return new Promise(async (resolve, reject) => {
-      try {
+	async detailsBasedOnRoleAndLocation(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let solutionDetails = await solutionsHelper.detailsBasedOnRoleAndLocation(
+					req.params._id,
+					req.body,
+					req.query.type ? req.query.type : ''
+				)
 
-        let solutionDetails = 
-        await solutionsHelper.detailsBasedOnRoleAndLocation(
-          req.params._id,
-          req.body,
-          req.query.type ? req.query.type : ""
-        );
-          
-        return resolve(solutionDetails);
+				return resolve(solutionDetails)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-      } catch (error) {
-        return reject({
-          status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-          message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-          errorObject: error
-        });
-      }
-    });
-  }
-
-       /**
+	/**
     * @api {post} /project/v1/solutions/removeRolesInScope/:solutionId Remove roles from solutions scope
     * @apiVersion 1.0.0
     * @apiName remove roles in scope
@@ -426,40 +405,33 @@ module.exports = class Solutions extends Abstract {
       }
     */
 
-     /**
-   * Remove roles in solution scope
-   * @method
-   * @name removeRolesInScope
-   * @param {Object} req - requested data.
-   * @param {String} req.params._id - solution id.
-   * @param {Array} req.body.roles - Roles to be added.
-   * @returns {Array} Removed solution scope roles.
-   */
+	/**
+	 * Remove roles in solution scope
+	 * @method
+	 * @name removeRolesInScope
+	 * @param {Object} req - requested data.
+	 * @param {String} req.params._id - solution id.
+	 * @param {Array} req.body.roles - Roles to be added.
+	 * @returns {Array} Removed solution scope roles.
+	 */
 
-     async removeRolesInScope(req) {
-      return new Promise(async (resolve, reject) => {
-        try {
-  
-          let solutionUpdated = await solutionsHelper.removeRolesInScope(
-            req.params._id,
-            req.body.roles
-          );
-      
-          return resolve(solutionUpdated);
-  
-        } catch (error) {
-          return reject({
-            status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-            message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-            errorObject: error
-          });
-        }
-      });
-    }
+	async removeRolesInScope(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let solutionUpdated = await solutionsHelper.removeRolesInScope(req.params._id, req.body.roles)
 
+				return resolve(solutionUpdated)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-
-   /**
+	/**
   * @api {get} /project/v1/solutions/fetchLink/:solutionId
   * @apiVersion 1.0.0
   * @apiName Get link by solution id
@@ -476,38 +448,35 @@ module.exports = class Solutions extends Abstract {
     }
   */
 
-   /**
-   * Get link by solution id.
-   * @method
-   * @name fetchLink
-   * @param {Object} req - requested data.
-   * @param {String} req.params._id - solution Id
-   * @returns {Array}
-   */
+	/**
+	 * Get link by solution id.
+	 * @method
+	 * @name fetchLink
+	 * @param {Object} req - requested data.
+	 * @param {String} req.params._id - solution Id
+	 * @returns {Array}
+	 */
 
-  async fetchLink(req) {
-    return new Promise(async (resolve, reject) => {
-      try {
+	async fetchLink(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let solutionData = await solutionsHelper.fetchLink(
+					req.params._id,
+					req.userDetails.userInformation.userId
+				)
 
-        let solutionData = await solutionsHelper.fetchLink(
-          req.params._id,
-          req.userDetails.userInformation.userId
-        );
+				return resolve(solutionData)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-        return resolve(solutionData);
-
-      }
-      catch (error) {
-        return reject({
-          status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-          message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-          errorObject: error
-        })
-      }
-    })
-  }
-
-   /**
+	/**
   * @api {post} /project/v1/solutions/verifyLink/:link
   * @apiVersion 1.0.0
   * @apiName verify Link
@@ -540,40 +509,39 @@ module.exports = class Solutions extends Abstract {
     }
   */
 
-   /**
-   * verify Link
-   * @method
-   * @name verifyLink
-   * @param {Object} req - requested data.
-   * @param {String} req.params._id - solution link
-   * @returns {Array}
-   */
+	/**
+	 * verify Link
+	 * @method
+	 * @name verifyLink
+	 * @param {Object} req - requested data.
+	 * @param {String} req.params._id - solution link
+	 * @returns {Array}
+	 */
 
-   async verifyLink(req) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        let solutionData = await solutionsHelper.verifyLink(
-          req.params._id,
-          req.body,
-          req.userDetails.userInformation.userId,
-          req.userDetails.userToken,
-          req.query.hasOwnProperty("createProject") ? UTILS.convertStringToBoolean(req.query.createProject) : true
-        );
-        return resolve(solutionData);
+	async verifyLink(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let solutionData = await solutionsHelper.verifyLink(
+					req.params._id,
+					req.body,
+					req.userDetails.userInformation.userId,
+					req.userDetails.userToken,
+					req.query.hasOwnProperty('createProject')
+						? UTILS.convertStringToBoolean(req.query.createProject)
+						: true
+				)
+				return resolve(solutionData)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-      }
-      catch (error) {
-        return reject({
-          status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-          message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-          errorObject: error
-        })
-      }
-    })
-  }
-
-
-   /**
+	/**
     * @api {post} /project/v1/solutions/addEntitiesInScope/:solutionId Add entities in solutions
     * @apiVersion 1.0.0
     * @apiName Add entities in solutions
@@ -593,41 +561,37 @@ module.exports = class Solutions extends Abstract {
       }
     */
 
-     /**
-   * Add entities in solution scope
-   * @method
-   * @name addEntitiesInScope
-   * @param {Object} req - requested data.
-   * @param {String} req.params._id - solution id.
-   * @param {Array} req.body.entities - Entities to be added.
-   * @returns {Array} Solution scope entities updation.
-   */
+	/**
+	 * Add entities in solution scope
+	 * @method
+	 * @name addEntitiesInScope
+	 * @param {Object} req - requested data.
+	 * @param {String} req.params._id - solution id.
+	 * @param {Array} req.body.entities - Entities to be added.
+	 * @returns {Array} Solution scope entities updation.
+	 */
 
-     async addEntitiesInScope(req) {
-      return new Promise(async (resolve, reject) => {
-        try {
-  
-          let solutionUpdated = await solutionsHelper.addEntitiesInScope(
-            req.params._id,
-            req.body.entities,
-            req.userDetails.userToken
-          );
-      
-          return resolve(solutionUpdated);
-  
-        } catch (error) {
-          return reject({
-            status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-            message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-            errorObject: error
-          });
-        }
-      });
-    }
+	async addEntitiesInScope(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let solutionUpdated = await solutionsHelper.addEntitiesInScope(
+					req.params._id,
+					req.body.entities,
+					req.userDetails.userToken
+				)
 
+				return resolve(solutionUpdated)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-
-    /**
+	/**
     * @api {post} /project/v1/solutions/removeEntitiesInScope/:solutionId Remove entities from solution scope.
     * @apiVersion 1.0.0
     * @apiName Remove entities from solution scope.
@@ -647,41 +611,37 @@ module.exports = class Solutions extends Abstract {
       }
     */
 
-     /**
-   * Remove entities in slution scope
-   * @method
-   * @name removeEntitiesInScope
-   * @param {Object} req - requested data.
-   * @param {String} req.params._id - solution id.
-   * @param {Array} req.body.entities - Entities to be added.
-   * @returns {Array} Program scope roles.
-   */
+	/**
+	 * Remove entities in slution scope
+	 * @method
+	 * @name removeEntitiesInScope
+	 * @param {Object} req - requested data.
+	 * @param {String} req.params._id - solution id.
+	 * @param {Array} req.body.entities - Entities to be added.
+	 * @returns {Array} Program scope roles.
+	 */
 
-  async removeEntitiesInScope(req) {
-    return new Promise(async (resolve, reject) => {
-      try {
+	async removeEntitiesInScope(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let solutionUpdated = await solutionsHelper.removeEntitiesInScope(
+					req.params._id,
+					req.body.entities,
+					req.userDetails.userToken
+				)
 
-        let solutionUpdated = await solutionsHelper.removeEntitiesInScope(
-          req.params._id,
-          req.body.entities,
-          req.userDetails.userToken
-        );
-    
-        return resolve(solutionUpdated);
+				return resolve(solutionUpdated)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-      } catch (error) {
-        return reject({
-          status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-          message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-          errorObject: error
-        });
-      }
-    });
-  }
-
-
-
-    /**
+	/**
   * @api {post} /project/v1/solutions/verifySolution/:Id
   * @apiVersion 1.0.0
   * @apiName verify Solutions targeted
@@ -707,39 +667,32 @@ module.exports = class Solutions extends Abstract {
     }
   */
 
-   /**
-   * verify Solution
-   * @method
-   * @name verifySolution
-   * @param {Object} req - requested data.
-   * @param {String} req.params._id - solution id
-   * @returns {Array}
-   */
+	/**
+	 * verify Solution
+	 * @method
+	 * @name verifySolution
+	 * @param {Object} req - requested data.
+	 * @param {String} req.params._id - solution id
+	 * @returns {Array}
+	 */
 
-   async verifySolution(req) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        
-        let solutionData = await solutionsHelper.isTargetedBasedOnUserProfile(
-          req.params._id,
-          req.body,
-        );
+	async verifySolution(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let solutionData = await solutionsHelper.isTargetedBasedOnUserProfile(req.params._id, req.body)
 
-        return resolve(solutionData);
+				return resolve(solutionData)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-      }
-      catch (error) {
-        return reject({
-          status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-          message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-          errorObject: error
-        })
-      }
-    })
-  }
-
-
-  /**
+	/**
     * @api {post} /project/v1/solutions/forUserRoleAndLocation?programId=:programId&type=:type&subType=:subType&page=:page&limit=:limit Auto targeted solutions
     * @apiVersion 1.0.0
     * @apiName Auto targeted solution
@@ -771,43 +724,39 @@ module.exports = class Solutions extends Abstract {
     }
     */
 
-     /**
-   * Auto targeted solution.
-   * @method
-   * @name forUserRoleAndLocation
-   * @param {Object} req - requested data.
-   * @returns {JSON} Created solution data.
-   */
+	/**
+	 * Auto targeted solution.
+	 * @method
+	 * @name forUserRoleAndLocation
+	 * @param {Object} req - requested data.
+	 * @returns {JSON} Created solution data.
+	 */
 
-     async forUserRoleAndLocation(req) {
-      return new Promise(async (resolve, reject) => {
-        try {
-  
-          let targetedSolutions = await solutionsHelper.forUserRoleAndLocation(
-            req.body,
-            req.query.type ? req.query.type : "",
-            req.query.subType ? req.query.subType : "",
-            req.query.programId ? req.query.programId : "",
-            req.pageSize,
-            req.pageNo,
-            req.searchText
-          );
-            
-          return resolve(targetedSolutions);
-  
-        } catch (error) {
-          return reject({
-            status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-            message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-            errorObject: error
-          });
-        }
-      });
-    }
+	async forUserRoleAndLocation(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let targetedSolutions = await solutionsHelper.forUserRoleAndLocation(
+					req.body,
+					req.query.type ? req.query.type : '',
+					req.query.subType ? req.query.subType : '',
+					req.query.programId ? req.query.programId : '',
+					req.pageSize,
+					req.pageNo,
+					req.searchText
+				)
 
+				return resolve(targetedSolutions)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-
-     /**
+	/**
     * @api {post} /project/v1/solutions/targetedSolutions?type=:solutionType&page=:page&limit=:limit&search=:search&filter=:filter
     * List of assigned solutions and targetted ones.
     * @apiVersion 1.0.0
@@ -849,47 +798,40 @@ module.exports = class Solutions extends Abstract {
     * @apiUse errorBody
     */
 
-    /**
-      * List of solutions and targetted ones.
-      * @method
-      * @name targetedSolutions
-      * @param {Object} req - request data.
-      * @returns {JSON} List of solutions with targetted ones.
-     */
+	/**
+	 * List of solutions and targetted ones.
+	 * @method
+	 * @name targetedSolutions
+	 * @param {Object} req - request data.
+	 * @returns {JSON} List of solutions with targetted ones.
+	 */
 
-  async targetedSolutions(req) {
-    return new Promise(async (resolve, reject) => {
-        try {
+	async targetedSolutions(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let observations = await solutionsHelper.targetedSolutions(
+					req.body,
+					req.query.type,
+					req.userDetails.userInformation.userId,
+					req.pageSize,
+					req.pageNo,
+					req.searchText,
+					req.query.filter,
+					req.query.surveyReportPage ? req.query.surveyReportPage : ''
+				)
 
-            let observations = await solutionsHelper.targetedSolutions(
-                req.body,
-                req.query.type,
-                req.userDetails.userInformation.userId,
-                req.pageSize,
-                req.pageNo,
-                req.searchText,
-                req.query.filter,
-                req.query.surveyReportPage ? req.query.surveyReportPage : ""
-            );
+				return resolve(observations)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-            return resolve(observations);
-
-        } catch (error) {
-            return reject({
-                status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-                message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-                errorObject: error
-            });
-        }
-    })
-}
-
-
-
-
-
-
-   /**
+	/**
   * @api {post} /project/v1/solutions/verifySolution/:Id
   * @apiVersion 1.0.0
   * @apiName verify Solutions targeted
@@ -899,13 +841,8 @@ module.exports = class Solutions extends Abstract {
   * @apiUse successBody
   * @apiUse errorBody
   * @apiParamExample {json} Request:
-<<<<<<< HEAD
   * {
        "entityType" : "block",
-=======
-    * {
-    *   "entityType" : "block",
->>>>>>> project-template-creation-changes
         "entities" : [
             "5fd1b52ab53a6416aaeefc80",
             "5fd098e2e049735a86b748ac"
@@ -923,41 +860,32 @@ module.exports = class Solutions extends Abstract {
     }
   */
 
-   /**
-   * isTargetedBasedOnUserProfile
-   * @method
-   * @name isTargetedBasedOnUserProfile
-   * @param {Object} req - requested data.
-   * @param {String} req.params._id - solution id
-   * @returns {Array}
-   */
+	/**
+	 * isTargetedBasedOnUserProfile
+	 * @method
+	 * @name isTargetedBasedOnUserProfile
+	 * @param {Object} req - requested data.
+	 * @param {String} req.params._id - solution id
+	 * @returns {Array}
+	 */
 
-   async isTargetedBasedOnUserProfile(req) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        
-        let solutionData = await solutionsHelper.isTargetedBasedOnUserProfile(
-          req.params._id,
-          req.body,
-        );
+	async isTargetedBasedOnUserProfile(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let solutionData = await solutionsHelper.isTargetedBasedOnUserProfile(req.params._id, req.body)
 
-        return resolve(solutionData);
+				return resolve(solutionData)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-      }
-      catch (error) {
-        return reject({
-          status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-          message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-          errorObject: error
-        })
-      }
-    })
-  }
-
-
-
-
-     /**
+	/**
     * @api {get} /project/v1/solutions/getDetails/:solutionId Solution details
     * @apiVersion 1.0.0
     * @apiName Details of the solution.
@@ -1058,35 +986,30 @@ module.exports = class Solutions extends Abstract {
     }}
     */
 
-     /**
-   * Details of the solution.
-   * @method
-   * @name getDetails
-   * @param {Object} req - requested data.
-   * @param {String} req.params._id - solution id.
-   * @returns {Object} Solution details 
-   */
+	/**
+	 * Details of the solution.
+	 * @method
+	 * @name getDetails
+	 * @param {Object} req - requested data.
+	 * @param {String} req.params._id - solution id.
+	 * @returns {Object} Solution details
+	 */
 
-     async getDetails(req) {
-      return new Promise(async (resolve, reject) => {
-        try {
-  
-          let solutionData = await solutionsHelper.getDetails(
-            req.params._id
-          );
-  
-          solutionData["result"] = solutionData.data;
-      
-          return resolve(solutionData);
-  
-        } catch (error) {
-          return reject({
-            status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-            message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-            errorObject: error
-          });
-        }
-      });
-    }
+	async getDetails(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let solutionData = await solutionsHelper.getDetails(req.params._id)
 
+				solutionData['result'] = solutionData.data
+
+				return resolve(solutionData)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 }

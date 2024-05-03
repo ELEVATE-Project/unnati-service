@@ -3,23 +3,20 @@
  * author : vishnu
  * created-date : 09-Mar-2022
  * Description : programs related information.
-*/
-
+ */
 
 // Dependencies
-const programsHelper = require(MODULES_BASE_PATH + "/programs/helper")
+const programsHelper = require(MODULES_BASE_PATH + '/programs/helper')
 
+module.exports = class Programs extends Abstract {
+	constructor() {
+		super('programs')
+	}
+	static get name() {
+		return 'programs'
+	}
 
-module.exports = class  Programs extends Abstract{
-  constructor() {
-    super("programs");
-  }
-  static get name() {
-    return "programs";
-  }
-    
-
-   /**
+	/**
    * Create program.
    * @api {post} /project/v1/programs/create
     * @apiVersion 1.0.0
@@ -71,30 +68,27 @@ module.exports = class  Programs extends Abstract{
    * @returns {JSON} - created program document.
    */
 
-    async create(req) {
-      return new Promise(async (resolve, reject) => {
-        try {
-          let programCreationData = await programsHelper.create(
-            req.body,
-            req.userDetails.userInformation.userId,
-            true                                                                      //this is true for when its called via API calls
-          );
-          
-          return resolve(programCreationData)
-  
-        }
-        catch (error) {
-          reject({
-            status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-            message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-            errorObject: error
-          })
-        }
-      })
-    }
+	async create(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let programCreationData = await programsHelper.create(
+					req.body,
+					req.userDetails.userInformation.userId,
+					true //this is true for when its called via API calls
+				)
 
+				return resolve(programCreationData)
+			} catch (error) {
+				reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-  /**
+	/**
    * Update program.
    * @api {post} /project/v1/programs/update/:programId
    * @method
@@ -144,31 +138,28 @@ module.exports = class  Programs extends Abstract{
    * @returns {JSON} - 
    */
 
-  async update(req) {
-    return new Promise(async (resolve, reject) => {
-      try {
+	async update(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let programUpdationData = await programsHelper.update(
+					req.params._id,
+					req.body,
+					req.userDetails.userInformation.userId,
+					true //this is true for when its called via API calls
+				)
 
-        let programUpdationData = await programsHelper.update(
-          req.params._id,
-          req.body,
-          req.userDetails.userInformation.userId,
-          true                                                                      //this is true for when its called via API calls
-        );
-        
-        return resolve(programUpdationData);
+				return resolve(programUpdationData)
+			} catch (error) {
+				reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-      }
-      catch (error) {
-        reject({
-          status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-          message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-          errorObject: error
-        })
-      }
-    })
-  }
-
-    /**
+	/**
     * @api {post} /project/v1/programs/details/:programId
     * @apiVersion 1.0.0
     * @apiName 
@@ -232,38 +223,32 @@ module.exports = class  Programs extends Abstract{
     }
   */
 
+	/**
+	 * Details of the program
+	 * @method
+	 * @name details
+	 * @param {Object} req - requested data.
+	 * @param {String} req.params._id - program id.
+	 * @returns {Array} Program scope roles.
+	 */
 
-  /**
-   * Details of the program
-   * @method
-   * @name details
-   * @param {Object} req - requested data.
-   * @param {String} req.params._id - program id.
-   * @returns {Array} Program scope roles.
-   */
+	async details(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let programData = await programsHelper.details(req.params._id)
 
-    async details(req) {
-      return new Promise(async (resolve, reject) => {
-        try {
+				return resolve(programData)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-          let programData = await programsHelper.details(
-            req.params._id
-          );
-      
-          return resolve(programData);
-          
-        } catch (error) {
-          return reject({
-            status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-            message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-            errorObject: error
-          });
-        }
-      });
-    }
-
-
-    /**
+	/**
     * @api {post} /project/v1/programs/addRolesInScope/:programId Add roles in programs
     * @apiVersion 1.0.0
     * @apiName addRolesInScope
@@ -283,38 +268,33 @@ module.exports = class  Programs extends Abstract{
       }
     */
 
-     /**
-   * Add roles in program scope
-   * @method
-   * @name addRolesInScope
-   * @param {Object} req - requested data.
-   * @param {String} req.params._id - program id.
-   * @param {Array} req.body.roles - Roles to be added.
-   * @returns {Array} Program scope roles.
-   */
+	/**
+	 * Add roles in program scope
+	 * @method
+	 * @name addRolesInScope
+	 * @param {Object} req - requested data.
+	 * @param {String} req.params._id - program id.
+	 * @param {Array} req.body.roles - Roles to be added.
+	 * @returns {Array} Program scope roles.
+	 */
 
-     async addRolesInScope(req) {
-      return new Promise(async (resolve, reject) => {
-        try {
-  
-          let programUpdated = await programsHelper.addRolesInScope(
-            req.params._id,
-            req.body.roles
-          );
-      
-          return resolve(programUpdated);
-  
-        } catch (error) {
-          return reject({
-            status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-            message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-            errorObject: error
-          });
-        }
-      });
-    }
+	async addRolesInScope(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let programUpdated = await programsHelper.addRolesInScope(req.params._id, req.body.roles)
 
-   /**
+				return resolve(programUpdated)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
+
+	/**
     * @api {post} /project/v1/programs/addEntitiesInScope/:programId Add entities in programs
     * @apiName addEntitiesInScope
     * @apiGroup Programs
@@ -333,40 +313,37 @@ module.exports = class  Programs extends Abstract{
       }
     */
 
-     /**
-   * Add entities in program scope
-   * @method
-   * @name addEntitiesInScope
-   * @param {Object} req - requested data.
-   * @param {String} req.params._id - program id.
-   * @param {Array} req.body.entities - Entities to be added.
-   * @returns {Array} Program scope roles.
-   */
+	/**
+	 * Add entities in program scope
+	 * @method
+	 * @name addEntitiesInScope
+	 * @param {Object} req - requested data.
+	 * @param {String} req.params._id - program id.
+	 * @param {Array} req.body.entities - Entities to be added.
+	 * @returns {Array} Program scope roles.
+	 */
 
-     async addEntitiesInScope(req) {
-      return new Promise(async (resolve, reject) => {
-        try {
-  
-          let programUpdated = await programsHelper.addEntitiesInScope(
-            req.params._id,
-            req.body.entities,
-            req.userDetails.userToken
-          );
-      
-          return resolve(programUpdated);
-  
-        } catch (error) {
-          return reject({
-            status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-            message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-            errorObject: error
-          });
-        }
-      });
-    }
+	async addEntitiesInScope(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let programUpdated = await programsHelper.addEntitiesInScope(
+					req.params._id,
+					req.body.entities,
+					req.userDetails.userToken
+				)
 
+				return resolve(programUpdated)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-    /**
+	/**
     * @api {post} /project/v1/programs/removeRolesInScope/:programId Remove roles in programs
     * @apiVersion 1.0.0
     * @apiName removeRolesInScope
@@ -386,40 +363,33 @@ module.exports = class  Programs extends Abstract{
       }
     */
 
-  /**
-   * Remove roles in program scope
-   * @method
-   * @name removeRolesInScope
-   * @param {Object} req - requested data.
-   * @param {String} req.params._id - program id.
-   * @param {Array} req.body.roles - Roles to be added.
-   * @returns {Array} Program scope roles.
-   */
+	/**
+	 * Remove roles in program scope
+	 * @method
+	 * @name removeRolesInScope
+	 * @param {Object} req - requested data.
+	 * @param {String} req.params._id - program id.
+	 * @param {Array} req.body.roles - Roles to be added.
+	 * @returns {Array} Program scope roles.
+	 */
 
-     async removeRolesInScope(req) {
-      return new Promise(async (resolve, reject) => {
-        try {
-  
-          let programUpdated = await programsHelper.removeRolesInScope(
-            req.params._id,
-            req.body.roles
-          );
-      
-          return resolve(programUpdated);
-  
-        } catch (error) {
-          return reject({
-            status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-            message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-            errorObject: error
-          });
-        }
-      });
-    }
+	async removeRolesInScope(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let programUpdated = await programsHelper.removeRolesInScope(req.params._id, req.body.roles)
 
+				return resolve(programUpdated)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-
-     /**
+	/**
     * @api {post} /project/v1/programs/removeEntitiesInScope/:programId remove entities from programs
     * @apiVersion 1.0.0
     * @apiName removeEntitiesInScope
@@ -439,38 +409,33 @@ module.exports = class  Programs extends Abstract{
       }
     */
 
-    /**
-   * Remove entities in program scope
-   * @method
-   * @name removeEntitiesInScope
-   * @param {Object} req - requested data.
-   * @param {String} req.params._id - program id.
-   * @param {Array} req.body.entities - Entities to be added.
-   * @returns {Array} Program scope roles.
-   */
+	/**
+	 * Remove entities in program scope
+	 * @method
+	 * @name removeEntitiesInScope
+	 * @param {Object} req - requested data.
+	 * @param {String} req.params._id - program id.
+	 * @param {Array} req.body.entities - Entities to be added.
+	 * @returns {Array} Program scope roles.
+	 */
 
-  async removeEntitiesInScope(req) {
-    return new Promise(async (resolve, reject) => {
-      try {
+	async removeEntitiesInScope(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let programUpdated = await programsHelper.removeEntitiesInScope(req.params._id, req.body.entities)
 
-        let programUpdated = await programsHelper.removeEntitiesInScope(
-          req.params._id,
-          req.body.entities
-        );
-    
-        return resolve(programUpdated);
+				return resolve(programUpdated)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-      } catch (error) {
-        return reject({
-          status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-          message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-          errorObject: error
-        });
-      }
-    });
-  }
-
-  /**
+	/**
   * @api {post} /project/v1/programs/list?page=:page&limit=:limit&search=:search
   * @apiVersion 1.0.0
   * @apiName 
@@ -498,44 +463,34 @@ module.exports = class  Programs extends Abstract{
   }
   */
 
-   /**
-   * List programs.
-   * @method
-   * @name list
-   * @param {Object} req - Requested data.
-   * @param {Array} req.query.page - Page number.
-   * @param {Array} req.query.limit - Page Limit.
-   * @param {Array} req.query.search - Search text.
-   * @returns {JSON} List programs data.
-  */
+	/**
+	 * List programs.
+	 * @method
+	 * @name list
+	 * @param {Object} req - Requested data.
+	 * @param {Array} req.query.page - Page number.
+	 * @param {Array} req.query.limit - Page Limit.
+	 * @param {Array} req.query.search - Search text.
+	 * @returns {JSON} List programs data.
+	 */
 
- async list(req) {
-  return new Promise(async (resolve, reject) => {
-    try {
+	async list(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let listOfPrograms = await programsHelper.list(req.pageNo, req.pageSize, req.searchText)
 
-      let listOfPrograms = await programsHelper.list(
-        req.pageNo,
-        req.pageSize,
-        req.searchText
-      );
+				return resolve(listOfPrograms)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-      return resolve(listOfPrograms);
-
-    } catch (error) {
-      return reject({
-        status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-        message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-        errorObject: error
-      });
-    }
-  });
-}
-
-
-
-
-
- /**
+	/**
     * @api {get} /project/v1/programs/join/:programId 
     * @apiVersion 1.0.0
     * @apiName Program Join
@@ -544,7 +499,6 @@ module.exports = class  Programs extends Abstract{
     * @apiHeader {String} X-App-Ver Appversion
     * @apiSampleRequest /project/v1/programs/join/5ffbf8909259097d48017bbf
     * {
-<<<<<<< HEAD
         "externalId" : "PROGID01",
         "name" : "DCPCR School Development Index 2018-19",
         "description" : "DCPCR School Development Index 2018-19",
@@ -571,39 +525,10 @@ module.exports = class  Programs extends Abstract{
         },
         "requestForPIIConsent" : true
       }
-=======
-      "externalId" : "PROGID01",
-      "name" : "DCPCR School Development Index 2018-19",
-      "description" : "DCPCR School Development Index 2018-19",
-      "isDeleted" : false,
-      "resourceType" : [ 
-          "program"
-      ],
-      "language" : [ 
-          "English"
-      ],
-      "keywords" : [],
-      "concepts" : [],
-      "userId":"a082787f-8f8f-42f2-a706-35457ca6f1fd",
-      "imageCompression" : {
-          "quality" : 10
-      },
-      "components" : [ 
-          "5b98fa069f664f7e1ae7498c"
-      ],
-      "scope" : {
-          "entityType" : "state",
-          "entities" : ["bc75cc99-9205-463e-a722-5326857838f8","8ac1efe9-0415-4313-89ef-884e1c8eee34"],
-          "roles" : ["HM"]
-      },
-      "requestForPIIConsent" : true
-}
->>>>>>> project-template-creation-changes
 
     * @apiUse successBody
     * @apiUse errorBody
     * @apiParamExample {json} Response:
-<<<<<<< HEAD
     *{
       "message": "You have joined this program successfully",
       "status": 200,
@@ -611,56 +536,42 @@ module.exports = class  Programs extends Abstract{
         "_id" : "5ffbf8909259097d48017bbf"
       }
     }
-=======
-    *  {
-          "message": "You have joined the program successfully",
-          "status": 200,
-          "result": {
-            "_id" : "5ffbf8909259097d48017bbf"
-          }
-      }
->>>>>>> project-template-creation-changes
     * 
     */
 
-     /**
-   * join program
-   * @method
-   * @name join
-   * @param {Object} req - requested data.
-   * @param {String} req.params._id - program id.
-   * @returns {Object} Program join status.
-  */
+	/**
+	 * join program
+	 * @method
+	 * @name join
+	 * @param {Object} req - requested data.
+	 * @param {String} req.params._id - program id.
+	 * @returns {Object} Program join status.
+	 */
 
-     async join(req) {
-      return new Promise(async (resolve, reject) => {
-        try {
-  
-          let programJoin = await programsHelper.join(
-            req.params._id,
-            req.body,
-            req.userDetails.userInformation.userId,
-            req.userDetails.userToken,
-            req.headers["x-app-id"]  ? 
-            req.headers["x-app-id"]  : 
-            req.headers.appname ? req.headers.appname : "",
-            req.headers["x-app-ver"] ? 
-            req.headers["x-app-ver"] : 
-            req.headers.appversion ? req.headers.appversion : "",
-            req.headers["internal-access-token"] ? 
-            true : 
-            req.headers.internalAccessToken ? true : false
-          );    
-          return resolve(programJoin);
-          
-        } catch (error) {
-          return reject({
-            status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-            message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-            errorObject: error
-          });
-        }
-      });
-    }
-        
+	async join(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let programJoin = await programsHelper.join(
+					req.params._id,
+					req.body,
+					req.userDetails.userInformation.userId,
+					req.userDetails.userToken,
+					req.headers['x-app-id'] ? req.headers['x-app-id'] : req.headers.appname ? req.headers.appname : '',
+					req.headers['x-app-ver']
+						? req.headers['x-app-ver']
+						: req.headers.appversion
+						? req.headers.appversion
+						: '',
+					req.headers['internal-access-token'] ? true : req.headers.internalAccessToken ? true : false
+				)
+				return resolve(programJoin)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 }
