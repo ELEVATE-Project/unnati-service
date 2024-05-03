@@ -35,6 +35,7 @@ module.exports = class FilesHelper {
 				let payloadIds = Object.keys(payloadData)
 
 				let result = {
+					cloudStorage: cloudStorage,
 					[payloadIds[0]]: {},
 				}
 

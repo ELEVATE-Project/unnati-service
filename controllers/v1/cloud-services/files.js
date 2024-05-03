@@ -54,6 +54,7 @@ module.exports = class Files {
         "message": "File upload urls generated successfully.",
         "status": 200,
         "result": {
+            "cloudStorage": "gcloud",
             "5f72f9998925ec7c60f79a91": {
                 "files": [
                     {
