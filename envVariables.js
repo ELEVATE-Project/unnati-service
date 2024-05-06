@@ -34,7 +34,7 @@ let enviromentVariables = {
 		optional: false,
 	},
 	ELEVATE_ENTITY_SERVICE_BASE_URL: {
-		message: 'Please specify the value for e.g. 5000',
+		message: 'Elevate-entity service base URL is required',
 		optional: false,
 	},
 	// "KAFKA_URL" : {
