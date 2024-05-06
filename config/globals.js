@@ -24,8 +24,8 @@ module.exports = function () {
   global.CSV_FILE_STREAM = require(PROJECT_ROOT_DIRECTORY + "/generics/file-stream");
   require("./connections");
 
-  global.HTTP_STATUS_CODE = 
-  require(GENERICS_FILES_PATH + "/http-status-codes");
+  global.HTTP_STATUS_CODE =
+    require(GENERICS_FILES_PATH + "/http-status-codes");
 
   // Load database models.
   global.models = requireAll({
@@ -76,7 +76,7 @@ module.exports = function () {
       global.schemas[name] = require(PROJECT_ROOT_DIRECTORY + '/models/' + file);
     }
   });
-  
+
 
   // All controllers
   global.controllers = requireAll({
@@ -89,25 +89,25 @@ module.exports = function () {
   // Message constants
   global.CONSTANTS = new Array
   fs.readdirSync(GENERICS_FILES_PATH + "/constants")
-  .forEach(function (file) {
-    if (file.match(/\.js$/) !== null) {
-      let name = file.replace('.js', '');
-      name = UTILS.hyphenCaseToCamelCase(name);
-      global.CONSTANTS[name] = 
-      require(GENERICS_FILES_PATH + "/constants/" + file);
-    }
-  });
+    .forEach(function (file) {
+      if (file.match(/\.js$/) !== null) {
+        let name = file.replace('.js', '');
+        name = UTILS.hyphenCaseToCamelCase(name);
+        global.CONSTANTS[name] =
+          require(GENERICS_FILES_PATH + "/constants/" + file);
+      }
+    });
 
 
   // KAFKA CONSUMERS
 
   fs.readdirSync(PROJECT_ROOT_DIRECTORY + "/generics/kafka/consumers")
-  .forEach(function (file) {
-    if (file.match(/\.js$/) !== null) {
-      var name = file.replace('.js', '');
-       global[name + 'Consumer'] = 
-      require(PROJECT_ROOT_DIRECTORY + "/generics/kafka/consumers/" + file);
-    }
-  });
+    .forEach(function (file) {
+      if (file.match(/\.js$/) !== null) {
+        var name = file.replace('.js', '');
+        global[name + 'Consumer'] =
+          require(PROJECT_ROOT_DIRECTORY + "/generics/kafka/consumers/" + file);
+      }
+    });
 
 };

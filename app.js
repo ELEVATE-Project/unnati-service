@@ -17,6 +17,7 @@ require("./healthCheck")(app);
 // Setup application config, establish DB connections and set global constants.
 require("./config/connections");
 require("./config/globals")();
+require("./config/cloud-service");
 
 // Check if all environment variables are provided.
 const environmentData = require("./envVariables")();
