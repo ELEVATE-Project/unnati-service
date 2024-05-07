@@ -11,166 +11,6 @@ const request = require('request')
 const rp = require('request-promise')
 const filesHelper = require('../../module/files/helper')
 
-exports.unnatiEntityReportPdfGeneration = async function (entityReportData) {
-	return new Promise(async function (resolve, reject) {
-		let currentTempFolder = 'tmp/' + uuidv4() + '--' + Math.floor(Math.random() * (10000 - 10 + 1) + 10)
-		let imgPath = __dirname + '/../' + currentTempFolder
-
-		if (!fs.existsSync(imgPath)) {
-			fs.mkdirSync(imgPath)
-		}
-
-		const sourceBootstrapPath = path.join(__dirname, '../../public/css/bootstrap.min.css')
-		const destinationStylePath = path.join(imgPath, 'style.css')
-		await copyBootStrapFile(sourceBootstrapPath, destinationStylePath)
-
-		// let bootstrapStream = await copyBootStrapFile(__dirname + '/../public/css/bootstrap.min.css', imgPath + '/style.css');
-		try {
-			let formData = []
-			//copy images from public folder
-			let imgSourcePaths = [
-				'/../public/images/note1.svg',
-				'/../public/images/note2.svg',
-				'/../public/images/note3.svg',
-				'/../public/images/note4.svg',
-			]
-			for (let i = 0; i < imgSourcePaths.length; i++) {
-				let imgName = 'note' + (i + 1) + '.svg'
-				let src = path.join(__dirname, '..', imgSourcePaths[i])
-				fs.copyFileSync(src, imgPath + ('/' + imgName))
-				formData.push({
-					value: fs.createReadStream(imgPath + ('/' + imgName)),
-					options: {
-						filename: imgName,
-					},
-				})
-			}
-			//get the chart object
-			let chartData = await getEntityReportChartObjects(entityReportData)
-			//generate the chart using highchart server
-			let entityReportCharts = await createChart(chartData, imgPath)
-			formData.push(...entityReportCharts)
-
-			let ejsInputData = {
-				chartData: entityReportCharts,
-				response: entityReportData,
-			}
-
-			ejs.renderFile(path.join(__dirname, '../../views/unnatiEntityReport.ejs'), {
-				data: ejsInputData,
-			}).then(function (dataEjsRender) {
-				let dir = imgPath
-				if (!fs.existsSync(dir)) {
-					fs.mkdirSync(dir)
-				}
-
-				fs.writeFile(dir + '/index.html', dataEjsRender, function (errWriteFile, dataWriteFile) {
-					if (errWriteFile) {
-						throw errWriteFile
-					} else {
-						let optionsHtmlToPdf = UTILS.getGotenbergConnection()
-						optionsHtmlToPdf.formData = {
-							files: [],
-						}
-						formData.push({
-							value: fs.createReadStream(dir + '/index.html'),
-							options: {
-								filename: 'index.html',
-							},
-						})
-
-						formData.push({
-							value: fs.createReadStream(dir + '/style.css'),
-							options: {
-								filename: 'style.css',
-							},
-						})
-
-						optionsHtmlToPdf.formData.files = formData
-						rp(optionsHtmlToPdf)
-							.then(function (responseHtmlToPdf) {
-								let pdfBuffer = Buffer.from(responseHtmlToPdf.body)
-								if (responseHtmlToPdf.statusCode == 200) {
-									let pdfFile = uuidv4() + '.pdf'
-									fs.writeFile(dir + '/' + pdfFile, pdfBuffer, 'binary', async function (err) {
-										if (err) {
-										} else {
-											let uploadFileResponse = await uploadPdfToCloud(pdfFile, dir)
-											if (uploadFileResponse.success) {
-												let pdfDownloadableUrl = await getDownloadableUrl(
-													uploadFileResponse.data
-												)
-
-												if (
-													pdfDownloadableUrl.success &&
-													pdfDownloadableUrl.data.result &&
-													Object.keys(pdfDownloadableUrl.data.result).length > 0
-												) {
-													fs.readdir(imgPath, (err, files) => {
-														if (err) throw err
-
-														let i = 0
-														for (const file of files) {
-															fs.unlink(path.join(imgPath, file), (err) => {
-																if (err) throw err
-															})
-
-															if (i == files.length) {
-																fs.unlink('../../' + currentTempFolder, (err) => {
-																	if (err) throw err
-																})
-																console.log(
-																	'path.dirname(filename).split(path.sep).pop()',
-																	path.dirname(file).split(path.sep).pop()
-																)
-															}
-
-															i = i + 1
-														}
-													})
-													rimraf(imgPath, function () {
-														console.log('done')
-													})
-
-													return resolve({
-														status: filesHelper.status_success,
-														message: filesHelper.pdf_report_generated,
-														pdfUrl: pdfDownloadableUrl.data.result.url,
-													})
-												} else {
-													return resolve({
-														status: filesHelper.status_failure,
-														message: pdfDownloadableUrl.message
-															? pdfDownloadableUrl.message
-															: filesHelper.could_not_generate_pdf,
-														pdfUrl: '',
-													})
-												}
-											} else {
-												return resolve({
-													status: filesHelper.status_failure,
-													message: uploadFileResponse.message
-														? uploadFileResponse.message
-														: filesHelper.could_not_generate_pdf,
-													pdfUrl: '',
-												})
-											}
-										}
-									})
-								}
-							})
-							.catch((err) => {
-								resolve(err)
-							})
-					}
-				})
-			})
-		} catch (err) {
-			return reject(err)
-		}
-	})
-}
-
 exports.unnatiViewFullReportPdfGeneration = async function (responseData, userId) {
 	return new Promise(async function (resolve, reject) {
 		var currentTempFolder = 'tmp/' + uuidv4() + '--' + Math.floor(Math.random() * (10000 - 10 + 1) + 10)
@@ -331,13 +171,13 @@ async function ganttChartObject(projects) {
 				let leastStartDate = ''
 
 				await Promise.all(
-					eachProject.projectDetails[0].tasks.map((eachTask) => {
+					eachProject.tasks.map((eachTask) => {
 						if (eachTask.startDate) {
 							leastStartDate = eachTask.startDate
 						}
-						labels.push(eachTask.title)
+						labels.push(eachTask.name)
 						data.push({
-							task: eachTask.title,
+							task: eachTask.name,
 							startDate: eachTask.startDate,
 							endDate: eachTask.endDate,
 						})
@@ -514,6 +354,7 @@ async function copyBootStrapFile(from, to) {
 			return resolve(readCss)
 		})
 		readCss.on('error', function (err) {
+			// return resolve(fileInfo);
 			return resolve(err)
 		})
 	})

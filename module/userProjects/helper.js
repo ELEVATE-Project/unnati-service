@@ -30,7 +30,7 @@ const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions')
 const programQueries = require(DB_QUERY_BASE_PATH + '/programs')
 const entitiesService = require(GENERICS_FILES_PATH + '/services/entity-management')
 const observationsHelper = require(MODULES_BASE_PATH + '/observations/helper')
-const common_handler_v2 = require('../../generics/helpers/common_handler_v2')
+const common_handler = require('../../generics/helpers/common_handler')
 
 /**
  * UserProjectsHelper
@@ -1762,9 +1762,6 @@ module.exports = class UserProjectsHelper {
 	 */
 
 	static share(projectId = '', taskIds = [], userToken, appVersion) {
-		console.log(projectId, 'line no 1852')
-		console.log(appVersion, 'line no 1853')
-		console.log(userToken, 'line no 1854')
 		return new Promise(async (resolve, reject) => {
 			try {
 				let projectPdf = true
@@ -1793,7 +1790,6 @@ module.exports = class UserProjectsHelper {
 						'attachments',
 						'taskReport.completed',
 					])
-					console.log(projectDocument, 'line no 1891')
 				} else {
 					projectPdf = false
 
@@ -1856,7 +1852,6 @@ module.exports = class UserProjectsHelper {
 
 				//returns project tasks and attachments with downloadable urls
 				let projectDataWithUrl = await _projectInformation(projectFilter)
-				console.log(projectDataWithUrl, 'line no 1936')
 				//replace projectDocument Data
 				if (
 					projectDataWithUrl.success &&
@@ -1951,12 +1946,10 @@ module.exports = class UserProjectsHelper {
 
 				if (UTILS.revertStatusorNot(appVersion)) {
 					projectDocument.status = UTILS.revertProjectStatus(projectDocument.status)
-					console.log(projectDocument, 'line no 2023')
 				}
 				// let response = await common_handler_v2.unnatiViewFullReportPdfGeneration( userToken, projectDocument, projectPdf,pdfRequest)
-				let response = await common_handler_v2.unnatiViewFullReportPdfGeneration(projectDocument)
+				let response = await common_handler.unnatiViewFullReportPdfGeneration(projectDocument, userToken)
 
-				console.log(response, 'line no 2019')
 				if (response && response.success == true) {
 					return resolve({
 						success: true,

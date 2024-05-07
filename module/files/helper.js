@@ -19,7 +19,6 @@ module.exports = class FilesHelper {
 	 */
 
 	static preSignedUrls(payloadData, userId) {
-		console.log('line no 23 helper')
 		return new Promise(async (resolve, reject) => {
 			try {
 				// Create an array of promises to generate signed URLs for each file in payloadData

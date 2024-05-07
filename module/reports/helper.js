@@ -64,12 +64,11 @@ module.exports = class ReportsHelper {
 						tasks: {
 							$elemMatch: {
 								isDeleted: { $ne: true },
-								syncedAt: { $gte: new Date(startFrom), $lte: new Date(endOf) },
+								// syncedAt: { $gte: new Date(startFrom), $lte: new Date(endOf) },
 							},
 						},
 					},
 				]
-
 				const projectDetails = await projectQueries.projectDocument(
 					query,
 					[
@@ -110,80 +109,71 @@ module.exports = class ReportsHelper {
 						return type.label
 					}
 				})
+				// if (!projectDetails.length > 0) {
+				//Initially not supporting pdf report, hence resolving response here. Remove resolve if pdf capability needs to be added
+				// return resolve({
+				// 	message: CONSTANTS.apiResponses.REPORTS_DATA_NOT_FOUND,
+				// 	data: {
+				// 		dataAvailable: false,
+				// 		data: {
+				// 			categories: categories,
+				// 			tasks: tasksReport,
+				// 			projects: projectReport,
+				// 		},
+				// 	},
+				// })
 
-				if (!projectDetails.length > 0) {
-					//Initially not supporting pdf report, hence resolving response here. Remove resolve if pdf capability needs to be added
-					// return resolve({
-					// 	message: CONSTANTS.apiResponses.REPORTS_DATA_NOT_FOUND,
-					// 	data: {
-					// 		dataAvailable: false,
-					// 		data: {
-					// 			categories: categories,
-					// 			tasks: tasksReport,
-					// 			projects: projectReport,
-					// 		},
-					// 	},
-					// })
-
-					if (getPdf == true) {
-						console.log(categories, 'line no 127')
-
-						let reportTaskData = {}
-						Object.keys(tasksReport).map((taskData) => {
-							reportTaskData[UTILS.camelCaseToTitleCase(taskData)] = tasksReport[taskData]
-						})
-						console.log(reportTaskData, 'line no 133')
-						let categoryData = {}
-						Object.keys(categories).map((category) => {
-							categoryData[UTILS.camelCaseToTitleCase(category)] = categories[category]
-						})
-
-						let pdfRequest = {
-							reportType: returnTypeInfo[0].label,
-							sharedBy: userName,
-							reportTitle: pdfReportString,
-							categories: categoryData,
-							tasks: reportTaskData,
-							projects: projectReport,
-						}
-						let response = await common_handler_v2.unnatiEntityReportPdfGeneration(pdfRequest)
-
-						unnatiEntityReportPdfGeneration
-						// response.success = true
-						console.log(response, 'line no 148')
-						if (response && response.success == true) {
-							return resolve({
-								success: true,
-								message: CONSTANTS.apiResponses.REPORT_GENERATED,
-								data: {
-									data: {
-										downloadUrl: response.data.pdfUrl,
-									},
-								},
-							})
-						} else {
-							console.log('line no 157 error')
-							return resolve({
-								message: CONSTANTS.apiResponses.REPORTS_DATA_NOT_FOUND,
-								data: [],
-								success: false,
-							})
-						}
-					} else {
-						console.log('line no 165 error')
+				if (getPdf == true) {
+					let reportTaskData = {}
+					Object.keys(tasksReport).map((taskData) => {
+						reportTaskData[UTILS.camelCaseToTitleCase(taskData)] = tasksReport[taskData]
+					})
+					let categoryData = {}
+					Object.keys(categories).map((category) => {
+						categoryData[UTILS.camelCaseToTitleCase(category)] = categories[category]
+					})
+					let pdfRequest = {
+						reportType: returnTypeInfo[0].label,
+						sharedBy: userName,
+						reportTitle: pdfReportString,
+						categories: categoryData,
+						tasks: reportTaskData,
+						projects: projectReport,
+					}
+					let response = await common_handler_v2.unnatiEntityReportPdfGeneration(pdfRequest)
+					// unnatiEntityReportPdfGeneration
+					// response.success = true
+					if (response && response.success == true) {
 						return resolve({
-							message: CONSTANTS.apiResponses.REPORTS_DATA_NOT_FOUND,
+							success: true,
+							message: CONSTANTS.apiResponses.REPORT_GENERATED,
 							data: {
-								dataAvailable: false,
 								data: {
-									categories: categories,
-									tasks: tasksReport,
-									projects: projectReport,
+									downloadUrl: response.data.pdfUrl,
 								},
 							},
 						})
+					} else {
+						return resolve({
+							message: CONSTANTS.apiResponses.REPORTS_DATA_NOT_FOUND,
+							data: [],
+							success: false,
+						})
 					}
+				} else {
+					return resolve({
+						message: CONSTANTS.apiResponses.REPORTS_DATA_NOT_FOUND,
+						data: {
+							dataAvailable: false,
+							data: {
+								categories: categories,
+								tasks: tasksReport,
+								projects: projectReport,
+							},
+						},
+					})
 				}
+				// }
 
 				await Promise.all(
 					projectDetails.map(async function (project) {
@@ -264,12 +254,12 @@ module.exports = class ReportsHelper {
 					})
 				)
 
-				if (UTILS.revertStatusorNot(appVersion)) {
-					projectReport[CONSTANTS.common.COMPLETED_STATUS] = projectReport[CONSTANTS.common.SUBMITTED_STATUS]
-					projectReport[CONSTANTS.common.NOT_STARTED_STATUS] = projectReport[CONSTANTS.common.STARTED]
-					delete projectReport[CONSTANTS.common.SUBMITTED_STATUS]
-					delete projectReport[CONSTANTS.common.STARTED]
-				}
+				// if (UTILS.revertStatusorNot(appVersion)) {
+				// 	projectReport[CONSTANTS.common.COMPLETED_STATUS] = projectReport[CONSTANTS.common.SUBMITTED_STATUS]
+				// 	projectReport[CONSTANTS.common.NOT_STARTED_STATUS] = projectReport[CONSTANTS.common.STARTED]
+				// 	delete projectReport[CONSTANTS.common.SUBMITTED_STATUS]
+				// 	delete projectReport[CONSTANTS.common.STARTED]
+				// }
 
 				//Initially not supporting pdf report, hence resolving response here. Remove resolve if pdf capability needs to be added
 				let response = {
@@ -693,12 +683,11 @@ module.exports = class ReportsHelper {
 						tasks: {
 							$elemMatch: {
 								isDeleted: { $ne: true },
-								syncedAt: { $gte: new Date(startFrom), $lte: new Date(endOf) },
+								// syncedAt: { $gte: new Date(startFrom), $lte: new Date(endOf) },
 							},
 						},
 					},
 				]
-
 				if (programId) {
 					query['programId'] = ObjectId(programId)
 				}
@@ -719,7 +708,6 @@ module.exports = class ReportsHelper {
 					],
 					[]
 				)
-
 				if (!projectDetails.length > 0) {
 					return resolve({
 						message: CONSTANTS.apiResponses.REPORTS_DATA_NOT_FOUND,
@@ -761,7 +749,8 @@ module.exports = class ReportsHelper {
 						reportType: returnTypeInfo[0].label,
 						projectDetails: projectData,
 					}
-					let response = await reportService.viewFullReport(userToken, data)
+					// let response = await reportService.viewFullReport(userToken, data)
+					let response = await common_handler_v2.unnatiViewFullReportPdfGeneration(data, userToken)
 
 					if (response && response.success == true) {
 						return resolve({
@@ -874,7 +863,6 @@ function _getDateRangeofReport(reportType) {
 		startFrom = moment().quarter(moment().quarter()).startOf('quarter').format('YYYY-MM-DD')
 		endOf = moment().quarter(moment().quarter()).endOf('quarter').format('YYYY-MM-DD')
 	}
-	console.log(endOf, startFrom, 'line no 718')
 	return { startFrom: startFrom, endOf: endOf }
 }
 

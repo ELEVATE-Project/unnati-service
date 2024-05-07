@@ -40,7 +40,6 @@ module.exports = class Projects {
 						projection[field] = 0
 					})
 				}
-				console.log(projection, 'line no 49')
 				let projects = await database.models.projects.find(queryObject, projection).lean()
 				return resolve(projects)
 			} catch (error) {
