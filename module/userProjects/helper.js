@@ -9,7 +9,6 @@
 
 const libraryCategoriesHelper = require(MODULES_BASE_PATH + '/library/categories/helper')
 const projectTemplatesHelper = require(MODULES_BASE_PATH + '/project/templates/helper')
-const projectTemplateTasksHelper = require(MODULES_BASE_PATH + '/project/templateTasks/helper')
 const { v4: uuidv4 } = require('uuid')
 const reportService = require(GENERICS_FILES_PATH + '/services/report')
 const projectQueries = require(DB_QUERY_BASE_PATH + '/projects')
@@ -29,9 +28,6 @@ const programUsersQueries = require(DB_QUERY_BASE_PATH + '/programUsers')
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions')
 const programQueries = require(DB_QUERY_BASE_PATH + '/programs')
 const entitiesService = require(GENERICS_FILES_PATH + '/services/entity-management')
-const observationsHelper = require(MODULES_BASE_PATH + '/observations/helper')
-const common_handler = require('../../generics/helpers/common_handler')
-
 /**
  * UserProjectsHelper
  * @class
@@ -1006,7 +1002,7 @@ module.exports = class UserProjectsHelper {
 	}
 
 	/**
-	 * update registry in entities.
+	 * fetch registry in entities.
 	 * @method
 	 * @name listByLocationIds
 	 * @param {Object} locationIds - locationIds
@@ -1433,12 +1429,12 @@ module.exports = class UserProjectsHelper {
 
 				let projectDetails = await this.details(projectId, userId, userRoleInformation)
 
-				let revertStatusorNot = UTILS.revertStatusorNot(appVersion)
-				if (revertStatusorNot) {
-					projectDetails.data.status = UTILS.revertProjectStatus(projectDetails.data.status)
-				} else {
-					projectDetails.data.status = UTILS.convertProjectStatus(projectDetails.data.status)
-				}
+				// let revertStatusorNot = UTILS.revertStatusorNot(appVersion);
+				// if ( revertStatusorNot ) {
+				//     projectDetails.data.status = UTILS.revertProjectStatus(projectDetails.data.status);
+				// } else {
+				//     projectDetails.data.status = UTILS.convertProjectStatus(projectDetails.data.status);
+				// }
 				// make templateUrl downloadable befor passing to front-end
 				// if ( projectDetails.data.certificate &&
 				//      projectDetails.data.certificate.templateUrl &&
@@ -1488,7 +1484,7 @@ module.exports = class UserProjectsHelper {
 					{
 						status: CONSTANTS.common.PUBLISHED,
 						_id: templateId,
-						// isReusable: false
+						isReusable: true,
 					},
 					'all',
 					['ratings', 'noOfRatings', 'averageRating']
@@ -1852,6 +1848,7 @@ module.exports = class UserProjectsHelper {
 
 				//returns project tasks and attachments with downloadable urls
 				let projectDataWithUrl = await _projectInformation(projectFilter)
+
 				//replace projectDocument Data
 				if (
 					projectDataWithUrl.success &&
@@ -1947,8 +1944,7 @@ module.exports = class UserProjectsHelper {
 				if (UTILS.revertStatusorNot(appVersion)) {
 					projectDocument.status = UTILS.revertProjectStatus(projectDocument.status)
 				}
-				// let response = await common_handler_v2.unnatiViewFullReportPdfGeneration( userToken, projectDocument, projectPdf,pdfRequest)
-				let response = await common_handler.unnatiViewFullReportPdfGeneration(projectDocument, userToken)
+				let response = await reportService.projectAndTaskReport(userToken, projectDocument, projectPdf)
 
 				if (response && response.success == true) {
 					return resolve({
