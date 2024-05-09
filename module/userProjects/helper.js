@@ -28,6 +28,7 @@ const programUsersQueries = require(DB_QUERY_BASE_PATH + '/programUsers')
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions')
 const programQueries = require(DB_QUERY_BASE_PATH + '/programs')
 const entitiesService = require(GENERICS_FILES_PATH + '/services/entity-management')
+const common_handler = require(GENERICS_FILES_PATH + '/helpers/common_handler')
 /**
  * UserProjectsHelper
  * @class
@@ -1944,15 +1945,15 @@ module.exports = class UserProjectsHelper {
 				if (UTILS.revertStatusorNot(appVersion)) {
 					projectDocument.status = UTILS.revertProjectStatus(projectDocument.status)
 				}
-				let response = await reportService.projectAndTaskReport(userToken, projectDocument, projectPdf)
 
-				if (response && response.success == true) {
+				let response = await common_handler.unnatiViewFullReportPdfGeneration(projectDocument, userToken)
+				if (response && response.success) {
 					return resolve({
 						success: true,
 						message: CONSTANTS.apiResponses.REPORT_GENERATED_SUCCESSFULLY,
 						data: {
 							data: {
-								downloadUrl: response.data.pdfUrl,
+								downloadUrl: response.pdfUrl,
 							},
 						},
 					})

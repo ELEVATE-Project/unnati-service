@@ -12,7 +12,7 @@ const reportService = require(GENERICS_FILES_PATH + '/services/report')
 const projectQueries = require(DB_QUERY_BASE_PATH + '/projects')
 const { result } = require('lodash')
 const moment = require('moment')
-const common_handler_v2 = require('../../generics/helpers/common_handler_v2')
+const common_handler_v2 = require(GENERICS_FILES_PATH + '/helpers/common_handler_v2')
 
 /**
  * Report Helper
@@ -140,16 +140,14 @@ module.exports = class ReportsHelper {
 						tasks: reportTaskData,
 						projects: projectReport,
 					}
-					let response = await common_handler_v2.unnatiEntityReportPdfGeneration(pdfRequest)
-					// unnatiEntityReportPdfGeneration
-					// response.success = true
-					if (response && response.success == true) {
+					let response = await common_handler_v2.unnatiEntityReportPdfGeneration(pdfRequest, userId)
+					if (response && response.success) {
 						return resolve({
 							success: true,
 							message: CONSTANTS.apiResponses.REPORT_GENERATED,
 							data: {
 								data: {
-									downloadUrl: response.data.pdfUrl,
+									downloadUrl: response.pdfUrl,
 								},
 							},
 						})
@@ -751,14 +749,13 @@ module.exports = class ReportsHelper {
 					}
 					// let response = await reportService.viewFullReport(userToken, data)
 					let response = await common_handler_v2.unnatiViewFullReportPdfGeneration(data, userToken)
-
-					if (response && response.success == true) {
+					if (response && response.success) {
 						return resolve({
 							success: true,
 							message: CONSTANTS.apiResponses.REPORT_GENERATED,
 							data: {
 								data: {
-									downloadUrl: response.data.pdfUrl,
+									downloadUrl: response.pdfUrl,
 								},
 							},
 						})

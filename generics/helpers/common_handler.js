@@ -9,7 +9,8 @@ const rimraf = require('rimraf')
 const ejs = require('ejs')
 const request = require('request')
 const rp = require('request-promise')
-const filesHelper = require('../../module/files/helper')
+const filesHelper = require(MODULES_BASE_PATH + '/cloud-services/files/helper')
+const axios = require('axios')
 
 exports.unnatiViewFullReportPdfGeneration = async function (responseData, userId) {
 	return new Promise(async function (resolve, reject) {
@@ -82,17 +83,18 @@ exports.unnatiViewFullReportPdfGeneration = async function (responseData, userId
 										if (err) {
 											return console.log(err)
 										} else {
-											let uploadFileResponse = await uploadPdfToCloud(pdfFile, dir)
-
+											let uploadFileResponse = await uploadPdfToCloud(pdfFile, userId, dir)
+											console.log(uploadFileResponse, 'line no 87')
+											let payload = {
+												filePaths: [uploadFileResponse.data],
+											}
 											if (uploadFileResponse.success) {
-												let pdfDownloadableUrl = await getDownloadableUrl(
-													uploadFileResponse.data
+												let pdfDownloadableUrl = await filesHelper.getDownloadableUrl(
+													payload.filePaths
 												)
-
 												if (
-													pdfDownloadableUrl.success &&
-													pdfDownloadableUrl.data.result &&
-													Object.keys(pdfDownloadableUrl.data.result).length > 0
+													pdfDownloadableUrl.result[0] &&
+													Object.keys(pdfDownloadableUrl.result[0]).length > 0
 												) {
 													fs.readdir(imgPath, (err, files) => {
 														if (err) throw err
@@ -121,9 +123,9 @@ exports.unnatiViewFullReportPdfGeneration = async function (responseData, userId
 													})
 
 													return resolve({
-														status: filesHelper.status_success,
-														message: filesHelper.pdf_report_generated,
-														pdfUrl: pdfDownloadableUrl.data.result.url,
+														success: CONSTANTS.common.SUCCESS,
+														message: pdfDownloadableUrl.message,
+														pdfUrl: pdfDownloadableUrl.result[0].url,
 													})
 												} else {
 													return resolve({
@@ -301,33 +303,30 @@ const createChart = async function (chartData, imgPath) {
 	})
 }
 
-const uploadPdfToCloud = async function (fileName, folderPath) {
+const uploadPdfToCloud = async function (fileName, userId, folderPath) {
 	return new Promise(async function (resolve, reject) {
 		try {
-			let getSignedUrl = await filesHelper.preSignedUrls(fileName)
-
-			if (getSignedUrl.result && Object.keys(getSignedUrl.result).length > 0) {
-				let fileUploadUrl = getSignedUrl.result[Object.keys(getSignedUrl.result)[0]].files[0].url
+			let uniqueId = UTILS.generateUniqueId()
+			let payload = {}
+			payload[uniqueId] = {
+				files: [fileName],
+			}
+			let getSignedUrl = await filesHelper.preSignedUrls(payload, userId)
+			if (getSignedUrl.data && Object.keys(getSignedUrl.data).length > 0) {
+				let fileUploadUrl = getSignedUrl.data[uniqueId].files[0].url
 				let fileData = fs.readFileSync(folderPath + '/' + fileName)
-
 				try {
-					await request({
-						url: fileUploadUrl,
-						method: 'put',
-						headers: {
-							'x-ms-blob-type':
-								getSignedUrl.result[Object.keys(getSignedUrl.result)[0]].files[0].cloudStorage ==
-								filesHelper.azure
-									? 'BlockBlob'
-									: null,
-							'Content-Type': 'multipart/form-data',
-						},
-						body: fileData,
-					})
+					const headers = {
+						'Content-Type': 'application/pdf',
+						'x-ms-blob-type':
+							getSignedUrl.data.cloudStorage === CONSTANTS.common.AZURE ? 'BlockBlob' : null,
+					}
+
+					const uploadResponse = await axios.put(fileUploadUrl, fileData, { headers })
 
 					return resolve({
 						success: true,
-						data: getSignedUrl.result[Object.keys(getSignedUrl.result)[0]].files[0].payload.sourcePath,
+						data: getSignedUrl.data[uniqueId].files[0].payload.sourcePath,
 					})
 				} catch (e) {
 					console.log(e)
