@@ -394,7 +394,7 @@ async function ganttChartObject(projects) {
 							maintainAspectRatio: false,
 							title: {
 								display: true,
-								text: eachProject.title,
+								text: eachProject.projectDetails[0].title,
 							},
 							legend: { display: false },
 							scales: {
