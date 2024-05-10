@@ -1948,6 +1948,7 @@ module.exports = class UserProjectsHelper {
 
 				let response = await common_handler.unnatiViewFullReportPdfGeneration(projectDocument, userToken)
 				if (response && response.success) {
+
 					return resolve({
 						success: true,
 						message: CONSTANTS.apiResponses.REPORT_GENERATED_SUCCESSFULLY,
@@ -3305,15 +3306,15 @@ function _entitiesInformation(entityIds, userToken) {
 				}
 			}
 
-			// if ( locationCodes.length > 0 ) {
-			//     let bodyData = {
-			//         "code" : locationCodes
-			//     }
-			//     let entityData = await userService.locationSearch( bodyData , formatResult = true );
-			//     if ( entityData.success ) {
-			//         entityInformations =  entityInformations.concat(entityData.data);
-			//     }
-			// }
+			if (locationCodes.length > 0) {
+				let queryData = {
+					'registryDetails.code': { $in: locationCodes },
+				}
+				let entityData = await entitiesService.entityDocuments(queryData, 'all', userToken)
+				if (entityData.success) {
+					entityInformations = entityInformations.concat(entityData.data)
+				}
+			}
 
 			// above code is commented as we are already fetching entity related info from entitiesService
 
