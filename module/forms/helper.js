@@ -96,7 +96,7 @@ module.exports = class FormsHelper {
 				} else {
 					filter = {
 						type: bodyData.type,
-						subType: bodyData.subType,
+						// subType: bodyData.subType,
 						organizationId: orgId,
 					}
 				}

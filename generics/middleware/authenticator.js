@@ -116,7 +116,7 @@ module.exports = async function (req, res, next, token = '') {
 		},
 	}
 
-	console.log(req.userDetails, 'req.userDetails')
+	// console.log(req.userDetails, 'req.userDetails')
 	next()
 
 	// var decoded = jwt.decode(token, { complete: true });

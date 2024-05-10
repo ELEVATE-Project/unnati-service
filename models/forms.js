@@ -38,6 +38,12 @@ formSchema.pre('findOneAndUpdate', function (next) {
 	next()
 })
 
+formSchema.pre('updateOne', function (next) {
+	// Increment version
+	this.update({}, { $inc: { version: 1 } })
+	next()
+})
+
 module.exports = {
 	name: 'forms',
 	schema: formSchema,
