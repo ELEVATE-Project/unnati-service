@@ -181,45 +181,45 @@ const profile = function (token, userId = '') {
  * @param {String} userId - user Id
  * @returns {JSON} - User profile details
  */
-const profileReadPrivate = function (userId) {
-	return new Promise(async (resolve, reject) => {
-		try {
-			//  <--- Important : This url endpoint is private do not use it for regular workflows --->
-			let url = userServiceUrl + CONSTANTS.endpoints.USER_READ_PRIVATE + '/' + userId
-			const options = {
-				headers: {
-					'content-type': 'application/json',
-				},
-			}
-			request.get(url, options, userReadCallback)
-			let result = {
-				success: true,
-			}
-			function userReadCallback(err, data) {
-				if (err) {
-					result.success = false
-				} else {
-					let response = JSON.parse(data.body)
-					if (response.responseCode === HTTP_STATUS_CODE['ok'].code) {
-						result['data'] = response.result
-					} else {
-						result.success = false
-					}
-				}
-				return resolve(result)
-			}
-			setTimeout(function () {
-				return resolve(
-					(result = {
-						success: false,
-					})
-				)
-			}, CONSTANTS.common.SERVER_TIME_OUT)
-		} catch (error) {
-			return reject(error)
-		}
-	})
-}
+// const profileReadPrivate = function (userId) {
+// 	return new Promise(async (resolve, reject) => {
+// 		try {
+// 			//  <--- Important : This url endpoint is private do not use it for regular workflows --->
+// 			let url = userServiceUrl + CONSTANTS.endpoints.USER_READ_PRIVATE + '/' + userId
+// 			const options = {
+// 				headers: {
+// 					'content-type': 'application/json',
+// 				},
+// 			}
+// 			request.get(url, options, userReadCallback)
+// 			let result = {
+// 				success: true,
+// 			}
+// 			function userReadCallback(err, data) {
+// 				if (err) {
+// 					result.success = false
+// 				} else {
+// 					let response = JSON.parse(data.body)
+// 					if (response.responseCode === HTTP_STATUS_CODE['ok'].code) {
+// 						result['data'] = response.result
+// 					} else {
+// 						result.success = false
+// 					}
+// 				}
+// 				return resolve(result)
+// 			}
+// 			setTimeout(function () {
+// 				return resolve(
+// 					(result = {
+// 						success: false,
+// 					})
+// 				)
+// 			}, CONSTANTS.common.SERVER_TIME_OUT)
+// 		} catch (error) {
+// 			return reject(error)
+// 		}
+// 	})
+// }
 
 /**
  * get subEntities of matching type by recursion.
@@ -269,50 +269,50 @@ const profileReadPrivate = function (userId) {
  * @param {Object} roles - {"roles":"all"}
  * @returns {Array} - All user roles
  */
-const getUserRoles = function (filterData = 'all', projection = 'all', skipFields = 'none') {
-	return new Promise(async (resolve, reject) => {
-		try {
-			let url = userServiceUrl + CONSTANTS.endpoints.LIST_USER_ROLES
-			const options = {
-				headers: {
-					'content-type': 'application/json',
-					'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
-				},
-				json: {
-					query: filterData,
-					projection: projection,
-					skipFields: skipFields,
-				},
-			}
-			request.get(url, options, requestCallback)
-			let result = {
-				success: true,
-			}
-			function requestCallback(err, data) {
-				if (err) {
-					result.success = false
-				} else {
-					let response = JSON.parse(data.body)
-					if (response.responseCode === HTTP_STATUS_CODE.ok.code) {
-						result['data'] = response.result
-					} else {
-						result.success = false
-					}
-				}
-				return resolve(result)
-			}
-			setTimeout(function () {
-				return resolve(
-					(result = {
-						success: false,
-					})
-				)
-			}, CONSTANTS.common.SERVER_TIME_OUT)
-		} catch (error) {
-			return reject(error)
-		}
-	})
-}
+// const getUserRoles = function (filterData = 'all', projection = 'all', skipFields = 'none') {
+// 	return new Promise(async (resolve, reject) => {
+// 		try {
+// 			let url = userServiceUrl + CONSTANTS.endpoints.LIST_USER_ROLES
+// 			const options = {
+// 				headers: {
+// 					'content-type': 'application/json',
+// 					'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+// 				},
+// 				json: {
+// 					query: filterData,
+// 					projection: projection,
+// 					skipFields: skipFields,
+// 				},
+// 			}
+// 			request.get(url, options, requestCallback)
+// 			let result = {
+// 				success: true,
+// 			}
+// 			function requestCallback(err, data) {
+// 				if (err) {
+// 					result.success = false
+// 				} else {
+// 					let response = JSON.parse(data.body)
+// 					if (response.responseCode === HTTP_STATUS_CODE.ok.code) {
+// 						result['data'] = response.result
+// 					} else {
+// 						result.success = false
+// 					}
+// 				}
+// 				return resolve(result)
+// 			}
+// 			setTimeout(function () {
+// 				return resolve(
+// 					(result = {
+// 						success: false,
+// 					})
+// 				)
+// 			}, CONSTANTS.common.SERVER_TIME_OUT)
+// 		} catch (error) {
+// 			return reject(error)
+// 		}
+// 	})
+// }
 
 /**
  * Fetches the default organization details for a given organization code/id.
@@ -380,8 +380,8 @@ module.exports = {
 	profile: profile,
 	// locationSearch : locationSearch,
 	// getParentEntities : getParentEntities,
-	profileReadPrivate: profileReadPrivate,
+	// profileReadPrivate: profileReadPrivate,
 	// getSubEntitiesBasedOnEntityType : getSubEntitiesBasedOnEntityType,
-	getUserRoles: getUserRoles,
+	// getUserRoles: getUserRoles,
 	fetchDefaultOrgDetails: fetchDefaultOrgDetails,
 }
