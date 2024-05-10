@@ -20,6 +20,7 @@ module.exports = class FormsHelper {
 	static getDefaultOrgId(userToken) {
 		return new Promise(async (resolve, reject) => {
 			try {
+				// call user-service to fetch default organization details
 				let defaultOrgDetails = await userService.fetchDefaultOrgDetails(
 					process.env.DEFAULT_ORGANISATION_CODE,
 					userToken
@@ -84,8 +85,9 @@ module.exports = class FormsHelper {
 	static update(_id, bodyData, orgId) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				let filter = {}
+				// validate _id field
 				_id = _id === ':_id' ? null : _id
+				let filter = {}
 				if (_id) {
 					filter = {
 						_id: ObjectId(_id),
@@ -98,6 +100,7 @@ module.exports = class FormsHelper {
 						organizationId: orgId,
 					}
 				}
+				// create update object to pass to db query
 				let updateData = {}
 				updateData['$set'] = bodyData
 				const updatedForm = await formQueries.updateOneForm(filter, updateData, { new: true })
@@ -135,6 +138,7 @@ module.exports = class FormsHelper {
 	static read(_id, bodyData, orgId, userToken) {
 		return new Promise(async (resolve, reject) => {
 			try {
+				// validate _id field
 				_id = _id === ':_id' ? null : _id
 				let filter = {}
 				if (_id) {
@@ -145,6 +149,7 @@ module.exports = class FormsHelper {
 				const form = await formQueries.findOneForm(filter)
 				let defaultOrgForm
 				if (!form || !form._id) {
+					// call getDefaultOrgId() to get default organization details from user-service
 					const defaultOrgId = await this.getDefaultOrgId(userToken)
 					if (!defaultOrgId) {
 						return resolve({
@@ -189,6 +194,7 @@ module.exports = class FormsHelper {
 			try {
 				const filter = 'all'
 				const projectFields = ['_id', 'type', 'version']
+				// db query to get forms version of all documents
 				const getAllFormsVersion = await formQueries.formDocuments(filter, projectFields)
 				if (!getAllFormsVersion || !getAllFormsVersion.length > 0) {
 					throw {
