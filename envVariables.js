@@ -98,6 +98,11 @@ let enviromentVariables = {
 		optional: true,
 		default: 300,
 	},
+	// default organisation code
+	DEFAULT_ORGANISATION_CODE: {
+		message: 'Default Organization Id/Code is required',
+		optional: false,
+	},
 }
 
 let success = true
