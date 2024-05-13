@@ -104,8 +104,8 @@ let enviromentVariables = {
 		optional: false,
 	},
 	APP_PORTAL_BASE_URL: {
-		message: 'App Portal base url',
-		optional: true,
+		message: 'App Portal base url required',
+		optional: false,
 		default: 'https://dev.elevate.org',
 	},
 }
