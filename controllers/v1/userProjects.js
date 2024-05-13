@@ -50,7 +50,7 @@ module.exports = class UserProjects extends Abstract {
                 "name": "Task 1",
                 "description": "Task 1 description",
                 "status": "notStarted/inProgress/completed",
-                "isACustomTask": false,Fs
+                "isACustomTask": false
                 "startDate": "2020-09-29T09:08:41.667Z",
                 "endDate": "2020-09-29T09:08:41.667Z",
                 "lastModifiedAt": "2020-09-29T09:08:41.667Z",

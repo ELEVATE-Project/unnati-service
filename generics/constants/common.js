@@ -77,4 +77,8 @@ module.exports = {
 	PUBLIC: 'public',
 	PRIVATE: 'private',
 	AZURE: 'azure',
+	status_success: 'success',
+	status_failure: 'failure',
+	pdf_report_generated: 'Pdf report generated successfully',
+	could_not_generate_pdf: 'Could not generate pdf report',
 }
