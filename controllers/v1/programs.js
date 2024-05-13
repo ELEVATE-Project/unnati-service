@@ -436,7 +436,7 @@ module.exports = class Programs extends Abstract {
 	}
 
 	/**
-  * @api {post} /project/v1/programs/list?page=:page&limit=:limit&search=:search
+  * @api {get} /project/v1/programs/list?page=:page&limit=:limit&search=:search
   * @apiVersion 1.0.0
   * @apiName 
   * @apiGroup Programs

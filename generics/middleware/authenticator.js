@@ -61,7 +61,7 @@ module.exports = async function (req, res, next, token = '') {
 		return
 	}
 
-	let internalAccessApiPaths = ['/templates/bulkCreate', '/reports/entity']
+	let internalAccessApiPaths = ['/templates/bulkCreate']
 	let performInternalAccessTokenCheck = false
 	await Promise.all(
 		internalAccessApiPaths.map(async function (path) {
@@ -109,12 +109,13 @@ module.exports = async function (req, res, next, token = '') {
 		userInformation: {
 			userId: decodedToken.data.id.toString(),
 			userName: decodedToken.data.name,
+			organizationId: decodedToken.data.organization_id,
 			// email : decodedToken.data.email, //email is removed from token
 			firstName: decodedToken.data.name,
 		},
 	}
 
-	console.log(req.userDetails, 'req.userDetails')
+	// console.log(req.userDetails, 'req.userDetails')
 	next()
 
 	// var decoded = jwt.decode(token, { complete: true });

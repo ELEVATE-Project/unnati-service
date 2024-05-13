@@ -98,6 +98,16 @@ let enviromentVariables = {
 		optional: true,
 		default: 300,
 	},
+	// default organisation code
+	DEFAULT_ORGANISATION_CODE: {
+		message: 'Default Organization Id/Code is required',
+		optional: false,
+	},
+	APP_PORTAL_BASE_URL: {
+		message: 'App Portal base url',
+		optional: true,
+		default: 'https://dev.elevate.org',
+	},
 }
 
 let success = true

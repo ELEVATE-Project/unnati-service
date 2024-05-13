@@ -191,4 +191,13 @@ module.exports = {
 	FAILED_PRE_SIGNED_URL: 'Failed to generate signed url',
 	FAILED_TO_UPLOAD: 'Failed to upload file',
 	FAILED_TO_CREATE_DOWNLOADABLEURL: 'Failed to generate downloadableUrl',
+	FORM_CREATED_SUCCESSFULLY: 'Form created successfully',
+	FORM_NOT_CREATED: 'Form creation failed',
+	DEFAULT_ORG_ID_NOT_SET: 'Default orgId not set',
+	FORM_NOT_FOUND: 'Form not found',
+	FORM_FETCHED_SUCCESSFULLY: 'Form fetched successfully',
+	FORM_VERSION_NOT_FETCHED: 'Forms version not able to fetch',
+	FORM_VERSION_FETCHED_SUCCESSFULLY: 'Forms version fetched successfully',
+	FORM_UPDATED_SUCCESSFULLY: 'Form updated successfully',
+	FORM_NOT_UPDATED: 'Form updation failed',
 }

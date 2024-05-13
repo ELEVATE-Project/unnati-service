@@ -19,11 +19,9 @@ module.exports = {
 	LIST_ENTITIES: '/v1/entities/listByIds',
 	USER_EXTENSION_GET_PROFILE: '/v2/user-extension/getProfile',
 	USER_EXTENSION_UPDATE_USER_PROFILE: '/v1/user-extension/update',
-	GET_DOWNLOADABLE_URL: '/v1/cloud-services/files/getDownloadableUrl',
 	USER_PRIVATE_PROGRAMS: '/v1/users/privatePrograms',
 	UPDATE_SOLUTIONS: '/v1/solutions/updateSolutions',
 	LIST_PROGRAMS: '/v1/programs/list',
-	GET_PRESIGNED_URL: '/v1/cloud-services/files/preSignedUrls',
 	PRESIGNED_GCP_URL: '/v1/cloud-services/gcp/preSignedUrls', // Kendra service
 	PRESIGNED_AWS_URL: '/v1/cloud-services/aws/preSignedUrls', // Kendra service
 	PRESIGNED_AZURE_URL: '/v1/cloud-services/azure/preSignedUrls', // Kendra service,
@@ -58,4 +56,5 @@ module.exports = {
 	IS_TARGETED_BASED_ON_USER_PROFILE: '/v1/solutions/isTargetedBasedOnUserProfile',
 	FIND_ENTITY_DOCUMENTS: '/v1/entities/find',
 	FIND_ENTITY_TYPE_DOCUMENTS: '/v1/entityTypes/find',
+	ORGANIZATION_READ: '/v1/organization/read',
 }
