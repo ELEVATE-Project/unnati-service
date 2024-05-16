@@ -19,7 +19,7 @@ module.exports = class Reports {
 	}
 
 	/**
-    * @api {get} /improvement-project/api/v1/reports/entity/:_id?requestPdf=:requestPdf&programId=:programId&reportType=:reportType
+    * @api {get} /project/v1/reports/entity/?requestPdf=true&reportType=1
     * Entity Report.
     * @apiVersion 1.0.0
     * @apiGroup Reports
@@ -167,7 +167,7 @@ module.exports = class Reports {
     * Get detail view report
     * @apiVersion 1.0.0
     * @apiGroup Reports
-    * @apiSampleRequest /improvement-project/api/v1/reports/detailView/5f731631e8d7cd3b88ac0659?requestPdf=false&programId=5da5a3af6ee4a93ce5a1987a&reportType=1
+    * @apiSampleRequest project/v1/reports/detailView/c4c7a517-019e-40e8-af2c-d8b967b92401/?requestPdf=true&reportType=1
     * @apiParamExample {json} Response:
     * {
         "message": "Chart report data generated succesfully",

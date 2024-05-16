@@ -8,7 +8,6 @@
 // Dependencies
 
 const userProjectsHelper = require(MODULES_BASE_PATH + '/userProjects/helper')
-const reportService = require(GENERICS_FILES_PATH + '/services/report')
 const projectQueries = require(DB_QUERY_BASE_PATH + '/projects')
 const { result } = require('lodash')
 const moment = require('moment')
@@ -53,9 +52,9 @@ module.exports = class ReportsHelper {
 					pdfReportString = pdfReportString + ' - ' + moment(endOf).format('MMM YY')
 				}
 
-				// if (programId) {
-				//     query['programId'] = ObjectId(programId);
-				// }
+				if (programId) {
+					query['programId'] = ObjectId(programId)
+				}
 				query['isDeleted'] = { $ne: true }
 
 				query['$or'] = [
@@ -345,6 +344,12 @@ module.exports = class ReportsHelper {
 		})
 	}
 
+	/**
+	 * Generates a PDF report based on entity report data.
+	 * @param {Object} entityReportData - Data for generating the report.
+	 * @param {string} userId - User ID associated with the report generation.
+	 * @returns {Promise<Object>} A promise that resolves to an object containing PDF generation status and URL.
+	 */
 	unnatiEntityReportPdfGeneration = async function (entityReportData) {
 		return new Promise(async function (resolve, reject) {
 			let currentTempFolder = 'tmp/' + uuidv4() + '--' + Math.floor(Math.random() * (10000 - 10 + 1) + 10)
@@ -478,24 +483,24 @@ module.exports = class ReportsHelper {
 
 														return resolve({
 															status: filesHelper.status_success,
-															message: filesHelper.pdf_report_generated,
+															message: filesHelper.PDF_REPORT_GENERATED,
 															pdfUrl: pdfDownloadableUrl.data.result.url,
 														})
 													} else {
 														return resolve({
-															status: filesHelper.status_failure,
+															status: CONSTANTS.common.STATUS_FAILURE,
 															message: pdfDownloadableUrl.message
 																? pdfDownloadableUrl.message
-																: filesHelper.could_not_generate_pdf,
+																: CONSTANTS.common.COULD_NOT_GENERATE_PDF,
 															pdfUrl: '',
 														})
 													}
 												} else {
 													return resolve({
-														status: filesHelper.status_failure,
+														status: CONSTANTS.common.STATUS_FAILURE,
 														message: uploadFileResponse.message
 															? uploadFileResponse.message
-															: filesHelper.could_not_generate_pdf,
+															: CONSTANTS.common.COULD_NOT_GENERATE_PDF,
 														pdfUrl: '',
 													})
 												}
@@ -747,8 +752,8 @@ module.exports = class ReportsHelper {
 						reportType: returnTypeInfo[0].label,
 						projectDetails: projectData,
 					}
-					// let response = await reportService.viewFullReport(userToken, data)
-					let response = await common_handler_v2.unnatiViewFullReportPdfGeneration(data, userToken)
+
+					let response = await common_handler_v2.unnatiViewFullReportPdfGeneration(data, userId)
 					if (response && response.success) {
 						return resolve({
 							success: true,

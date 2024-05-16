@@ -11,6 +11,7 @@ const request = require('request')
 const rp = require('request-promise')
 const filesHelper = require(MODULES_BASE_PATH + '/cloud-services/files/helper')
 const axios = require('axios')
+const GotenbergConnection = require(SERVICES_BASE_PATH + '/gotenberg')
 
 /**
  * Generates a full PDF report containing Gantt chart visualizations and uploads it to cloud storage.
@@ -69,7 +70,7 @@ exports.unnatiViewFullReportPdfGeneration = async function (responseData, userId
 						throw errWriteFile
 					} else {
 						// Prepare options for converting HTML to PDF using Gotenberg service
-						let optionsHtmlToPdf = UTILS.getGotenbergConnection()
+						let optionsHtmlToPdf = GotenbergConnection.getGotenbergConnection()
 						optionsHtmlToPdf.formData = {
 							files: [],
 						}
@@ -152,19 +153,19 @@ exports.unnatiViewFullReportPdfGeneration = async function (responseData, userId
 													})
 												} else {
 													return resolve({
-														status: CONSTANTS.common.status_failure,
+														status: CONSTANTS.common.STATUS_FAILURE,
 														message: pdfDownloadableUrl.message
 															? pdfDownloadableUrl.message
-															: CONSTANTS.common.could_not_generate_pdf,
+															: CONSTANTS.common.COULD_NOT_GENERATE_PDF,
 														pdfUrl: '',
 													})
 												}
 											} else {
 												return resolve({
-													status: CONSTANTS.common.status_failure,
+													status: CONSTANTS.common.STATUS_FAILURE,
 													message: uploadFileResponse.message
 														? uploadFileResponse.message
-														: CONSTANTS.common.could_not_generate_pdf,
+														: CONSTANTS.common.COULD_NOT_GENERATE_PDF,
 													pdfUrl: '',
 												})
 											}
@@ -238,7 +239,7 @@ async function ganttChartObject(projects) {
 									// Dataset for start dates relative to leastStartDate
 									data: data.map((t) => {
 										if (leastStartDate && t.startDate) {
-											return dateDiffInDays(new Date(leastStartDate), new Date(t.startDate))
+											return UTILS.dateDiffInDays(new Date(leastStartDate), new Date(t.startDate))
 										}
 										return null
 									}),
@@ -255,7 +256,7 @@ async function ganttChartObject(projects) {
 									// Dataset for task durations (end dates - start dates)
 									data: data.map((t) => {
 										if (t.startDate && t.endDate) {
-											return dateDiffInDays(new Date(t.startDate), new Date(t.endDate))
+											return UTILS.dateDiffInDays(new Date(t.startDate), new Date(t.endDate))
 										}
 									}),
 									datalabels: {
@@ -306,19 +307,6 @@ async function ganttChartObject(projects) {
 
 		resolve([arrayOfChartData, projectData])
 	})
-}
-
-/**
- * Calculate the difference in days between two dates.
- * @param {Date} a - The first date.
- * @param {Date} b - The second date.
- * @returns {number} The difference in days between the two dates (b - a).
- */
-function dateDiffInDays(startDate, endDate) {
-	// Get the UTC timestamps for the start date and end date (ignoring time and timezone)
-	const utc1 = Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate())
-	const utc2 = Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate())
-	return Math.floor((utc2 - utc1) / (1000 * 60 * 60 * 24))
 }
 
 /**

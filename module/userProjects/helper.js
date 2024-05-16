@@ -10,7 +10,6 @@
 const libraryCategoriesHelper = require(MODULES_BASE_PATH + '/library/categories/helper')
 const projectTemplatesHelper = require(MODULES_BASE_PATH + '/project/templates/helper')
 const { v4: uuidv4 } = require('uuid')
-const reportService = require(GENERICS_FILES_PATH + '/services/report')
 const projectQueries = require(DB_QUERY_BASE_PATH + '/projects')
 const projectCategoriesQueries = require(DB_QUERY_BASE_PATH + '/projectCategories')
 const projectTemplateQueries = require(DB_QUERY_BASE_PATH + '/projectTemplates')

@@ -128,22 +128,6 @@ function valueParser(dataToBeParsed) {
 	return parsedData
 }
 
-function getGotenbergConnection() {
-	let options = {
-		method: 'POST',
-		uri: process.env.GOTENBERG_URL + '/forms/chromium/convert/html',
-		headers: {
-			'Content-Type': 'application/x-www-form-urlencoded',
-		},
-		resolveWithFullResponse: true,
-		encoding: null,
-		json: true,
-		formData: '',
-	}
-
-	return options
-}
-
 /**
  * Convert string to boolean.
  * @method
@@ -539,6 +523,19 @@ function generateTelemetryEvent(rawEvent) {
 }
 
 /**
+ * Calculate the difference in days between two dates.
+ * @param {Date} a - The first date.
+ * @param {Date} b - The second date.
+ * @returns {number} The difference in days between the two dates (b - a).
+ */
+function dateDiffInDays(startDate, endDate) {
+	// Get the UTC timestamps for the start date and end date (ignoring time and timezone)
+	const utc1 = Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate())
+	const utc2 = Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate())
+	return Math.floor((utc2 - utc1) / (1000 * 60 * 60 * 24))
+}
+
+/**
  * check the uuid is valid
  * @function
  * @name checkIfValidUUID
@@ -570,7 +567,6 @@ module.exports = {
 	convertStringToBoolean: convertStringToBoolean,
 	getAllBooleanDataFromModels: getAllBooleanDataFromModels,
 	epochTime: epochTime,
-	getGotenbergConnection: getGotenbergConnection,
 	isValidMongoId: isValidMongoId,
 	convertProjectStatus: convertProjectStatus,
 	revertProjectStatus: revertProjectStatus,
@@ -589,4 +585,5 @@ module.exports = {
 	generateTelemetryEvent: generateTelemetryEvent,
 	checkIfValidUUID: checkIfValidUUID,
 	md5Hash: md5Hash,
+	dateDiffInDays: dateDiffInDays,
 }
