@@ -1757,7 +1757,8 @@ module.exports = class UserProjectsHelper {
 	 * @returns {Object} Downloadable pdf url.
 	 */
 
-	static share(projectId = '', taskIds = [], userToken, appVersion) {
+	static share(projectId = '', taskIds = [], userId, appVersion) {
+		console.log(userId, 'line no 1761')
 		return new Promise(async (resolve, reject) => {
 			try {
 				let projectPdf = true
@@ -1945,7 +1946,7 @@ module.exports = class UserProjectsHelper {
 					projectDocument.status = UTILS.revertProjectStatus(projectDocument.status)
 				}
 
-				let response = await common_handler.unnatiViewFullReportPdfGeneration(projectDocument, userToken)
+				let response = await common_handler.unnatiViewFullReportPdfGeneration(projectDocument, userId)
 				if (response && response.success) {
 					return resolve({
 						success: true,

@@ -23,7 +23,7 @@ module.exports = class Reports {
     * Entity Report.
     * @apiVersion 1.0.0
     * @apiGroup Reports
-    * @apiSampleRequest /improvement-project/api/v1/reports/entity/5f731631e8d7cd3b88ac0659?requestPdf=false&reportType=1
+    * @apiSampleRequest /project/v1/reports/entity/?requestPdf=false&reportType=1
     * @apiParamExample {json} Response:
     * {
         "message": "Reports generated successfully.",
@@ -94,11 +94,11 @@ module.exports = class Reports {
 	}
 
 	/**
-    * @api {post} /improvement-project/api/v1/reports/getProgramsByEntity/:_id
+    * @api {post} /project/v1/reports/getProgramsByEntity/:_id
     * Get programs by entity.
     * @apiVersion 1.0.0
     * @apiGroup Reports
-    * @apiSampleRequest /improvement-project/api/v1/reports/getProgramsByEntity/5ddf79ff47e9260268c9547a?page=1&limit=10&search=a
+    * @apiSampleRequest /project/api/v1/reports/getProgramsByEntity/5ddf79ff47e9260268c9547a?page=1&limit=10&search=a
     * @apiParamExample {json} Request:
     {
         "role": "HM,DEO",
@@ -163,7 +163,7 @@ module.exports = class Reports {
 		})
 	}
 	/**
-    * @api {get} /improvement-project/api/v1/reports/detailView/:_id?requestPdf=:requestPdf&programId=:programId&reportType=:reportType
+    * @api {get} /project/v1/reports/detailView/:_id?requestPdf=:requestPdf&programId=:programId&reportType=:reportType
     * Get detail view report
     * @apiVersion 1.0.0
     * @apiGroup Reports

@@ -640,7 +640,7 @@ module.exports = class UserProjects extends Abstract {
 				let report = await userProjectsHelper.share(
 					req.params._id,
 					taskIds,
-					req.userDetails.userToken,
+					req.userDetails.userInformation.userId,
 					req.headers['x-app-ver']
 				)
 				return resolve({

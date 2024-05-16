@@ -8,7 +8,6 @@
 module.exports = {
 	ACTIVE_STATUS: 'active',
 	PUBLISHED: 'published',
-	SUCCESS: 'Success',
 	ASSESSMENT: 'assessment',
 	CONTENT: 'content',
 	IMPROVEMENT_PROJECT: 'improvementProject',

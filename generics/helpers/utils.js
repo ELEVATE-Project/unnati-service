@@ -524,8 +524,8 @@ function generateTelemetryEvent(rawEvent) {
 
 /**
  * Calculate the difference in days between two dates.
- * @param {Date} a - The first date.
- * @param {Date} b - The second date.
+ * @param {Date} startDate - The first date.
+ * @param {Date} endDate - The second date.
  * @returns {number} The difference in days between the two dates (b - a).
  */
 function dateDiffInDays(startDate, endDate) {
