@@ -1066,7 +1066,7 @@ module.exports = class UserProjectsHelper {
 
 	static detailsV2(
 		projectId,
-		solutionId,
+		solutionId = '',
 		userId,
 		userToken,
 		bodyData,
@@ -1083,7 +1083,7 @@ module.exports = class UserProjectsHelper {
 					templateDocuments = await projectTemplateQueries.templateDocument({
 						externalId: templateId,
 						isReusable: false,
-						solutionId: { $exists: true },
+						// solutionId: { $exists: true },
 					})
 
 					if (!templateDocuments.length > 0) {
@@ -1093,7 +1093,7 @@ module.exports = class UserProjectsHelper {
 						}
 					}
 
-					solutionId = templateDocuments[0].solutionId
+					solutionId = templateDocuments[0].solutionId ? templateDocuments[0].solutionId : solutionId
 					solutionExternalId = templateDocuments[0].solutionExternalId
 				}
 
@@ -1162,17 +1162,23 @@ module.exports = class UserProjectsHelper {
 								//     isAPrivateSolution
 								// );
 
+								// if (
+								// 	!solutionDetails.success ||
+								// 	(solutionDetails.data.data && !solutionDetails.data.data.length > 0)
+								// ) {
+								// 	throw {
+								// 		status: HTTP_STATUS_CODE.bad_request.status,
+								// 		message: CONSTANTS.apiResponses.SOLUTION_DOES_NOT_EXISTS_IN_SCOPE,
+								// 	}
+								// }
 								if (
-									!solutionDetails.success ||
-									(solutionDetails.data.data && !solutionDetails.data.data.length > 0)
+									solutionDetails &&
+									solutionDetails.success &&
+									solutionDetails.data.data &&
+									solutionDetails.data.data.length > 0
 								) {
-									throw {
-										status: HTTP_STATUS_CODE.bad_request.status,
-										message: CONSTANTS.apiResponses.SOLUTION_DOES_NOT_EXISTS_IN_SCOPE,
-									}
+									solutionDetails = solutionDetails.data
 								}
-
-								solutionDetails = solutionDetails.data
 							}
 						} else {
 							solutionDetails = await solutionsQueries.solutionsDocument(solutionId)
@@ -1191,7 +1197,11 @@ module.exports = class UserProjectsHelper {
 						let programDetails = await programsQueries.programsDocument(queryData, ['requestForPIIConsent'])
 
 						// if requestForPIIConsent not there do not call program join
-						if (programDetails.length > 0 && programDetails[0].hasOwnProperty('requestForPIIConsent')) {
+						if (
+							Object.keys(solutionDetails).length > 0 &&
+							programDetails.length > 0 &&
+							programDetails[0].hasOwnProperty('requestForPIIConsent')
+						) {
 							// program join API call it will increment the noOfResourcesStarted counter and will make user join program
 							// before creating any project this api has to called
 							let programUsers = await programUsersQueries.programUsersDocument(
@@ -1232,27 +1242,33 @@ module.exports = class UserProjectsHelper {
 
 						projectCreation.data['isAPrivateProgram'] = solutionDetails.isAPrivateProgram
 
-						projectCreation.data.programInformation = {
-							_id: ObjectId(solutionDetails.programId),
-							externalId: solutionDetails.programExternalId,
-							description: solutionDetails.programDescription ? solutionDetails.programDescription : '',
-							name: solutionDetails.programName,
+						if (Object.keys(solutionDetails).length > 0) {
+							projectCreation.data.programInformation = {
+								_id: ObjectId(solutionDetails.programId),
+								externalId: solutionDetails.programExternalId,
+								description: solutionDetails.programDescription
+									? solutionDetails.programDescription
+									: '',
+								name: solutionDetails.programName,
+							}
+
+							projectCreation.data.solutionInformation = {
+								_id: ObjectId(solutionDetails._id),
+								externalId: solutionDetails.externalId,
+								description: solutionDetails.description ? solutionDetails.description : '',
+								name: solutionDetails.name,
+							}
+
+							projectCreation.data['programId'] = projectCreation.data.programInformation._id
+
+							projectCreation.data['programExternalId'] =
+								projectCreation.data.programInformation.externalId
+
+							projectCreation.data['solutionId'] = projectCreation.data.solutionInformation._id
+
+							projectCreation.data['solutionExternalId'] =
+								projectCreation.data.solutionInformation.externalId
 						}
-
-						projectCreation.data.solutionInformation = {
-							_id: ObjectId(solutionDetails._id),
-							externalId: solutionDetails.externalId,
-							description: solutionDetails.description ? solutionDetails.description : '',
-							name: solutionDetails.name,
-						}
-
-						projectCreation.data['programId'] = projectCreation.data.programInformation._id
-
-						projectCreation.data['programExternalId'] = projectCreation.data.programInformation.externalId
-
-						projectCreation.data['solutionId'] = projectCreation.data.solutionInformation._id
-
-						projectCreation.data['solutionExternalId'] = projectCreation.data.solutionInformation.externalId
 
 						projectCreation.data['userRole'] = bodyData.role
 
