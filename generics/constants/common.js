@@ -76,4 +76,5 @@ module.exports = {
 	READ_PERMISSION: 'r',
 	PUBLIC: 'public',
 	PRIVATE: 'private',
+	CERTIFICATE: 'certificate',
 }
