@@ -3297,6 +3297,7 @@ function _entitiesInformation(entityIds, userToken) {
 
 			if (locationIds.length > 0) {
 				let queryData = {
+					'registryDetails.locationId': { $in: locationIds },
 					_id: { $in: locationIds },
 				}
 				let entityData = await entitiesService.entityDocuments(queryData, 'all', userToken)
