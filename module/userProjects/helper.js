@@ -10,7 +10,6 @@
 const libraryCategoriesHelper = require(MODULES_BASE_PATH + '/library/categories/helper')
 const projectTemplatesHelper = require(MODULES_BASE_PATH + '/project/templates/helper')
 const { v4: uuidv4 } = require('uuid')
-const reportService = require(GENERICS_FILES_PATH + '/services/report')
 const projectQueries = require(DB_QUERY_BASE_PATH + '/projects')
 const projectCategoriesQueries = require(DB_QUERY_BASE_PATH + '/projectCategories')
 const projectTemplateQueries = require(DB_QUERY_BASE_PATH + '/projectTemplates')
@@ -28,6 +27,7 @@ const programUsersQueries = require(DB_QUERY_BASE_PATH + '/programUsers')
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions')
 const programQueries = require(DB_QUERY_BASE_PATH + '/programs')
 const entitiesService = require(GENERICS_FILES_PATH + '/services/entity-management')
+const common_handler = require(GENERICS_FILES_PATH + '/helpers/common_handler')
 /**
  * UserProjectsHelper
  * @class
@@ -1773,7 +1773,8 @@ module.exports = class UserProjectsHelper {
 	 * @returns {Object} Downloadable pdf url.
 	 */
 
-	static share(projectId = '', taskIds = [], userToken, appVersion) {
+	static share(projectId = '', taskIds = [], userId, appVersion) {
+		console.log(userId, 'line no 1761')
 		return new Promise(async (resolve, reject) => {
 			try {
 				let projectPdf = true
@@ -1960,15 +1961,15 @@ module.exports = class UserProjectsHelper {
 				if (UTILS.revertStatusorNot(appVersion)) {
 					projectDocument.status = UTILS.revertProjectStatus(projectDocument.status)
 				}
-				let response = await reportService.projectAndTaskReport(userToken, projectDocument, projectPdf)
 
-				if (response && response.success == true) {
+				let response = await common_handler.unnatiViewFullReportPdfGeneration(projectDocument, userId)
+				if (response && response.success) {
 					return resolve({
 						success: true,
 						message: CONSTANTS.apiResponses.REPORT_GENERATED_SUCCESSFULLY,
 						data: {
 							data: {
-								downloadUrl: response.data.pdfUrl,
+								downloadUrl: response.pdfUrl,
 							},
 						},
 					})
@@ -3313,6 +3314,7 @@ function _entitiesInformation(entityIds, userToken) {
 			if (locationIds.length > 0) {
 				let queryData = {
 					'registryDetails.locationId': { $in: locationIds },
+					_id: { $in: locationIds },
 				}
 				let entityData = await entitiesService.entityDocuments(queryData, 'all', userToken)
 				if (entityData.success) {
@@ -3320,15 +3322,15 @@ function _entitiesInformation(entityIds, userToken) {
 				}
 			}
 
-			if (locationCodes.length > 0) {
-				let queryData = {
-					'registryDetails.code': { $in: locationCodes },
-				}
-				let entityData = await entitiesService.entityDocuments(queryData, 'all', userToken)
-				if (entityData.success) {
-					entityInformations = entityInformations.concat(entityData.data)
-				}
-			}
+			// if ( locationCodes.length > 0 ) {
+			//     let bodyData = {
+			//         "code" : locationCodes
+			//     }
+			//     let entityData = await userService.locationSearch( bodyData , formatResult = true );
+			//     if ( entityData.success ) {
+			//         entityInformations =  entityInformations.concat(entityData.data);
+			//     }
+			// }
 
 			// above code is commented as we are already fetching entity related info from entitiesService
 

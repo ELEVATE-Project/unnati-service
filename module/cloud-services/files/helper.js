@@ -108,7 +108,6 @@ module.exports = class FilesHelper {
 							result: {},
 						})
 					}
-
 					return resolve({
 						message: CONSTANTS.apiResponses.CLOUD_SERVICE_SUCCESS_MESSAGE,
 						result: downloadableUrl.result,

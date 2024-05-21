@@ -90,7 +90,6 @@ module.exports = async function (req, res, next, token = '') {
 		rspObj.responseCode = HTTP_STATUS_CODE['unauthorized'].status
 		return res.status(HTTP_STATUS_CODE['unauthorized'].status).send(respUtil(rspObj))
 	}
-
 	rspObj.errCode = CONSTANTS.apiResponses.TOKEN_INVALID_CODE
 	rspObj.errMsg = CONSTANTS.apiResponses.TOKEN_INVALID_MESSAGE
 	rspObj.responseCode = HTTP_STATUS_CODE['unauthorized'].status

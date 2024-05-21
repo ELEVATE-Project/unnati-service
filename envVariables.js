@@ -29,6 +29,10 @@ let enviromentVariables = {
 		message: 'Required internal access token',
 		optional: false,
 	},
+	GOTENBERG_URL: {
+		message: 'Gotenberg url required',
+		optional: false,
+	},
 	KAFKA_COMMUNICATIONS_ON_OFF: {
 		message: 'Enable/Disable kafka communications',
 		optional: false,
