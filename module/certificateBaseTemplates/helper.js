@@ -4,8 +4,10 @@
  * created-date : 14-05-2024
  * Description : Certificate Template related helper functionality.
  */
+
 // dependencies
 const certificateTemplatesHelper = require(MODULES_BASE_PATH + '/certificateTemplates/helper')
+const certificateBaseTemplateQueries = require(DB_QUERY_BASE_PATH + '/certificateBaseTemplates')
 
 /**
  * CertificateBaseTemplatesHelper
@@ -17,6 +19,8 @@ module.exports = class CertificateBaseTemplatesHelper {
 	 * @method create
 	 * @name create
 	 * @param {Object} data - certificate base template creation data.
+	 * @param {String} file - file.
+	 * @param {String} userId - userId.
 	 * @returns {JSON} created certificate base template details.
 	 */
 
@@ -30,14 +34,14 @@ module.exports = class CertificateBaseTemplatesHelper {
 					}
 				}
 				data.url = uploadFile.data.templateUrl
-				let certificateTemplateCreated = await database.models.certificateBaseTemplates.create(data)
+				let certificateBaseTemplateCreated = await certificateBaseTemplateQueries.create(data)
 				return resolve({
 					message: CONSTANTS.apiResponses.CERTIFICATE_BASE_TEMPLATE_ADDED,
 					data: {
-						id: certificateTemplateCreated._id,
+						_id: certificateBaseTemplateCreated._id,
 					},
 					result: {
-						id: certificateTemplateCreated._id,
+						_id: certificateBaseTemplateCreated._id,
 					},
 				})
 			} catch (error) {
@@ -73,7 +77,7 @@ module.exports = class CertificateBaseTemplatesHelper {
 				let updateObject = {
 					$set: data,
 				}
-				let certificateBaseTemplateUpdated = await database.models.certificateBaseTemplates.findOneAndUpdate(
+				let certificateBaseTemplateUpdated = await certificateBaseTemplateQueries.update(
 					{ _id: baseTemplateId },
 					updateObject
 				)
@@ -85,7 +89,10 @@ module.exports = class CertificateBaseTemplatesHelper {
 				return resolve({
 					message: CONSTANTS.apiResponses.CERTIFICATE_BASE_TEMPLATE_UPDATED,
 					data: {
-						id: certificateBaseTemplateUpdated._id,
+						_id: certificateBaseTemplateUpdated._id,
+					},
+					result: {
+						_id: certificateBaseTemplateUpdated._id,
 					},
 				})
 			} catch (error) {

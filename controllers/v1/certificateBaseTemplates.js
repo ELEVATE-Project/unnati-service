@@ -71,7 +71,6 @@ module.exports = class CertificateBaseTemplates extends Abstract {
 						req.files,
 						req.userDetails.userInformation.userId
 					)
-					certificateBaseTemplateData['result'] = certificateBaseTemplateData.data
 					return resolve(certificateBaseTemplateData)
 				}
 			} catch (error) {
