@@ -2188,19 +2188,86 @@ module.exports = class UserProjectsHelper {
 	 * @returns {Array} List of projects.
 	 */
 
-	static list(bodyData, pageNo, pageSize, searchText, filter) {
+	static list(pageNo, pageSize, searchText, filter, projection = []) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				let projects = await projectQueries.projectDocument(
-					bodyData.query,
-					bodyData.projection,
-					bodyData.skipFields
-				)
+				let matchQuery = {
+					isDeleted: false,
+				}
+
+				//   matchQuery.status = CONSTANTS.common.ACTIVE_STATUS;
+
+				if (Object.keys(filter).length > 0) {
+					matchQuery = _.merge(matchQuery, filter)
+				}
+
+				let searchData = [
+					{
+						name: new RegExp(searchText, 'i'),
+					},
+					{
+						externalId: new RegExp(searchText, 'i'),
+					},
+					{
+						description: new RegExp(searchText, 'i'),
+					},
+				]
+
+				if (searchText !== '') {
+					if (matchQuery['$or']) {
+						matchQuery['$and'] = [{ $or: matchQuery.$or }, { $or: searchData }]
+
+						delete matchQuery.$or
+					} else {
+						matchQuery['$or'] = searchData
+					}
+				}
+
+				let projection1 = {}
+
+				if (projection.length > 0) {
+					projection.forEach((projectedData) => {
+						projection1[projectedData] = 1
+					})
+				} else {
+					projection1 = {
+						description: 1,
+						externalId: 1,
+						name: 1,
+					}
+				}
+
+				let facetQuery = {}
+				facetQuery['$facet'] = {}
+
+				facetQuery['$facet']['totalCount'] = [{ $count: 'count' }]
+
+				facetQuery['$facet']['data'] = [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize }]
+
+				let projection2 = {}
+
+				projection2['$project'] = {
+					data: 1,
+					count: {
+						$arrayElemAt: ['$totalCount.count', 0],
+					},
+				}
+
+				let projects = await projectQueries.getAggregate([
+					{ $match: matchQuery },
+					{
+						$sort: { updatedAt: -1 },
+					},
+					{ $project: projection1 },
+					facetQuery,
+					projection2,
+				])
 
 				return resolve({
 					success: true,
 					message: CONSTANTS.apiResponses.PROJECTS_FETCHED,
-					result: projects,
+					data: projects[0],
+					result: projects[0],
 				})
 			} catch (error) {
 				return reject(error)
