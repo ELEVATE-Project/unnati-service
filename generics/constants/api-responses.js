@@ -200,4 +200,5 @@ module.exports = {
 	FORM_VERSION_FETCHED_SUCCESSFULLY: 'Forms version fetched successfully',
 	FORM_UPDATED_SUCCESSFULLY: 'Form updated successfully',
 	FORM_NOT_UPDATED: 'Form updation failed',
+	DATA_FETCHED_SUCCESSFULLY: 'Data fetched successfully',
 }
