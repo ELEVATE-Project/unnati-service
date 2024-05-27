@@ -6,9 +6,12 @@
  */
 
 // Dependencies
+/**
+ * ProgramsHelper
+ * @class
+ */
 const adminQueries = require(DB_QUERY_BASE_PATH + '/admin')
-
-module.exports = class Admin {
+module.exports = class AdminHelper {
 	/**
 	 * create index in the model.
 	 * @method
@@ -65,7 +68,7 @@ module.exports = class Admin {
 					reqBody.query = await this.convertStringToObjectIdInQuery(reqBody.query, reqBody.mongoIdKeys)
 				}
 
-				let mongoDBDocuments = await this.list(
+				let mongoDBDocuments = await adminQueries.list(
 					collection,
 					reqBody.query,
 					reqBody.projection ? reqBody.projection : [],
@@ -73,7 +76,6 @@ module.exports = class Admin {
 					reqBody.limit ? reqBody.limit : 100,
 					reqBody.skip ? reqBody.skip : 0
 				)
-
 				return resolve({
 					message: CONSTANTS.apiResponses.DATA_FETCHED_SUCCESSFULLY,
 					success: true,
@@ -114,83 +116,5 @@ module.exports = class Admin {
 		}
 
 		return query
-	}
-
-	/**
-	 * List of data based on collection.
-	 * @method
-	 * @name list
-	 * @param {Object} filterQueryObject - filter query data.
-	 * @param {Object} [projection = {}] - projected data.
-	 * @returns {Promise} returns a promise.
-	 */
-
-	static list(
-		collection,
-		query = 'all',
-		fields = 'all',
-		skipFields = 'none',
-		limitingValue = 100,
-		skippingValue = 0,
-		sortedData = ''
-	) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				let queryObject = {}
-
-				if (query != 'all') {
-					queryObject = query
-				}
-
-				let projectionObject = {}
-
-				if (fields != 'all') {
-					fields.forEach((element) => {
-						projectionObject[element] = 1
-					})
-				}
-
-				if (skipFields != 'none') {
-					skipFields.forEach((element) => {
-						projectionObject[element] = 0
-					})
-				}
-
-				let mongoDBDocuments
-
-				if (sortedData !== '') {
-					mongoDBDocuments = await database
-						.getCollection(collection)
-						.find(queryObject)
-						.project(projectionObject)
-						.sort(sortedData)
-						.limit(limitingValue)
-						.toArray()
-				} else {
-					mongoDBDocuments = await database
-						.getCollection(collection)
-						.find(queryObject)
-						.project(projectionObject)
-						.skip(skippingValue)
-						.limit(limitingValue)
-						.toArray()
-				}
-				// finding document count from db. We can't get it from result array length because a limiting value is passed
-				let docCount = await database.getCollection(collection).find(queryObject).count()
-
-				return resolve({
-					success: true,
-					message: CONSTANTS.apiResponses.DATA_FETCHED_SUCCESSFULLY,
-					data: mongoDBDocuments,
-					count: docCount,
-				})
-			} catch (error) {
-				return resolve({
-					success: false,
-					message: error.message,
-					data: false,
-				})
-			}
-		})
 	}
 }
