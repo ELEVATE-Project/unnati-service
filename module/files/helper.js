@@ -156,6 +156,10 @@ module.exports = class FilesHelper {
 						actionPermission // read/write
 					)
 
+					if (typeof response.url === 'object') {
+						response.url = response.url[0]
+					}
+
 					return response
 				})
 
