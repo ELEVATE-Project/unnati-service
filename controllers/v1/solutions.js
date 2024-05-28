@@ -6,7 +6,6 @@
  */
 // Dependencies
 const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper')
-
 module.exports = class Solutions extends Abstract {
 	constructor() {
 		super('solutions')

@@ -29,6 +29,10 @@ let enviromentVariables = {
 		message: 'Required internal access token',
 		optional: false,
 	},
+	GOTENBERG_URL: {
+		message: 'Gotenberg url required',
+		optional: false,
+	},
 	KAFKA_COMMUNICATIONS_ON_OFF: {
 		message: 'Enable/Disable kafka communications',
 		optional: false,
@@ -41,10 +45,10 @@ let enviromentVariables = {
 	//   "message" : "Required",
 	//   "optional" : false
 	// },
-	// "USER_SERVICE_URL" : {
-	//   "message" : "Required user service base url",
-	//   "optional" : false
-	// },
+	USER_SERVICE_URL: {
+		message: 'Required user service base url',
+		optional: false,
+	},
 	SERVICE_NAME: {
 		message: 'current service name',
 		optional: true,
@@ -102,6 +106,11 @@ let enviromentVariables = {
 	DEFAULT_ORGANISATION_CODE: {
 		message: 'Default Organization Id/Code is required',
 		optional: false,
+	},
+	APP_PORTAL_BASE_URL: {
+		message: 'App Portal base url required',
+		optional: false,
+		default: 'https://dev.elevate.org',
 	},
 }
 

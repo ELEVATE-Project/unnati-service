@@ -8,7 +8,6 @@
 module.exports = {
 	ACTIVE_STATUS: 'active',
 	PUBLISHED: 'published',
-	SUCCESS: 'Success',
 	ASSESSMENT: 'assessment',
 	CONTENT: 'content',
 	IMPROVEMENT_PROJECT: 'improvementProject',
@@ -76,4 +75,9 @@ module.exports = {
 	READ_PERMISSION: 'r',
 	PUBLIC: 'public',
 	PRIVATE: 'private',
+	AZURE: 'azure',
+	SUCCESS: 'SUCCESS',
+	STATUS_FAILURE: 'FAILURE',
+	PDF_REPORT_GENERATED_: 'PDF_REPORT_GENERATED_SUCCESSFULLY',
+	COULD_NOT_GENERATE_PDF: 'COULD_NOT_GENERATE_PDF_REPORT',
 }

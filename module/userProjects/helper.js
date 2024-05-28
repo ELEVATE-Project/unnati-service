@@ -10,7 +10,6 @@
 const libraryCategoriesHelper = require(MODULES_BASE_PATH + '/library/categories/helper')
 const projectTemplatesHelper = require(MODULES_BASE_PATH + '/project/templates/helper')
 const { v4: uuidv4 } = require('uuid')
-const reportService = require(GENERICS_FILES_PATH + '/services/report')
 const projectQueries = require(DB_QUERY_BASE_PATH + '/projects')
 const projectCategoriesQueries = require(DB_QUERY_BASE_PATH + '/projectCategories')
 const projectTemplateQueries = require(DB_QUERY_BASE_PATH + '/projectTemplates')
@@ -28,6 +27,7 @@ const programUsersQueries = require(DB_QUERY_BASE_PATH + '/programUsers')
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions')
 const programQueries = require(DB_QUERY_BASE_PATH + '/programs')
 const entitiesService = require(GENERICS_FILES_PATH + '/services/entity-management')
+const common_handler = require(GENERICS_FILES_PATH + '/helpers/common_handler')
 /**
  * UserProjectsHelper
  * @class
@@ -585,57 +585,80 @@ module.exports = class UserProjectsHelper {
 	 * @returns {Object} List of library projects.
 	 */
 
-	static projects(query, pageSize, pageNo, searchQuery, fieldsArray, groupBy = '') {
+	static projects(query, pageSize, pageNo, searchText, fieldsArray, groupBy = '') {
 		return new Promise(async (resolve, reject) => {
 			try {
-				let matchQuery = {
-					$match: query,
+				// Initialize the aggregation pipeline
+				let aggregateData = []
+
+				// Construct the match query if query is not null
+				let matchQuery = {}
+				if (query) {
+					matchQuery = { $match: query }
 				}
 
-				if (searchQuery && searchQuery.length > 0) {
-					matchQuery['$match']['$or'] = searchQuery
+				// Add searchText logic
+				if (searchText && searchText.trim() !== '') {
+					const searchData = [
+						{ name: { $regex: searchText, $options: 'i' } },
+						{ description: { $regex: searchText, $options: 'i' } },
+						{ externalId: { $regex: searchText, $options: 'i' } },
+						// Add more fields as necessary
+					]
+
+					if (matchQuery.$match) {
+						if (matchQuery.$match['$or']) {
+							matchQuery.$match['$and'] = [{ $or: matchQuery.$match.$or }, { $or: searchData }]
+							delete matchQuery.$match.$or
+						} else {
+							matchQuery.$match['$or'] = searchData
+						}
+					} else {
+						matchQuery = { $match: { $or: searchData } }
+					}
 				}
 
+				// Construct the projection
 				let projection = {}
 				fieldsArray.forEach((field) => {
 					projection[field] = 1
 				})
 
-				let aggregateData = []
-				aggregateData.push(matchQuery)
-				aggregateData.push({
-					$sort: { syncedAt: -1 },
-				})
-
-				if (groupBy !== '') {
-					aggregateData.push({
-						$group: groupBy,
-					})
-				} else {
-					aggregateData.push({
-						$project: projection,
-					})
+				// Add match query to the pipeline if it's not empty
+				if (Object.keys(matchQuery).length > 0) {
+					aggregateData.push(matchQuery)
 				}
 
-				aggregateData.push(
-					{
-						$facet: {
-							totalCount: [{ $count: 'count' }],
-							data: [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize }],
-						},
-					},
-					{
-						$project: {
-							data: 1,
-							count: {
-								$arrayElemAt: ['$totalCount.count', 0],
-							},
-						},
-					}
-				)
+				// Add sorting stage
+				aggregateData.push({ $sort: { syncedAt: -1 } })
 
+				// Add group stage or project stage
+				if (groupBy !== '') {
+					aggregateData.push({ $group: groupBy })
+				} else {
+					aggregateData.push({ $project: projection })
+				}
+
+				// Add facet stage for pagination and total count
+				aggregateData.push({
+					$facet: {
+						totalCount: [{ $count: 'count' }],
+						data: [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize }],
+					},
+				})
+
+				// Add project stage to reshape the result
+				aggregateData.push({
+					$project: {
+						data: 1,
+						count: { $arrayElemAt: ['$totalCount.count', 0] },
+					},
+				})
+
+				// Execute the aggregation pipeline
 				let result = await projectQueries.getAggregate(aggregateData)
 
+				// Resolve the promise with the results
 				return resolve({
 					success: true,
 					message: CONSTANTS.apiResponses.PROJECTS_FETCHED,
@@ -645,6 +668,7 @@ module.exports = class UserProjectsHelper {
 					},
 				})
 			} catch (error) {
+				// Handle errors and resolve with a failure message
 				return resolve({
 					success: false,
 					message: error.message,
@@ -1066,7 +1090,7 @@ module.exports = class UserProjectsHelper {
 
 	static detailsV2(
 		projectId,
-		solutionId,
+		solutionId = '',
 		userId,
 		userToken,
 		bodyData,
@@ -1083,7 +1107,7 @@ module.exports = class UserProjectsHelper {
 					templateDocuments = await projectTemplateQueries.templateDocument({
 						externalId: templateId,
 						isReusable: false,
-						solutionId: { $exists: true },
+						// solutionId: { $exists: true },
 					})
 
 					if (!templateDocuments.length > 0) {
@@ -1093,7 +1117,7 @@ module.exports = class UserProjectsHelper {
 						}
 					}
 
-					solutionId = templateDocuments[0].solutionId
+					solutionId = templateDocuments[0].solutionId ? templateDocuments[0].solutionId : solutionId
 					solutionExternalId = templateDocuments[0].solutionExternalId
 				}
 
@@ -1162,17 +1186,23 @@ module.exports = class UserProjectsHelper {
 								//     isAPrivateSolution
 								// );
 
+								// if (
+								// 	!solutionDetails.success ||
+								// 	(solutionDetails.data.data && !solutionDetails.data.data.length > 0)
+								// ) {
+								// 	throw {
+								// 		status: HTTP_STATUS_CODE.bad_request.status,
+								// 		message: CONSTANTS.apiResponses.SOLUTION_DOES_NOT_EXISTS_IN_SCOPE,
+								// 	}
+								// }
 								if (
-									!solutionDetails.success ||
-									(solutionDetails.data.data && !solutionDetails.data.data.length > 0)
+									solutionDetails &&
+									solutionDetails.success &&
+									solutionDetails.data.data &&
+									solutionDetails.data.data.length > 0
 								) {
-									throw {
-										status: HTTP_STATUS_CODE.bad_request.status,
-										message: CONSTANTS.apiResponses.SOLUTION_DOES_NOT_EXISTS_IN_SCOPE,
-									}
+									solutionDetails = solutionDetails.data
 								}
-
-								solutionDetails = solutionDetails.data
 							}
 						} else {
 							solutionDetails = await solutionsQueries.solutionsDocument(solutionId)
@@ -1191,7 +1221,11 @@ module.exports = class UserProjectsHelper {
 						let programDetails = await programsQueries.programsDocument(queryData, ['requestForPIIConsent'])
 
 						// if requestForPIIConsent not there do not call program join
-						if (programDetails.length > 0 && programDetails[0].hasOwnProperty('requestForPIIConsent')) {
+						if (
+							Object.keys(solutionDetails).length > 0 &&
+							programDetails.length > 0 &&
+							programDetails[0].hasOwnProperty('requestForPIIConsent')
+						) {
 							// program join API call it will increment the noOfResourcesStarted counter and will make user join program
 							// before creating any project this api has to called
 							let programUsers = await programUsersQueries.programUsersDocument(
@@ -1232,27 +1266,33 @@ module.exports = class UserProjectsHelper {
 
 						projectCreation.data['isAPrivateProgram'] = solutionDetails.isAPrivateProgram
 
-						projectCreation.data.programInformation = {
-							_id: ObjectId(solutionDetails.programId),
-							externalId: solutionDetails.programExternalId,
-							description: solutionDetails.programDescription ? solutionDetails.programDescription : '',
-							name: solutionDetails.programName,
+						if (Object.keys(solutionDetails).length > 0) {
+							projectCreation.data.programInformation = {
+								_id: ObjectId(solutionDetails.programId),
+								externalId: solutionDetails.programExternalId,
+								description: solutionDetails.programDescription
+									? solutionDetails.programDescription
+									: '',
+								name: solutionDetails.programName,
+							}
+
+							projectCreation.data.solutionInformation = {
+								_id: ObjectId(solutionDetails._id),
+								externalId: solutionDetails.externalId,
+								description: solutionDetails.description ? solutionDetails.description : '',
+								name: solutionDetails.name,
+							}
+
+							projectCreation.data['programId'] = projectCreation.data.programInformation._id
+
+							projectCreation.data['programExternalId'] =
+								projectCreation.data.programInformation.externalId
+
+							projectCreation.data['solutionId'] = projectCreation.data.solutionInformation._id
+
+							projectCreation.data['solutionExternalId'] =
+								projectCreation.data.solutionInformation.externalId
 						}
-
-						projectCreation.data.solutionInformation = {
-							_id: ObjectId(solutionDetails._id),
-							externalId: solutionDetails.externalId,
-							description: solutionDetails.description ? solutionDetails.description : '',
-							name: solutionDetails.name,
-						}
-
-						projectCreation.data['programId'] = projectCreation.data.programInformation._id
-
-						projectCreation.data['programExternalId'] = projectCreation.data.programInformation.externalId
-
-						projectCreation.data['solutionId'] = projectCreation.data.solutionInformation._id
-
-						projectCreation.data['solutionExternalId'] = projectCreation.data.solutionInformation.externalId
 
 						projectCreation.data['userRole'] = bodyData.role
 
@@ -1757,7 +1797,7 @@ module.exports = class UserProjectsHelper {
 	 * @returns {Object} Downloadable pdf url.
 	 */
 
-	static share(projectId = '', taskIds = [], userToken, appVersion) {
+	static share(projectId = '', taskIds = [], userId, appVersion) {
 		return new Promise(async (resolve, reject) => {
 			try {
 				let projectPdf = true
@@ -1944,15 +1984,15 @@ module.exports = class UserProjectsHelper {
 				if (UTILS.revertStatusorNot(appVersion)) {
 					projectDocument.status = UTILS.revertProjectStatus(projectDocument.status)
 				}
-				let response = await reportService.projectAndTaskReport(userToken, projectDocument, projectPdf)
 
-				if (response && response.success == true) {
+				let response = await common_handler.unnatiViewFullReportPdfGeneration(projectDocument, userId)
+				if (response && response.success) {
 					return resolve({
 						success: true,
 						message: CONSTANTS.apiResponses.REPORT_GENERATED_SUCCESSFULLY,
 						data: {
 							data: {
-								downloadUrl: response.data.pdfUrl,
+								downloadUrl: response.pdfUrl,
 							},
 						},
 					})
@@ -2175,83 +2215,85 @@ module.exports = class UserProjectsHelper {
 	static list(pageNo, pageSize, searchText, filter, projection = []) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				let matchQuery = {
-					isDeleted: false,
-				}
+				// let matchQuery = {
+				// 	isDeleted: false,
+				// }
 
-				//   matchQuery.status = CONSTANTS.common.ACTIVE_STATUS;
+				// //   matchQuery.status = CONSTANTS.common.ACTIVE_STATUS;
 
-				if (Object.keys(filter).length > 0) {
-					matchQuery = _.merge(matchQuery, filter)
-				}
+				// if (Object.keys(filter).length > 0) {
+				// 	matchQuery = _.merge(matchQuery, filter)
+				// }
 
-				let searchData = [
-					{
-						name: new RegExp(searchText, 'i'),
-					},
-					{
-						externalId: new RegExp(searchText, 'i'),
-					},
-					{
-						description: new RegExp(searchText, 'i'),
-					},
-				]
+				// let searchData = [
+				// 	{
+				// 		name: new RegExp(searchText, 'i'),
+				// 	},
+				// 	{
+				// 		externalId: new RegExp(searchText, 'i'),
+				// 	},
+				// 	{
+				// 		description: new RegExp(searchText, 'i'),
+				// 	},
+				// ]
 
-				if (searchText !== '') {
-					if (matchQuery['$or']) {
-						matchQuery['$and'] = [{ $or: matchQuery.$or }, { $or: searchData }]
+				// if (searchText !== '') {
+				// 	if (matchQuery['$or']) {
+				// 		matchQuery['$and'] = [{ $or: matchQuery.$or }, { $or: searchData }]
 
-						delete matchQuery.$or
-					} else {
-						matchQuery['$or'] = searchData
-					}
-				}
+				// 		delete matchQuery.$or
+				// 	} else {
+				// 		matchQuery['$or'] = searchData
+				// 	}
+				// }
 
-				let projection1 = {}
+				// let projection1 = {}
 
-				if (projection.length > 0) {
-					projection.forEach((projectedData) => {
-						projection1[projectedData] = 1
-					})
-				} else {
-					projection1 = {
-						description: 1,
-						externalId: 1,
-						name: 1,
-					}
-				}
+				// if (projection.length > 0) {
+				// 	projection.forEach((projectedData) => {
+				// 		projection1[projectedData] = 1
+				// 	})
+				// } else {
+				// 	projection1 = {
+				// 		description: 1,
+				// 		externalId: 1,
+				// 		name: 1,
+				// 	}
+				// }
 
-				let facetQuery = {}
-				facetQuery['$facet'] = {}
+				// let facetQuery = {}
+				// facetQuery['$facet'] = {}
 
-				facetQuery['$facet']['totalCount'] = [{ $count: 'count' }]
+				// facetQuery['$facet']['totalCount'] = [{ $count: 'count' }]
 
-				facetQuery['$facet']['data'] = [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize }]
+				// facetQuery['$facet']['data'] = [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize }]
 
-				let projection2 = {}
+				// let projection2 = {}
 
-				projection2['$project'] = {
-					data: 1,
-					count: {
-						$arrayElemAt: ['$totalCount.count', 0],
-					},
-				}
+				// projection2['$project'] = {
+				// 	data: 1,
+				// 	count: {
+				// 		$arrayElemAt: ['$totalCount.count', 0],
+				// 	},
+				// }
 
-				let projects = await projectQueries.getAggregate([
-					{ $match: matchQuery },
-					{
-						$sort: { updatedAt: -1 },
-					},
-					{ $project: projection1 },
-					facetQuery,
-					projection2,
-				])
+				// let projects = await projectQueries.getAggregate([
+				// 	{ $match: matchQuery },
+				// 	{
+				// 		$sort: { updatedAt: -1 },
+				// 	},
+				// 	{ $project: projection1 },
+				// 	facetQuery,
+				// 	projection2,
+				// ])
+
+				let projects = await this.projects(null, pageSize, pageNo, searchText, filter)
 
 				return resolve({
 					success: true,
 					message: CONSTANTS.apiResponses.PROJECTS_FETCHED,
-					data: projects[0],
-					result: projects[0],
+					data: projects.data,
+					result: projects.data,
 				})
 			} catch (error) {
 				return reject(error)
@@ -3364,6 +3406,7 @@ function _entitiesInformation(entityIds, userToken) {
 			if (locationIds.length > 0) {
 				let queryData = {
 					'registryDetails.locationId': { $in: locationIds },
+					_id: { $in: locationIds },
 				}
 				let entityData = await entitiesService.entityDocuments(queryData, 'all', userToken)
 				if (entityData.success) {
@@ -3371,15 +3414,15 @@ function _entitiesInformation(entityIds, userToken) {
 				}
 			}
 
-			if (locationCodes.length > 0) {
-				let queryData = {
-					'registryDetails.code': { $in: locationCodes },
-				}
-				let entityData = await entitiesService.entityDocuments(queryData, 'all', userToken)
-				if (entityData.success) {
-					entityInformations = entityInformations.concat(entityData.data)
-				}
-			}
+			// if ( locationCodes.length > 0 ) {
+			//     let bodyData = {
+			//         "code" : locationCodes
+			//     }
+			//     let entityData = await userService.locationSearch( bodyData , formatResult = true );
+			//     if ( entityData.success ) {
+			//         entityInformations =  entityInformations.concat(entityData.data);
+			//     }
+			// }
 
 			// above code is commented as we are already fetching entity related info from entitiesService
 

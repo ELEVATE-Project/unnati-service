@@ -50,7 +50,7 @@ module.exports = class UserProjects extends Abstract {
                 "name": "Task 1",
                 "description": "Task 1 description",
                 "status": "notStarted/inProgress/completed",
-                "isACustomTask": false,
+                "isACustomTask": false
                 "startDate": "2020-09-29T09:08:41.667Z",
                 "endDate": "2020-09-29T09:08:41.667Z",
                 "lastModifiedAt": "2020-09-29T09:08:41.667Z",
@@ -640,7 +640,7 @@ module.exports = class UserProjects extends Abstract {
 				let report = await userProjectsHelper.share(
 					req.params._id,
 					taskIds,
-					req.userDetails.userToken,
+					req.userDetails.userInformation.userId,
 					req.headers['x-app-ver']
 				)
 				return resolve({
@@ -836,7 +836,12 @@ module.exports = class UserProjects extends Abstract {
 	async list(req) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				let projects = await userProjectsHelper.list(req.pageNo, req.pageSize, req.query.search, req.body)
+				let projects = await userProjectsHelper.list(
+					req.pageNo,
+					req.pageSize,
+					req.query.search,
+					typeof req.query.filter == 'object' ? req.query.filter : [req.query.filter]
+				)
 				return resolve(projects)
 			} catch (error) {
 				return reject({

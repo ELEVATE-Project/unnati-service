@@ -6,15 +6,13 @@
  */
 
 module.exports = (req) => {
+	let filesValidator = {
+		preSignedUrls: function () {
+			req.checkBody('request').exists().withMessage('request data is required')
+		},
+	}
 
-    let filesValidator = {
-        preSignedUrls : function() {
-            req.checkBody('request').exists().withMessage("request data is required");
-        }
-    }
-
-    if (filesValidator[req.params.method]) {
-        filesValidator[req.params.method]();
-    }
-
-};
+	if (filesValidator[req.params.method]) {
+		filesValidator[req.params.method]()
+	}
+}
