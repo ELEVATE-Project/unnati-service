@@ -156,6 +156,8 @@ module.exports = class FilesHelper {
 						actionPermission // read/write
 					)
 
+					response.url = Array.isArray(response.url) ? response.url[0] : response.url
+
 					return response
 				})
 
