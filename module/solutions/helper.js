@@ -290,6 +290,13 @@ module.exports = class SolutionsHelper {
 	static createSolution(userToken, solutionData, checkDate = false) {
 		return new Promise(async (resolve, reject) => {
 			try {
+				solutionData.type = solutionData.subType = CONSTANTS.common.IMPROVEMENT_PROJECT
+				solutionData.resourceType = [CONSTANTS.common.RESOURCE_TYPE]
+				solutionData.language = [CONSTANTS.common.ENGLISH_LANGUAGE]
+				solutionData.keywords = [CONSTANTS.common.KEYWORDS]
+				solutionData.isDeleted = false
+				solutionData.isReusable = false
+
 				let programData = await programQueries.programsDocument(
 					{
 						externalId: solutionData.programExternalId,
