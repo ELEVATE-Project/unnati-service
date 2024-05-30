@@ -837,11 +837,10 @@ module.exports = class UserProjects extends Abstract {
 		return new Promise(async (resolve, reject) => {
 			try {
 				let projects = await userProjectsHelper.list(
-					req.userDetails.userInformation.userId,
 					req.pageNo,
 					req.pageSize,
-					req.searchText,
-					req.query.filter
+					req.query.search,
+					typeof req.query.filter == 'object' ? req.query.filter : [req.query.filter]
 				)
 				return resolve(projects)
 			} catch (error) {
