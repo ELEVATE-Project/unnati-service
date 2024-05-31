@@ -37,12 +37,11 @@ module.exports = class ReportsHelper {
 			try {
 				let query = {}
 
-				// If entityId is provided, use it; otherwise, use userId.
-				if (entityId) {
-					query['entityId'] = entityId
-				} else {
-					query['userId'] = userId
-				}
+				// if (entityId) {
+				//     query["entityId"] = entityId;
+				// } else {
+				query['userId'] = userId
+				// }
 
 				let dateRange = await _getDateRangeofReport(reportType)
 				let endOf = dateRange.endOf
@@ -124,20 +123,21 @@ module.exports = class ReportsHelper {
 								let key = category.externalId || category.name
 								categories[key] = (categories[key] || 0) + 1
 							})
-							categories['total'] += project.categories.length
+							categories['total'] = categories['total'] + project.categories.length
 						}
 
 						if (project.status == CONSTANTS.common.SUBMITTED_STATUS) {
-							projectReport[CONSTANTS.common.SUBMITTED_STATUS]++
+							projectReport[CONSTANTS.common.SUBMITTED_STATUS] =
+								projectReport[CONSTANTS.common.SUBMITTED_STATUS] + 1
 						} else if (
 							project.status == CONSTANTS.common.INPROGRESS_STATUS ||
 							project.status == CONSTANTS.common.STARTED
 						) {
 							let overdue = _getOverdueStatus(project.endDate)
 							if (overdue) {
-								projectReport['overdue']++
+								projectReport['overdue'] = projectReport['overdue'] + 1
 							} else {
-								projectReport[project.status]++
+								projectReport[project.status] = projectReport[project.status] + 1
 							}
 						}
 						projectReport['total'] =
@@ -147,18 +147,29 @@ module.exports = class ReportsHelper {
 							projectReport[CONSTANTS.common.SUBMITTED_STATUS]
 
 						if (project.taskReport) {
-							Object.keys(project.taskReport).forEach((key) => {
-								tasksReport[key] = (tasksReport[key] || 0) + project.taskReport[key]
+							let keys = Object.keys(project.taskReport)
+							keys.map((key) => {
+								if (tasksReport[key]) {
+									tasksReport[key] = tasksReport[key] + project.taskReport[key]
+								} else {
+									tasksReport[key] = project.taskReport[key]
+								}
 							})
 						}
 
 						await Promise.all(
 							project.tasks.map((task) => {
-								if (!task.isDeleted && task.status != CONSTANTS.common.COMPLETED_STATUS) {
+								if (task.isDeleted == false && task.status != CONSTANTS.common.COMPLETED_STATUS) {
 									let overdue = _getOverdueStatus(task.endDate)
 									if (overdue) {
-										tasksReport['overdue'] = (tasksReport['overdue'] || 0) + 1
-										tasksReport[task.status]--
+										if (tasksReport['overdue']) {
+											tasksReport['overdue'] = tasksReport['overdue'] + 1
+										} else {
+											tasksReport['overdue'] = 1
+										}
+										if (tasksReport[task.status]) {
+											tasksReport[task.status] = tasksReport[task.status] - 1
+										}
 									}
 								}
 							})
@@ -166,7 +177,7 @@ module.exports = class ReportsHelper {
 					})
 				)
 
-				if (getPdf) {
+				if (getPdf == true) {
 					let reportTaskData = {}
 					Object.keys(tasksReport).map((taskData) => {
 						reportTaskData[UTILS.camelCaseToTitleCase(taskData)] = tasksReport[taskData]
@@ -240,6 +251,7 @@ module.exports = class ReportsHelper {
 			}
 		})
 	}
+
 	/**
 	 * Get programs list.
 	 * @method
