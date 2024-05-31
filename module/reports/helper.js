@@ -123,12 +123,22 @@ module.exports = class ReportsHelper {
 					projectDetails.map(async (project) => {
 						if (project.categories) {
 							project.categories.forEach((category) => {
-								let key = category.externalId || category.name
-								categories[key] = (categories[key] || 0) + 1
+								if (category.externalId !== '' && categories[category.externalId]) {
+									categories[category.externalId] = categories[category.externalId] + 1
+								} else if (categories[category.name]) {
+									categories[category.name] = categories[category.name] + 1
+								} else {
+									if (category.externalId !== '') {
+										categories[category.externalId] = 1
+									} else {
+										categories[category.name] = 1
+									}
+								}
 							})
 							categories['total'] = categories['total'] + project.categories.length
 						}
 
+						//Add data into projectReport and check project overdue.
 						if (project.status == CONSTANTS.common.SUBMITTED_STATUS) {
 							projectReport[CONSTANTS.common.SUBMITTED_STATUS] =
 								projectReport[CONSTANTS.common.SUBMITTED_STATUS] + 1
@@ -136,6 +146,7 @@ module.exports = class ReportsHelper {
 							project.status == CONSTANTS.common.INPROGRESS_STATUS ||
 							project.status == CONSTANTS.common.STARTED
 						) {
+							//Returns project overdue status true/false.
 							let overdue = _getOverdueStatus(project.endDate)
 							if (overdue) {
 								projectReport['overdue'] = projectReport['overdue'] + 1
@@ -143,20 +154,30 @@ module.exports = class ReportsHelper {
 								projectReport[project.status] = projectReport[project.status] + 1
 							}
 						}
+
+						//get total project count
 						projectReport['total'] =
 							projectReport[CONSTANTS.common.STARTED] +
 							projectReport['overdue'] +
 							projectReport[CONSTANTS.common.INPROGRESS_STATUS] +
 							projectReport[CONSTANTS.common.SUBMITTED_STATUS]
 
+						//Get tasks summary deatail of project.
 						if (project.taskReport) {
-							Object.keys(project.taskReport).forEach((key) => {
-								tasksReport[key] = (tasksReport[key] || 0) + project.taskReport[key]
+							let keys = Object.keys(project.taskReport)
+							keys.map((key) => {
+								if (tasksReport[key]) {
+									tasksReport[key] = tasksReport[key] + project.taskReport[key]
+								} else {
+									tasksReport[key] = project.taskReport[key]
+								}
 							})
 						}
 
+						//Get number of tasks overdued.
 						await Promise.all(
 							project.tasks.map((task) => {
+								//consider task only if not deleted
 								if (task.isDeleted == false && task.status != CONSTANTS.common.COMPLETED_STATUS) {
 									let overdue = _getOverdueStatus(task.endDate)
 									if (overdue) {
@@ -207,6 +228,7 @@ module.exports = class ReportsHelper {
 						pdfRequest['entityName'] = projectDetails[0].entityInformation.name
 					}
 
+					//send data to report service to generate PDF.
 					let response = await common_handler_v2.unnatiEntityReportPdfGeneration(pdfRequest, userId)
 					if (response && response.success) {
 						return resolve({
