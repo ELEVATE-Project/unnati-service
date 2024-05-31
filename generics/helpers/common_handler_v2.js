@@ -23,8 +23,9 @@ exports.unnatiEntityReportPdfGeneration = async function (entityReportData, user
 	// Return a Promise to handle the asynchronous PDF generation process
 	return new Promise(async function (resolve, reject) {
 		// Generate a unique temporary folder path for storing intermediate files
-		let currentTempFolder = 'tmp/' + uuidv4() + '--' + Math.floor(Math.random() * (10000 - 10 + 1) + 10)
-		let imgPath = __dirname + '/../' + currentTempFolder
+		let currentTempFolder = uuidv4() + '--' + Math.floor(Math.random() * (10000 - 10 + 1) + 10)
+
+		var imgPath = path.resolve(__dirname, '../../public/reports/', currentTempFolder)
 
 		// Create the temporary folder if it doesn't exist
 		if (!fs.existsSync(imgPath)) {
@@ -555,7 +556,10 @@ const uploadPdfToCloud = async function (fileName, userId, folderPath) {
 				try {
 					// Set headers based on cloud storage type (e.g., Azure Blob Storage)
 					const headers = {
-						'Content-Type': 'application/pdf',
+						'Content-Type':
+							getSignedUrl.data.cloudStorage === CONSTANTS.common.GCP
+								? 'multipart/form-data'
+								: 'application/pdf',
 						'x-ms-blob-type':
 							getSignedUrl.data.cloudStorage === CONSTANTS.common.AZURE ? 'BlockBlob' : null,
 					}

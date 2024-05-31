@@ -28,6 +28,7 @@ const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions')
 const programQueries = require(DB_QUERY_BASE_PATH + '/programs')
 const entitiesService = require(GENERICS_FILES_PATH + '/services/entity-management')
 const common_handler = require(GENERICS_FILES_PATH + '/helpers/common_handler')
+const ObjectId = require('mongodb').ObjectID
 /**
  * UserProjectsHelper
  * @class
@@ -1774,7 +1775,6 @@ module.exports = class UserProjectsHelper {
 	 */
 
 	static share(projectId = '', taskIds = [], userId, appVersion) {
-		console.log(userId, 'line no 1761')
 		return new Promise(async (resolve, reject) => {
 			try {
 				let projectPdf = true
@@ -1969,12 +1969,18 @@ module.exports = class UserProjectsHelper {
 						message: CONSTANTS.apiResponses.REPORT_GENERATED_SUCCESSFULLY,
 						data: {
 							data: {
-								downloadUrl: response.pdfUrl,
+								downloadUrl: response.pdfUrl ? response.pdfUrl : '',
+							},
+						},
+						result: {
+							data: {
+								downloadUrl: response.pdfUrl ? response.pdfUrl : '',
 							},
 						},
 					})
 				} else {
 					throw {
+						status: HTTP_STATUS_CODE.bad_request.status,
 						message: CONSTANTS.apiResponses.COULD_NOT_GENERATE_PDF_REPORT,
 					}
 				}
@@ -1984,6 +1990,7 @@ module.exports = class UserProjectsHelper {
 					success: false,
 					message: error.message,
 					data: {},
+					result: {},
 				})
 			}
 		})

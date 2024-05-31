@@ -643,10 +643,7 @@ module.exports = class UserProjects extends Abstract {
 					req.userDetails.userInformation.userId,
 					req.headers['x-app-ver']
 				)
-				return resolve({
-					message: report.message,
-					result: report.data,
-				})
+				return resolve(report)
 			} catch (error) {
 				return reject({
 					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
