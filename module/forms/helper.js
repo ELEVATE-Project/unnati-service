@@ -25,6 +25,7 @@ module.exports = class FormsHelper {
 					process.env.DEFAULT_ORGANISATION_CODE,
 					userToken
 				)
+				console.log('line : 28 defaultOrgDetails', defaultOrgDetails)
 				if (defaultOrgDetails.success && defaultOrgDetails.data) {
 					return resolve(defaultOrgDetails.data.id)
 				} else return null
@@ -138,6 +139,7 @@ module.exports = class FormsHelper {
 	static read(_id, bodyData, orgId, userToken) {
 		return new Promise(async (resolve, reject) => {
 			try {
+				console.log('line 141 : Inside helper', _id, bodyData, orgId, userToken)
 				// validate _id field
 				_id = _id === ':_id' ? null : _id
 				let filter = {}
@@ -149,6 +151,7 @@ module.exports = class FormsHelper {
 				const form = await formQueries.findOneForm(filter)
 				let defaultOrgForm
 				if (!form || !form._id) {
+					console.log('line 153 inside org api call block : ')
 					// call getDefaultOrgId() to get default organization details from user-service
 					const defaultOrgId = await this.getDefaultOrgId(userToken)
 					if (!defaultOrgId) {

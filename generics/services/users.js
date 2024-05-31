@@ -324,6 +324,7 @@ const profile = function (token, userId = '') {
 const fetchDefaultOrgDetails = function (organisationIdentifier, userToken) {
 	return new Promise(async (resolve, reject) => {
 		try {
+			console.log('inside user function : ', organisationIdentifier, userToken)
 			let url
 			if (!isNaN(organisationIdentifier)) {
 				url =
@@ -338,7 +339,7 @@ const fetchDefaultOrgDetails = function (organisationIdentifier, userToken) {
 					'?organisation_code=' +
 					organisationIdentifier
 			}
-
+			console.log('URL : ', url)
 			const options = {
 				headers: {
 					'X-auth-token': 'bearer ' + userToken,
@@ -351,6 +352,7 @@ const fetchDefaultOrgDetails = function (organisationIdentifier, userToken) {
 			}
 			function userReadCallback(err, data) {
 				if (err) {
+					console.log('yeahhh : ', err)
 					result.success = false
 				} else {
 					let response = JSON.parse(data.body)
@@ -371,6 +373,7 @@ const fetchDefaultOrgDetails = function (organisationIdentifier, userToken) {
 				)
 			}, CONSTANTS.common.SERVER_TIME_OUT)
 		} catch (error) {
+			console.log(error)
 			return reject(error)
 		}
 	})
