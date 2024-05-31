@@ -22,7 +22,7 @@ const profile = function (token, userId = '') {
 				headers: {
 					'content-type': 'application/json',
 					'X-auth-token': 'bearer ' + token,
-					'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+					internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
 				},
 			}
 
@@ -341,7 +341,7 @@ const fetchDefaultOrgDetails = function (organisationIdentifier, userToken) {
 			const options = {
 				headers: {
 					'X-auth-token': 'bearer ' + userToken,
-					'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+					internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
 				},
 			}
 			request.get(url, options, userReadCallback)
