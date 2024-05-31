@@ -36,11 +36,13 @@ module.exports = class ReportsHelper {
 		return new Promise(async (resolve, reject) => {
 			try {
 				let query = {}
-				// if (entityId) {
-				//     query["entityId"] = entityId;
-				// } else {
-				query['userId'] = userId
-				// }
+
+				// If entityId is provided, use it; otherwise, use userId.
+				if (entityId) {
+					query['entityId'] = entityId
+				} else {
+					query['userId'] = userId
+				}
 
 				let dateRange = await _getDateRangeofReport(reportType)
 				let endOf = dateRange.endOf
@@ -101,13 +103,6 @@ module.exports = class ReportsHelper {
 				projectReport[CONSTANTS.common.SUBMITTED_STATUS] = 0
 				projectReport[CONSTANTS.common.INPROGRESS_STATUS] = 0
 				projectReport[CONSTANTS.common.STARTED] = 0
-
-				let types = await this.types()
-				let returnTypeInfo = types.data.filter((type) => {
-					if (type.value == reportType) {
-						return type.label
-					}
-				})
 				if (!projectDetails.length > 0) {
 					return resolve({
 						message: CONSTANTS.apiResponses.REPORTS_DATA_NOT_FOUND,
@@ -126,72 +121,44 @@ module.exports = class ReportsHelper {
 					projectDetails.map(async (project) => {
 						if (project.categories) {
 							project.categories.map((category) => {
-								if (category.externalId !== '' && categories[category.externalId]) {
-									categories[category.externalId] = categories[category.externalId] + 1
-								} else if (categories[category.name]) {
-									categories[category.name] = categories[category.name] + 1
-								} else {
-									if (category.externalId !== '') {
-										categories[category.externalId] = 1
-									} else {
-										categories[category.name] = 1
-									}
-								}
+								let key = category.externalId || category.name
+								categories[key] = (categories[key] || 0) + 1
 							})
-							categories['total'] = categories['total'] + project.categories.length
+							categories['total'] += project.categories.length
 						}
 
-						//Add data into projectReport and check project overdue.
 						if (project.status == CONSTANTS.common.SUBMITTED_STATUS) {
-							projectReport[CONSTANTS.common.SUBMITTED_STATUS] =
-								projectReport[CONSTANTS.common.SUBMITTED_STATUS] + 1
+							projectReport[CONSTANTS.common.SUBMITTED_STATUS]++
 						} else if (
 							project.status == CONSTANTS.common.INPROGRESS_STATUS ||
 							project.status == CONSTANTS.common.STARTED
 						) {
-							//Returns project overdue status true/false.
 							let overdue = _getOverdueStatus(project.endDate)
 							if (overdue) {
-								projectReport['overdue'] = projectReport['overdue'] + 1
+								projectReport['overdue']++
 							} else {
-								projectReport[project.status] = projectReport[project.status] + 1
+								projectReport[project.status]++
 							}
 						}
-
-						//get total project count
 						projectReport['total'] =
 							projectReport[CONSTANTS.common.STARTED] +
 							projectReport['overdue'] +
 							projectReport[CONSTANTS.common.INPROGRESS_STATUS] +
 							projectReport[CONSTANTS.common.SUBMITTED_STATUS]
 
-						//Get tasks summary deatail of project.
 						if (project.taskReport) {
-							let keys = Object.keys(project.taskReport)
-							keys.map((key) => {
-								if (tasksReport[key]) {
-									tasksReport[key] = tasksReport[key] + project.taskReport[key]
-								} else {
-									tasksReport[key] = project.taskReport[key]
-								}
+							Object.keys(project.taskReport).forEach((key) => {
+								tasksReport[key] = (tasksReport[key] || 0) + project.taskReport[key]
 							})
 						}
 
-						//Get number of tasks overdued.
 						await Promise.all(
 							project.tasks.map((task) => {
-								//consider task only if not deleted
-								if (task.isDeleted == false && task.status != CONSTANTS.common.COMPLETED_STATUS) {
+								if (!task.isDeleted && task.status != CONSTANTS.common.COMPLETED_STATUS) {
 									let overdue = _getOverdueStatus(task.endDate)
 									if (overdue) {
-										if (tasksReport['overdue']) {
-											tasksReport['overdue'] = tasksReport['overdue'] + 1
-										} else {
-											tasksReport['overdue'] = 1
-										}
-										if (tasksReport[task.status]) {
-											tasksReport[task.status] = tasksReport[task.status] - 1
-										}
+										tasksReport['overdue'] = (tasksReport['overdue'] || 0) + 1
+										tasksReport[task.status]--
 									}
 								}
 							})
@@ -199,7 +166,7 @@ module.exports = class ReportsHelper {
 					})
 				)
 
-				if (getPdf == true) {
+				if (getPdf) {
 					let reportTaskData = {}
 					Object.keys(tasksReport).map((taskData) => {
 						reportTaskData[UTILS.camelCaseToTitleCase(taskData)] = tasksReport[taskData]
@@ -231,9 +198,8 @@ module.exports = class ReportsHelper {
 						pdfRequest['entityName'] = projectDetails[0].entityInformation.name
 					}
 
-					//send data to report service to generate PDF.
 					let response = await common_handler_v2.unnatiEntityReportPdfGeneration(pdfRequest, userId)
-					if (response && response.success == true) {
+					if (response && response.success) {
 						return resolve({
 							success: true,
 							message: CONSTANTS.apiResponses.REPORT_GENERATED,
