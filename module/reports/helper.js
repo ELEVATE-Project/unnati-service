@@ -125,7 +125,7 @@ module.exports = class ReportsHelper {
 							})
 							categories['total'] = categories['total'] + project.categories.length
 						}
-
+						//Add data into projectReport and check project overdue.
 						if (project.status == CONSTANTS.common.SUBMITTED_STATUS) {
 							projectReport[CONSTANTS.common.SUBMITTED_STATUS] =
 								projectReport[CONSTANTS.common.SUBMITTED_STATUS] + 1
@@ -133,6 +133,7 @@ module.exports = class ReportsHelper {
 							project.status == CONSTANTS.common.INPROGRESS_STATUS ||
 							project.status == CONSTANTS.common.STARTED
 						) {
+							//Returns project overdue status true/false.
 							let overdue = _getOverdueStatus(project.endDate)
 							if (overdue) {
 								projectReport['overdue'] = projectReport['overdue'] + 1
@@ -140,12 +141,14 @@ module.exports = class ReportsHelper {
 								projectReport[project.status] = projectReport[project.status] + 1
 							}
 						}
+						//get total project count
 						projectReport['total'] =
 							projectReport[CONSTANTS.common.STARTED] +
 							projectReport['overdue'] +
 							projectReport[CONSTANTS.common.INPROGRESS_STATUS] +
 							projectReport[CONSTANTS.common.SUBMITTED_STATUS]
 
+						//Get tasks summary deatail of project
 						if (project.taskReport) {
 							let keys = Object.keys(project.taskReport)
 							keys.map((key) => {
@@ -157,8 +160,10 @@ module.exports = class ReportsHelper {
 							})
 						}
 
+						//Get number of tasks overdued.
 						await Promise.all(
 							project.tasks.map((task) => {
+								//consider task only if not deleted
 								if (task.isDeleted == false && task.status != CONSTANTS.common.COMPLETED_STATUS) {
 									let overdue = _getOverdueStatus(task.endDate)
 									if (overdue) {
@@ -209,6 +214,7 @@ module.exports = class ReportsHelper {
 						pdfRequest['entityName'] = projectDetails[0].entityInformation.name
 					}
 
+					//send data to report service to generate PDF.
 					let response = await common_handler_v2.unnatiEntityReportPdfGeneration(pdfRequest, userId)
 					if (response && response.success) {
 						return resolve({
