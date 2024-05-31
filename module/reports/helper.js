@@ -194,7 +194,6 @@ module.exports = class ReportsHelper {
 					}
 
 					let response = await common_handler_v2.unnatiEntityReportPdfGeneration(pdfRequest, userId)
-					console.log(response, 'line no 193')
 					if (response && response.success) {
 						return resolve({
 							success: true,
