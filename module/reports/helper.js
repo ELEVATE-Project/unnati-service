@@ -103,8 +103,11 @@ module.exports = class ReportsHelper {
 				projectReport[CONSTANTS.common.STARTED] = 0
 
 				let types = await this.types()
-				let returnTypeInfo = types.data.find((type) => type.value == reportType)
-
+				let returnTypeInfo = types.data.filter((type) => {
+					if (type.value == reportType) {
+						return type.label
+					}
+				})
 				if (!projectDetails.length > 0) {
 					return resolve({
 						message: CONSTANTS.apiResponses.REPORTS_DATA_NOT_FOUND,
