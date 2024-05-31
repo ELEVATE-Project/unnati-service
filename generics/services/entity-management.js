@@ -9,7 +9,7 @@
 const request = require('request')
 const fs = require('fs')
 
-const ELEVATE_ENTITY_SERVICE_BASE_URL = process.env.ELEVATE_ENTITY_SERVICE_BASE_URL
+const entityManagementServiceUrl = process.env.ENTITY_MANAGEMENT_SERVICE_URL
 
 /**
  * List of entity data.
@@ -23,7 +23,7 @@ const ELEVATE_ENTITY_SERVICE_BASE_URL = process.env.ELEVATE_ENTITY_SERVICE_BASE_
 const entityDocuments = function (filterData = 'all', projection = 'all', userToken) {
 	return new Promise(async (resolve, reject) => {
 		try {
-			const url = ELEVATE_ENTITY_SERVICE_BASE_URL + '/entity' + CONSTANTS.endpoints.FIND_ENTITY_DOCUMENTS
+			const url = entityManagementServiceUrl + CONSTANTS.endpoints.FIND_ENTITY_DOCUMENTS
 			const options = {
 				headers: {
 					'content-type': 'application/json',
@@ -74,7 +74,7 @@ const entityDocuments = function (filterData = 'all', projection = 'all', userTo
 const entityTypeDocuments = function (filterData = 'all', projection = 'all', userToken) {
 	return new Promise(async (resolve, reject) => {
 		try {
-			const url = ELEVATE_ENTITY_SERVICE_BASE_URL + '/entity' + CONSTANTS.endpoints.FIND_ENTITY_TYPE_DOCUMENTS
+			const url = entityManagementServiceUrl + CONSTANTS.endpoints.FIND_ENTITY_TYPE_DOCUMENTS
 			const options = {
 				headers: {
 					'content-type': 'application/json',

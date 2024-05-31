@@ -37,7 +37,7 @@ let enviromentVariables = {
 		message: 'Enable/Disable kafka communications',
 		optional: false,
 	},
-	ELEVATE_ENTITY_SERVICE_BASE_URL: {
+	ENTITY_MANAGEMENT_SERVICE_URL: {
 		message: 'Elevate-entity service base URL is required',
 		optional: false,
 	},
