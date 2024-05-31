@@ -125,7 +125,7 @@ module.exports = class ReportsHelper {
 				await Promise.all(
 					projectDetails.map(async (project) => {
 						if (project.categories) {
-							project.categories.forEach((category) => {
+							project.categories.map((category) => {
 								if (category.externalId !== '' && categories[category.externalId]) {
 									categories[category.externalId] = categories[category.externalId] + 1
 								} else if (categories[category.name]) {
@@ -233,7 +233,7 @@ module.exports = class ReportsHelper {
 
 					//send data to report service to generate PDF.
 					let response = await common_handler_v2.unnatiEntityReportPdfGeneration(pdfRequest, userId)
-					if (response && response.success) {
+					if (response && response.success == true) {
 						return resolve({
 							success: true,
 							message: CONSTANTS.apiResponses.REPORT_GENERATED,
