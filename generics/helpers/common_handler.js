@@ -22,10 +22,10 @@ const GotenbergConnection = require(SERVICES_BASE_PATH + '/gotenberg')
 exports.unnatiViewFullReportPdfGeneration = async function (responseData, userId) {
 	return new Promise(async function (resolve, reject) {
 		// Generate a unique temporary folder path
-		var currentTempFolder = 'tmp/' + uuidv4() + '--' + Math.floor(Math.random() * (10000 - 10 + 1) + 10)
+		var currentTempFolder = uuidv4() + '--' + Math.floor(Math.random() * (10000 - 10 + 1) + 10)
 
 		// Construct the full local path for the temporary folder
-		var imgPath = __dirname + '/../' + currentTempFolder
+		var imgPath = path.resolve(__dirname, '../../public/reports/', currentTempFolder)
 
 		// Create the temporary folder if it does not exist
 		if (!fs.existsSync(imgPath)) {
@@ -142,8 +142,8 @@ exports.unnatiViewFullReportPdfGeneration = async function (responseData, userId
 														}
 													})
 													// Delete the temporary directory itself
-													rimraf(imgPath, function () {
-														console.log('done')
+													rimraf(imgPath, () => {
+														console.log('Folder deleted')
 													})
 
 													return resolve({
@@ -374,7 +374,10 @@ const uploadPdfToCloud = async function (fileName, userId, folderPath) {
 				try {
 					// Set headers based on cloud storage type (e.g., Azure Blob Storage)
 					const headers = {
-						'Content-Type': 'application/pdf',
+						'Content-Type':
+							getSignedUrl.data.cloudStorage === CONSTANTS.common.GCP
+								? 'multipart/form-data'
+								: 'application/pdf',
 						'x-ms-blob-type':
 							getSignedUrl.data.cloudStorage === CONSTANTS.common.AZURE ? 'BlockBlob' : null,
 					}
