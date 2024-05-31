@@ -163,15 +163,21 @@ module.exports = class ReportsHelper {
 
 				if (getPdf) {
 					let reportTaskData = {}
-					Object.keys(tasksReport).forEach((taskData) => {
+					Object.keys(tasksReport).map((taskData) => {
 						reportTaskData[UTILS.camelCaseToTitleCase(taskData)] = tasksReport[taskData]
 					})
 
 					let categoryData = {}
-					Object.keys(categories).forEach((category) => {
+					Object.keys(categories).map((category) => {
 						categoryData[UTILS.camelCaseToTitleCase(category)] = categories[category]
 					})
 
+					let types = await this.types()
+					let returnTypeInfo = types.data.filter((type) => {
+						if (type.value == reportType) {
+							return type.label
+						}
+					})
 					let pdfRequest = {
 						reportType: returnTypeInfo.label,
 						sharedBy: userName,
@@ -180,10 +186,10 @@ module.exports = class ReportsHelper {
 						tasks: reportTaskData,
 						projects: projectReport,
 					}
-					if (programId) {
+					if (programId != '') {
 						pdfRequest['programName'] = projectDetails[0].programInformation.name
 					}
-					if (entityId) {
+					if (entityId != '') {
 						pdfRequest['entityName'] = projectDetails[0].entityInformation.name
 					}
 
