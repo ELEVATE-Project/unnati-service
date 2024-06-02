@@ -63,6 +63,7 @@ module.exports = class ReportsHelper {
 						tasks: {
 							$elemMatch: {
 								isDeleted: { $ne: true },
+								// syncedAt: { $gte: new Date(startFrom), $lte: new Date(endOf) },
 							},
 						},
 					},
@@ -120,8 +121,17 @@ module.exports = class ReportsHelper {
 					projectDetails.map(async (project) => {
 						if (project.categories) {
 							project.categories.map((category) => {
-								let key = category.externalId || category.name
-								categories[key] = (categories[key] || 0) + 1
+								if (category.externalId !== '' && categories[category.externalId]) {
+									categories[category.externalId] = categories[category.externalId] + 1
+								} else if (categories[category.name]) {
+									categories[category.name] = categories[category.name] + 1
+								} else {
+									if (category.externalId !== '') {
+										categories[category.externalId] = 1
+									} else {
+										categories[category.name] = 1
+									}
+								}
 							})
 							categories['total'] = categories['total'] + project.categories.length
 						}
