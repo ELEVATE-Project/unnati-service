@@ -28,7 +28,6 @@ const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions')
 const programQueries = require(DB_QUERY_BASE_PATH + '/programs')
 const entitiesService = require(GENERICS_FILES_PATH + '/services/entity-management')
 const common_handler = require(GENERICS_FILES_PATH + '/helpers/common_handler')
-const ObjectId = require('mongodb').ObjectID
 /**
  * UserProjectsHelper
  * @class
