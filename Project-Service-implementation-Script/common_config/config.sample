@@ -1,0 +1,72 @@
+[dev]
+elevateuserhost = "ELEVATE-USER-HOST"
+elevateprojecthost = "ELEVATE-PROJECT-HOST"
+elevateentityhost = "ELEVATE-ENTITY-HOST"
+keyclockapibody = '{"email": "EMAIL,"password": "PASSWORD"}'
+email = "EMAIL"
+password = "PASSWORD"
+internal-access-token = "INTERNAL-ACCESS-TOKEN"
+userlogin = elevate-interface/v2/account/login
+
+authorization = Bearer  # ADD_YOUR_TOKEN_HERE
+authorizationforhost = Bearer # ADD_YOUR_TOKEN_HERE
+appname = diksha
+x-channel-id = "X-CHANNEL-ID"
+keyclockapicontent-type = application/x-www-form-urlencoded
+content-type = application/json
+userinfoapiurl = api/user/v1/account/search
+searchforlocation = entity-management/v1/entities/find
+fetchprograminfoapiurl = programs/list?page=1&limit=5&search=
+fetchsolutiondetails = solutions/list?page=1&limit=100&search=&type=observation&subType
+solutionupdateapi = solutions/update/
+projectuploadapi = project/templates/bulkCreate
+taskuploadapi = project/templateTasks/bulkCreate/
+projectsolutioncreationapi = solutions/create
+mapsolutiontoproject = project/templates/importProjectTemplate/
+fetchsolutiondoc = solutions/getDetails/
+programcreationurl = programs/create
+fetchlink = solutions/fetchLink/
+readcourseurl = api/content/v1/read/
+fetchorgdetails = api/org/v1/search
+
+
+onelogo-onesignature = 1L1S
+onelogo-twosignature = 1L2S
+twologo-onesignature = 2L1S
+twologo-twosignature = 2L2S
+
+
+[local]
+elevateuserhost = "ELEVATE-USER-HOST"
+elevateprojecthost = "ELEVATE-PROJECT-HOST"
+elevateentityhost = "ELEVATE-ENTITY-HOST"
+keyclockapibody = '{"email": "EMAIL,"password": "PASSWORD"}'
+email = "EMAIL"
+password = "PASSWORD"
+internal-access-token = "INTERNAL-ACCESS-TOKEN"
+userlogin = user/v1/account/login
+authorization = Bearer  # ADD_YOUR_TOKEN_HERE
+authorizationforhost = Bearer # ADD_YOUR_TOKEN_HERE
+appname = diksha
+x-channel-id = "X-CHANNEL-ID"
+keyclockapicontent-type = application/x-www-form-urlencoded
+content-type = application/json
+userinfoapiurl = api/user/v1/account/search
+searchforlocation = project/v1/programs/create
+fetchprograminfoapiurl = project/v1/programs/list?page=1&limit=5&search=
+fetchsolutiondetails = project/v1/solutions/list?page=1&limit=100&search=&type=observation&subType
+solutionupdateapi = project/v1/solutions/update/
+
+projectuploadapi = project/v1/project/templates/bulkCreate
+taskuploadapi = project/v1/project/templateTasks/bulkCreate/
+projectsolutioncreationapi = project/v1/solutions/create
+mapsolutiontoproject = project/v1/project/templates/importProjectTemplate/
+fetchsolutiondoc = project/v1/solutions/getDetails/
+programcreationurl = project/v1/programs/create
+fetchlink = project/v1/solutions/fetchLink/
+readcourseurl = api/content/v1/read/
+fetchorgdetails = api/org/v1/search
+onelogo-onesignature = 1L1S
+onelogo-twosignature = 1L2S
+twologo-onesignature = 2L1S
+twologo-twosignature = 2L2S
