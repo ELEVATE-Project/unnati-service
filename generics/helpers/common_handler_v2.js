@@ -22,9 +22,11 @@ const GotenbergConnection = require(SERVICES_BASE_PATH + '/gotenberg')
 exports.unnatiEntityReportPdfGeneration = async function (entityReportData, userId) {
 	// Return a Promise to handle the asynchronous PDF generation process
 	return new Promise(async function (resolve, reject) {
-		// Generate a unique temporary folder path for storing intermediate files
+		// Generate a unique temporary folder path
 		let currentTempFolder = 'tmp/' + uuidv4() + '--' + Math.floor(Math.random() * (10000 - 10 + 1) + 10)
-		let imgPath = __dirname + '/../' + currentTempFolder
+
+		// Construct the full local path for the temporary folder
+		let imgPath = path.resolve(__dirname, '../../', currentTempFolder)
 
 		// Create the temporary folder if it doesn't exist
 		if (!fs.existsSync(imgPath)) {
