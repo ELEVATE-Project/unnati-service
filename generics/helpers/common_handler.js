@@ -26,9 +26,10 @@ exports.unnatiViewFullReportPdfGeneration = async function (responseData, userId
 
 		// Construct the full local path for the temporary folder
 		var imgPath = path.resolve(__dirname, '../../public/reports/', currentTempFolder)
-
+		console.log(imgPath, ' elevate-project-service ')
 		// Create the temporary folder if it does not exist
 		if (!fs.existsSync(imgPath)) {
+			console.log('directory does not exists')
 			fs.mkdirSync(imgPath)
 		}
 		// Copy Bootstrap CSS file to the temporary folder
