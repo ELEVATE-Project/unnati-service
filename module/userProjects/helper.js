@@ -1774,7 +1774,6 @@ module.exports = class UserProjectsHelper {
 	 */
 
 	static share(projectId = '', taskIds = [], userId, appVersion) {
-		console.log(userId, 'line no 1761')
 		return new Promise(async (resolve, reject) => {
 			try {
 				let projectPdf = true
