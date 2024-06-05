@@ -91,7 +91,7 @@ exports.unnatiViewFullReportPdfGeneration = async function (responseData, userId
 						})
 
 						optionsHtmlToPdf.formData.files = FormData
-
+						console.log('optionsHtmlToPdf : ', optionsHtmlToPdf)
 						// Convert HTML to PDF using Gotenberg service
 						rp(optionsHtmlToPdf)
 							.then(function (responseHtmlToPdf) {
