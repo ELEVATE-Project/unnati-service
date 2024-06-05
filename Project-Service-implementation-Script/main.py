@@ -546,9 +546,6 @@ def envCheck():
 def generateAccessToken(solutionName_for_folder_path):
     # production search user api - start
     headerKeyClockUser = {'Content-Type': config.get(environment, 'content-type')}
-    # responseKeyClockUser = requests.post(url=config.get(environment, 'elevateuserhost') + config.get(environment, 'userlogin'), headers=headerKeyClockUser,
-                                        #  data=json.dumps(config.get(environment, 'keyclockAPIBody')))
-    # terminatingMessage(type(json.loads(config.get(environment, 'keyclockAPIBody'))))\
     loginBody = {
         'email' : config.get(environment, 'email'),
         'password' : config.get(environment, 'password')
@@ -572,7 +569,6 @@ def generateAccessToken(solutionName_for_folder_path):
     print("Status code : " + str(responseKeyClockUser.status_code))
     createAPILog(solutionName_for_folder_path, messageArr)
     fileheader = ["Access Token", "Error in generating Access token", "Failed", str(responseKeyClockUser.status_code) + " Check access token api"]
-    # fileheader = ["Access Token", "Error in generating Access token", "Failed",responseKeyClockUser.status_code+"Check access token api"]
     apicheckslog(solutionName_for_folder_path, fileheader)
     fileheader = ["Access Token", "Error in generating Access token", "Failed","Check Headers of api"]
     apicheckslog(solutionName_for_folder_path, fileheader)
@@ -979,7 +975,6 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                         if set(detailsCols) == set(dictDetailsEnv.keys()):
                             solutionName = dictDetailsEnv['observation_solution_name'].encode('utf-8').decode('utf-8') if dictDetailsEnv['observation_solution_name'] else terminatingMessage("\"observation_solution_name\" must not be Empty in \"details\" sheet")
                             dikshaLoginId = dictDetailsEnv['Diksha_loginId'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Diksha_loginId'] else terminatingMessage("\"Diksha_loginId\" must not be Empty in \"details\" sheet")
-                            # ccUserDetails = fetchUserDetails(environment, accessToken, dikshaLoginId)
                             if not "CONTENT_CREATOR" in ccUserDetails[3]:
                                 terminatingMessage("---> "+dikshaLoginId +" is not a CONTENT_CREATOR in Diksha " + environment)
                             ccRootOrgName = ccUserDetails[4]
