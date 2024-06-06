@@ -115,7 +115,7 @@ certificatetemplateid = None
 question_sequence_arr = []
 
 # program creation function 
-def programCreation(accessToken,parentFolder,externalId,pName,pDescription,roles,programAuthor):
+def programCreation(accessToken,parentFolder,externalId,pName,pDescription,roles):
     # accessToken, parentFolder, externalId, pName, pDescription, keywords, entities, roles, orgIds,entitiesPGM,mainRole,rolesPGM
     messageArr = []
     messageArr.append("++++++++++++ Program Creation ++++++++++++")
@@ -136,7 +136,7 @@ def programCreation(accessToken,parentFolder,externalId,pName,pDescription,roles
       ],
       "keywords" : [],
       "concepts" : [],
-      "userId":programAuthor,
+      "userId":"",
       "imageCompression" : {
           "quality" : 10
       },
@@ -378,7 +378,6 @@ def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
                     global orgIds
                     
 
-
                     if not getProgramInfo(accessToken, parentFolder, programNameInp.encode('utf-8').decode('utf-8')):
                         extIdPGM = dictDetailsEnv['Program ID'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Program ID'] else terminatingMessage("\"Program ID\" must not be Empty in \"Program details\" sheet")
                         if str(dictDetailsEnv['Program ID']).strip() == "Do not fill this field":
@@ -422,12 +421,12 @@ def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
                         
                         # sys.exit()
                         # fetch sub-role details 
-                        rolesPGMID = fetchScopeRole(parentFolder, accessToken, rolesPGM.lstrip().rstrip().split(","))
+                        # rolesPGMID = fetchScopeRole(parentFolder, accessToken, rolesPGM.lstrip().rstrip().split(","))
                         
                         # sys.exit()
 
                         # call function to create program 
-                        programCreation(accessToken,parentFolder,externalId,pName,pDescription,roles,creatorKeyCloakId)
+                        programCreation(accessToken,parentFolder,extIdPGM,programNameInp,proDesc,roles)
                         # accessToken, parentFolder, extIdPGM, programNameInp, descriptionPGM,keywordsPGM.lstrip().rstrip().split(","),mainRole,rolesPGM
                         # sys.exit()
                         # programmappingpdpmsheetcreation(MainFilePath, accessToken, program_file, extIdPGM,parentFolder)
@@ -438,9 +437,9 @@ def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
                         # check if program is created or not 
                         if getProgramInfo(accessToken, parentFolder, extIdPGM):
                             print("Program Created SuccessFully.")
-                        else :
-                            programCreation(accessToken,parentFolder,externalId,pName,pDescription,roles,creatorKeyCloakId)
-                            getProgramInfo(accessToken, parentFolder, extIdPGM)
+                    else :
+                        programCreation(accessToken,parentFolder,extIdPGM,programNameInp,proDesc,roles)
+                        getProgramInfo(accessToken, parentFolder, extIdPGM)
 
             elif sheetEnv.strip().lower() == 'resource details':
                 # checking Resource details sheet 
@@ -546,6 +545,9 @@ def envCheck():
 def generateAccessToken(solutionName_for_folder_path):
     # production search user api - start
     headerKeyClockUser = {'Content-Type': config.get(environment, 'content-type')}
+    # responseKeyClockUser = requests.post(url=config.get(environment, 'elevateuserhost') + config.get(environment, 'userlogin'), headers=headerKeyClockUser,
+                                        #  data=json.dumps(config.get(environment, 'keyclockAPIBody')))
+    # terminatingMessage(type(json.loads(config.get(environment, 'keyclockAPIBody'))))\
     loginBody = {
         'email' : config.get(environment, 'email'),
         'password' : config.get(environment, 'password')
@@ -569,6 +571,7 @@ def generateAccessToken(solutionName_for_folder_path):
     print("Status code : " + str(responseKeyClockUser.status_code))
     createAPILog(solutionName_for_folder_path, messageArr)
     fileheader = ["Access Token", "Error in generating Access token", "Failed", str(responseKeyClockUser.status_code) + " Check access token api"]
+    # fileheader = ["Access Token", "Error in generating Access token", "Failed",responseKeyClockUser.status_code+"Check access token api"]
     apicheckslog(solutionName_for_folder_path, fileheader)
     fileheader = ["Access Token", "Error in generating Access token", "Failed","Check Headers of api"]
     apicheckslog(solutionName_for_folder_path, fileheader)
@@ -705,7 +708,6 @@ def fetchUserDetails(environment, accessToken, dikshaId):
         body = "{\n  \"request\": {\n    \"filters\": {\n    \t\"userName\": \"" + dikshaId.lstrip().rstrip() + "\"\n    },\n      \"fields\" :[],\n    \"limit\": 1000,\n    \"sort_by\": {\"createdDate\": \"desc\"}\n  }\n}"
 
     responseUserSearch = requests.request("POST", url, headers=headers, data=body)
-    print(dikshaId)
     if responseUserSearch.status_code == 200:
         responseUserSearch = responseUserSearch.json()
         if responseUserSearch['result']['response']['content']:
@@ -722,7 +724,6 @@ def fetchUserDetails(environment, accessToken, dikshaId):
         else:
             terminatingMessage("-->Given username/email is not present in DIKSHA platform<--.")
     else:
-        print(responseUserSearch.text)
         terminatingMessage("User fetch API failed. Check logs.")
     return [userKeycloak, userName, firstName,roledetails,rootOrgName,rootOrgId]
 
@@ -771,7 +772,6 @@ def fetchOrgId(environment, accessToken, parentFolder, OrgName):
             messageArr.append("headers : " + str(headers))
             messageArr.append("orgBody : " + str(orgBody))
             createAPILog(parentFolder, messageArr)
-            print(responseOrgSearch.text)
             terminatingMessage("Organisation/ State tenant fetch API failed. Check logs.")
     return orgIds
 
@@ -800,7 +800,7 @@ def fetchEntityId(solutionName_for_folder_path, accessToken, entitiesNameList, s
     ]
     }
     data=json.dumps(payload)
-    print(data)
+    
     responseFetchEntityListApi = requests.post(url=urlFetchEntityListApi, headers=headerFetchEntityListApi,data=json.dumps(payload))
     messageArr = ["Entities List Fetch API executed.", "URL  : " + str(urlFetchEntityListApi),
                   "Status : " + str(responseFetchEntityListApi.status_code)]
@@ -975,6 +975,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                         if set(detailsCols) == set(dictDetailsEnv.keys()):
                             solutionName = dictDetailsEnv['observation_solution_name'].encode('utf-8').decode('utf-8') if dictDetailsEnv['observation_solution_name'] else terminatingMessage("\"observation_solution_name\" must not be Empty in \"details\" sheet")
                             dikshaLoginId = dictDetailsEnv['Diksha_loginId'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Diksha_loginId'] else terminatingMessage("\"Diksha_loginId\" must not be Empty in \"details\" sheet")
+                            # ccUserDetails = fetchUserDetails(environment, accessToken, dikshaLoginId)
                             if not "CONTENT_CREATOR" in ccUserDetails[3]:
                                 terminatingMessage("---> "+dikshaLoginId +" is not a CONTENT_CREATOR in Diksha " + environment)
                             ccRootOrgName = ccUserDetails[4]
@@ -2841,19 +2842,21 @@ def fetchSolutionDetailsFromProgramSheet(solutionName_for_folder_path, programFi
         print('Fetch solution Api Success')
         
         solutionName = responseFetchSolutionJson["result"]["name"]
+
         xfile = openpyxl.load_workbook(programFile)
-        # resourceDetailsSheet = xfile.get_sheet_by_name('Resource Details')
-        # rowCountRD = resourceDetailsSheet.max_row
-        # columnCountRD = resourceDetailsSheet.max_column
-        # for row in range(3, rowCountRD + 1):
-        #     if resourceDetailsSheet["A" + str(row)].value == solutionName:
-        #         solutionMainRole = str(resourceDetailsSheet["E" + str(row)].value).strip()
-        #         solutionRolesArray = str(resourceDetailsSheet["F" + str(row)].value).split(",") if str(
-        #             resourceDetailsSheet["E" + str(row)].value).split(",") else []
-        #         if "teacher" in solutionMainRole.strip().lower():
-        #             solutionRolesArray.append("TEACHER")
-        #         solutionStartDate = resourceDetailsSheet["G" + str(row)].value
-        #         solutionEndDate = resourceDetailsSheet["H" + str(row)].value
+        resourceDetailsSheet = xfile.get_sheet_by_name('Resource Details')
+        rowCountRD = resourceDetailsSheet.max_row
+        columnCountRD = resourceDetailsSheet.max_column
+        for row in range(3, rowCountRD + 1):
+            if resourceDetailsSheet["A" + str(row)].value == solutionName:
+                solutionMainRole = str(resourceDetailsSheet["E" + str(row)].value).strip()
+                solutionRolesArray = str(resourceDetailsSheet["F" + str(row)].value).split(",") if str(
+                    resourceDetailsSheet["E" + str(row)].value).split(",") else []
+                print(str(resourceDetailsSheet["E" + str(row)].value).split(","))
+                if "teacher" in solutionMainRole.strip().lower():
+                    solutionRolesArray.append("TEACHER")
+                solutionStartDate = resourceDetailsSheet["G" + str(row)].value
+                solutionEndDate = resourceDetailsSheet["H" + str(row)].value
     return [solutionRolesArray, solutionStartDate, solutionEndDate]
 
 
