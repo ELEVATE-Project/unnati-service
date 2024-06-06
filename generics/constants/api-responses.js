@@ -201,4 +201,13 @@ module.exports = {
 	FORM_UPDATED_SUCCESSFULLY: 'Form updated successfully',
 	FORM_NOT_UPDATED: 'Form updation failed',
 	DATA_FETCHED_SUCCESSFULLY: 'Data fetched successfully',
+	COULD_NOT_UPLOAD_CONTENT: 'Could not upload content',
+	CERTIFICATE_BASE_TEMPLATE_ADDED: 'Certificate base template added',
+	CERTIFICATE_BASE_TEMPLATE_NOT_UPDATED: 'Base template updation failed',
+	CERTIFICATE_BASE_TEMPLATE_UPDATED: 'Base template updated successfully',
+	CERTIFICATE_TEMPLATE_ADDED: 'Template added successfully',
+	CERTIFICATE_TEMPLATE_NOT_UPDATED: 'Template updation failed',
+	CERTIFICATE_TEMPLATE_UPDATED: 'Template updated successfully',
+	BASE_CERTIFICATE_TEMPLATE_NOT_FOUND: 'Base certificate template not found',
+	FILE_UPLOADED: 'File successfully uploaded to cloud',
 }
