@@ -68,7 +68,6 @@ module.exports = class ReportsHelper {
 						},
 					},
 				]
-
 				const projectDetails = await projectQueries.projectDocument(
 					query,
 					[
@@ -83,7 +82,6 @@ module.exports = class ReportsHelper {
 					],
 					[]
 				)
-
 				let tasksReport = {
 					total: 0,
 					overdue: 0,
@@ -103,22 +101,81 @@ module.exports = class ReportsHelper {
 				projectReport[CONSTANTS.common.SUBMITTED_STATUS] = 0
 				projectReport[CONSTANTS.common.INPROGRESS_STATUS] = 0
 				projectReport[CONSTANTS.common.STARTED] = 0
-				if (!projectDetails.length > 0) {
-					return resolve({
-						message: CONSTANTS.apiResponses.REPORTS_DATA_NOT_FOUND,
-						data: {
-							dataAvailable: false,
-							data: {
-								categories: categories,
-								tasks: tasksReport,
-								projects: projectReport,
-							},
-						},
-					})
-				}
 
+				let types = await this.types()
+				let returnTypeInfo = types.data.filter((type) => {
+					if (type.value == reportType) {
+						return type.label
+					}
+				})
+
+				if (!projectDetails.length > 0) {
+					//Initially not supporting pdf report, hence resolving response here. Remove resolve if pdf capability needs to be added
+					// return resolve({
+					//     message: CONSTANTS.apiResponses.REPORTS_DATA_NOT_FOUND,
+					//     data: {
+					//         dataAvailable: false,
+					//         data: {
+					//             categories: categories,
+					//             tasks: tasksReport,
+					//             projects: projectReport
+					//         }
+					//     }
+					// })
+
+					if (getPdf == true) {
+						let reportTaskData = {}
+						Object.keys(tasksReport).map((taskData) => {
+							reportTaskData[UTILS.camelCaseToTitleCase(taskData)] = tasksReport[taskData]
+						})
+
+						let categoryData = {}
+						Object.keys(categories).map((category) => {
+							categoryData[UTILS.camelCaseToTitleCase(category)] = categories[category]
+						})
+
+						let pdfRequest = {
+							reportType: returnTypeInfo[0].label,
+							sharedBy: userName,
+							reportTitle: pdfReportString,
+							categories: categoryData,
+							tasks: reportTaskData,
+							projects: projectReport,
+						}
+						let response = await reportService.entityReport(userToken, pdfRequest)
+						if (response && response.success) {
+							return resolve({
+								success: true,
+								message: CONSTANTS.apiResponses.REPORT_GENERATED,
+								data: {
+									data: {
+										downloadUrl: response.data.pdfUrl,
+									},
+								},
+							})
+						} else {
+							return resolve({
+								message: CONSTANTS.apiResponses.REPORTS_DATA_NOT_FOUND,
+								data: [],
+								success: false,
+							})
+						}
+					} else {
+						return resolve({
+							message: CONSTANTS.apiResponses.REPORTS_DATA_NOT_FOUND,
+							data: {
+								dataAvailable: false,
+								data: {
+									categories: categories,
+									tasks: tasksReport,
+									projects: projectReport,
+								},
+							},
+						})
+					}
+				}
 				await Promise.all(
-					projectDetails.map(async (project) => {
+					projectDetails.map(async function (project) {
 						if (project.categories) {
 							project.categories.map((category) => {
 								if (category.externalId !== '' && categories[category.externalId]) {
@@ -135,6 +192,7 @@ module.exports = class ReportsHelper {
 							})
 							categories['total'] = categories['total'] + project.categories.length
 						}
+
 						//Add data into projectReport and check project overdue.
 						if (project.status == CONSTANTS.common.SUBMITTED_STATUS) {
 							projectReport[CONSTANTS.common.SUBMITTED_STATUS] =
@@ -145,6 +203,7 @@ module.exports = class ReportsHelper {
 						) {
 							//Returns project overdue status true/false.
 							let overdue = _getOverdueStatus(project.endDate)
+
 							if (overdue) {
 								projectReport['overdue'] = projectReport['overdue'] + 1
 							} else {
@@ -158,7 +217,7 @@ module.exports = class ReportsHelper {
 							projectReport[CONSTANTS.common.INPROGRESS_STATUS] +
 							projectReport[CONSTANTS.common.SUBMITTED_STATUS]
 
-						//Get tasks summary deatail of project
+						//Get tasks summary deatail of project.
 						if (project.taskReport) {
 							let keys = Object.keys(project.taskReport)
 							keys.map((key) => {
@@ -175,7 +234,9 @@ module.exports = class ReportsHelper {
 							project.tasks.map((task) => {
 								//consider task only if not deleted
 								if (task.isDeleted == false && task.status != CONSTANTS.common.COMPLETED_STATUS) {
+									//Returns true or false
 									let overdue = _getOverdueStatus(task.endDate)
+
 									if (overdue) {
 										if (tasksReport['overdue']) {
 											tasksReport['overdue'] = tasksReport['overdue'] + 1
@@ -191,6 +252,29 @@ module.exports = class ReportsHelper {
 						)
 					})
 				)
+
+				// if ( UTILS.revertStatusorNot(appVersion) ) {
+
+				//     projectReport[CONSTANTS.common.COMPLETED_STATUS] = projectReport[CONSTANTS.common.SUBMITTED_STATUS];
+				//     projectReport[CONSTANTS.common.NOT_STARTED_STATUS] = projectReport[CONSTANTS.common.STARTED];
+				//     delete projectReport[CONSTANTS.common.SUBMITTED_STATUS];
+				//     delete projectReport[CONSTANTS.common.STARTED];
+				// }
+
+				//Initially not supporting pdf report, hence resolving response here. Remove resolve if pdf capability needs to be added
+				// let response = {
+				//     categories: categories,
+				//     tasks: tasksReport,
+				//     projects: projectReport
+				// }
+				// return resolve({
+				//     success: true,
+				//     message: CONSTANTS.apiResponses.REPORTS_GENERATED,
+				//     data: {
+				//         dataAvailable: true,
+				//         data: response,
+				//     }
+				// });
 
 				if (getPdf == true) {
 					let reportTaskData = {}
@@ -209,6 +293,7 @@ module.exports = class ReportsHelper {
 							return type.label
 						}
 					})
+
 					let pdfRequest = {
 						reportType: returnTypeInfo[0].label,
 						sharedBy: userName,
@@ -235,12 +320,6 @@ module.exports = class ReportsHelper {
 									downloadUrl: response.pdfUrl,
 								},
 							},
-						})
-					} else {
-						return resolve({
-							success: false,
-							message: CONSTANTS.apiResponses.REPORTS_DATA_NOT_FOUND,
-							data: [],
 						})
 					}
 				} else {
