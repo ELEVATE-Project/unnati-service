@@ -142,7 +142,7 @@ module.exports = class ReportsHelper {
 							tasks: reportTaskData,
 							projects: projectReport,
 						}
-						let response = await reportService.entityReport(userToken, pdfRequest)
+						let response = await common_handler_v2.unnatiEntityReportPdfGeneration(pdfRequest, userId)
 						if (response && response.success) {
 							return resolve({
 								success: true,
