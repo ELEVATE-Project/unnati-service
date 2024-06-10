@@ -3754,7 +3754,7 @@ def prepareProjectAndTasksSheets(project_inputFile, projectName_for_folder_path,
         dictProjectDetails = {keysProject[col_index_env]: projectDetailsSheet.cell(row_index_env, col_index_env).value
                               for col_index_env in range(projectDetailsSheet.ncols)}
         title = str(dictProjectDetails["title"]).encode('utf-8').decode('utf-8').strip()
-        externalId = str(dictProjectDetails["projectId"]).strip() + str(millisecond)
+        externalId = str(dictProjectDetails["projectId"]).strip()  + "-" + str(millisecond)
         categories_list = ["teachers", "students", "infrastructure", "community", "educationLeader", "schoolProcess"]
         categories = str(dictProjectDetails["categories"]).encode('utf-8').decode('utf-8').split(",")
         categories_final = ""
@@ -3839,7 +3839,7 @@ def prepareProjectAndTasksSheets(project_inputFile, projectName_for_folder_path,
         # subtaskname = str(dictTasksDetails["Subtask"]).encode('utf-8').decode('utf-8').strip()
 
         if dictTasksDetails['TaskId'] :
-           taskId = str(dictTasksDetails["TaskId"]).encode('utf-8').decode('utf-8').strip()+ str(millisecond)
+           taskId = str(dictTasksDetails["TaskId"]).encode('utf-8').decode('utf-8').strip()  + "-" + str(millisecond)
            taskminNoOfSubmissionsRequired = str(dictTasksDetails["Number of submissions for observation"]).strip()
            sequenceNumber = sequenceNumber + 1
            taskSolutionType = ""
