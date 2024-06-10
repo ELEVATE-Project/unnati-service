@@ -2852,7 +2852,6 @@ def fetchSolutionDetailsFromProgramSheet(solutionName_for_folder_path, programFi
                 solutionMainRole = str(resourceDetailsSheet["E" + str(row)].value).strip()
                 solutionRolesArray = str(resourceDetailsSheet["F" + str(row)].value).split(",") if str(
                     resourceDetailsSheet["E" + str(row)].value).split(",") else []
-                print(str(resourceDetailsSheet["E" + str(row)].value).split(","))
                 if "teacher" in solutionMainRole.strip().lower():
                     solutionRolesArray.append("TEACHER")
                 solutionStartDate = resourceDetailsSheet["G" + str(row)].value
