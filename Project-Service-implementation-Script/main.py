@@ -627,12 +627,12 @@ def getProgramInfo(accessTokenUser, solutionName_for_folder_path, programNameInp
                             getProgramDetails))+"programs in backend","Failed","found"+str(len(
                             getProgramDetails))+"programs ,check logs"]
                         apicheckslog(solutionName_for_folder_path,fileheader)
+                        createAPILog(solutionName_for_folder_path, messageArr)
                         terminatingMessage("Aborting...")
                     elif len(getProgramDetails) > 1:
                         print("Total " + str(len(getProgramDetails)) + " backend programs found with the name : " + programName.lstrip().rstrip())
                         messageArr.append("Total " + str(len(getProgramDetails)) + " backend programs found with the name : " + programName.lstrip().rstrip())
                         createAPILog(solutionName_for_folder_path, messageArr)
-                        terminatingMessage("Aborting...")
                     
                     else:
                         programID = getProgramDetails[0][0]
@@ -2828,10 +2828,10 @@ def fetchSolutionDetailsFromProgramSheet(solutionName_for_folder_path, programFi
         'internal-access-token': config.get(environment, 'internal-access-token')
     }
     payloadFetchSolutionApi = {}
-
-    responseFetchSolutionApiUrl = requests.post(url=urlFetchSolutionApi, headers=headerFetchSolutionApi,
+    responseFetchSolutionApiUrl = requests.get(url=urlFetchSolutionApi, headers=headerFetchSolutionApi,
                                              data=payloadFetchSolutionApi)
     responseFetchSolutionJson = responseFetchSolutionApiUrl.json()
+    print("solution name : " + responseFetchSolutionJson["result"]["name"])
     messageArr = ["Solution Fetch Link.",
                   "solution name : " + responseFetchSolutionJson["result"]["name"],
                   "solution ExternalId : " + responseFetchSolutionJson["result"]["externalId"]]
@@ -2870,7 +2870,7 @@ def prepareProgramSuccessSheet(MainFilePath, solutionName_for_folder_path, progr
     }
     payloadFetchSolutionApi = {}
 
-    responseFetchSolutionApi = requests.post(url=urlFetchSolutionApi, headers=headerFetchSolutionApi,
+    responseFetchSolutionApi = requests.get(url=urlFetchSolutionApi, headers=headerFetchSolutionApi,
                                              data=payloadFetchSolutionApi)
     responseFetchSolutionJson = responseFetchSolutionApi.json()
     messageArr = ["Solution Fetch Link.",
@@ -2891,7 +2891,7 @@ def prepareProgramSuccessSheet(MainFilePath, solutionName_for_folder_path, progr
     }
     payloadFetchSolutionLinkApi = {}
 
-    responseFetchSolutionLinkApi = requests.post(url=urlFetchSolutionLinkApi, headers=headerFetchSolutionLinkApi,
+    responseFetchSolutionLinkApi = requests.get(url=urlFetchSolutionLinkApi, headers=headerFetchSolutionLinkApi,
                                                  data=payloadFetchSolutionLinkApi)
     messageArr = ["Solution Fetch Link.","solution id : " + solutionId,"solution ExternalId : " + solutionExternalId]
     messageArr.append("Upload status code : " + str(responseFetchSolutionLinkApi.status_code))
@@ -3303,7 +3303,6 @@ def createSurveySolution(parentFolder, wbSurvey, accessToken):
                             solutionId = responseCreateSolutionApi["result"]["solutionId"]
                             bodySolutionUpdate = {"creator": dictDetailsEnv['Name_of_the_creator'].encode('utf-8').decode('utf-8')}
                             solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
-
                             return [solutionId, surveySolutionExternalId]
                         else:
                             terminatingMessage("Survey creation Failed, check logs!")
@@ -3755,7 +3754,7 @@ def prepareProjectAndTasksSheets(project_inputFile, projectName_for_folder_path,
         dictProjectDetails = {keysProject[col_index_env]: projectDetailsSheet.cell(row_index_env, col_index_env).value
                               for col_index_env in range(projectDetailsSheet.ncols)}
         title = str(dictProjectDetails["title"]).encode('utf-8').decode('utf-8').strip()
-        externalId = str(dictProjectDetails["projectId"]).strip() + "-" + str(millisecond)
+        externalId = str(dictProjectDetails["projectId"]).strip() + str(millisecond)
         categories_list = ["teachers", "students", "infrastructure", "community", "educationLeader", "schoolProcess"]
         categories = str(dictProjectDetails["categories"]).encode('utf-8').decode('utf-8').split(",")
         categories_final = ""
@@ -3840,7 +3839,7 @@ def prepareProjectAndTasksSheets(project_inputFile, projectName_for_folder_path,
         # subtaskname = str(dictTasksDetails["Subtask"]).encode('utf-8').decode('utf-8').strip()
 
         if dictTasksDetails['TaskId'] :
-           taskId = str(dictTasksDetails["TaskId"]).encode('utf-8').decode('utf-8').strip() + "-" + str(millisecond)
+           taskId = str(dictTasksDetails["TaskId"]).encode('utf-8').decode('utf-8').strip()+ str(millisecond)
            taskminNoOfSubmissionsRequired = str(dictTasksDetails["Number of submissions for observation"]).strip()
            sequenceNumber = sequenceNumber + 1
            taskSolutionType = ""
