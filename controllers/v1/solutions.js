@@ -1011,4 +1011,124 @@ module.exports = class Solutions extends Abstract {
 			}
 		})
 	}
+
+	/**
+     * @api {post} /project/v1/solutions/details/:solutionId
+     * @apiVersion 1.0.0
+     * @apiName Get Project Template or Solution Questions
+     * @apiGroup Solutions
+     * @apiSampleRequest /project/v1/solutions/details/5ff9d50f9259097d48017bbb
+     * @apiHeader {String} X-authenticated-user-token Authenticity token  
+     * @apiUse successBody
+     * @apiUse errorBody
+     * @apiParamExample {json} Request:
+     * {
+     *   "role" : "HM,DEO",
+         "state" : "236f5cff-c9af-4366-b0b6-253a1789766a",
+        "district" : "1dcbc362-ec4c-4559-9081-e0c2864c2931",
+        "school" : "c5726207-4f9f-4f45-91f1-3e9e8e84d824"
+        }
+    * @apiParamExample {json} Response:
+    * {
+        "message": "Successfully fetched details",
+        "status": 200,
+        "result": {
+            "_id": "5f97d2f6bf3a3b1c0116c80a",
+            "status": "published",
+            "isDeleted": false,
+            "categories": [
+                {
+                    "_id": "5f102331665bee6a740714e8",
+                    "name": "Teachers",
+                    "externalId": "teachers"
+                },
+                {
+                    "name": "newCategory",
+                    "externalId": "",
+                    "_id": ""
+                }
+            ],
+            "tasks": [
+                {
+                    "_id": "289d9558-b98f-41cf-81d3-92486f114a49",
+                    "name": "Task 1",
+                    "description": "Task 1 description",
+                    "status": "notStarted",
+                    "isACustomTask": false,
+                    "startDate": "2020-09-29T09:08:41.667Z",
+                    "endDate": "2020-09-29T09:08:41.667Z",
+                    "lastModifiedAt": "2020-09-29T09:08:41.667Z",
+                    "type": "single",
+                    "isDeleted": false,
+                    "attachments": [
+                        {
+                            "name": "download(2).jpeg",
+                            "type": "image/jpeg",
+                            "sourcePath": "projectId/userId/imageName"
+                        }
+                    ],
+                    "remarks": "Tasks completed",
+                    "assignee": "Aman",
+                    "children": [
+                        {
+                            "_id": "289d9558-b98f-41cf-81d3-92486f114a50",
+                            "name": "Task 2",
+                            "description": "Task 2 description",
+                            "status": "notStarted",
+                            "children": [],
+                            "isACustomTask": false,
+                            "startDate": "2020-09-29T09:08:41.667Z",
+                            "endDate": "2020-09-29T09:08:41.667Z",
+                            "lastModifiedAt": "2020-09-29T09:08:41.667Z",
+                            "type": "single",
+                            "isDeleted": false,
+                            "externalId": "task 2",
+                            "isDeleteable": false,
+                            "createdAt": "2020-10-28T05:58:24.907Z",
+                            "updatedAt": "2020-10-28T05:58:24.907Z",
+                            "isImportedFromLibrary": false
+                        }
+                    ],
+                    "externalId": "task 1",
+                    "isDeleteable": false,
+                    "createdAt": "2020-10-28T05:58:24.907Z",
+                    "updatedAt": "2020-10-28T05:58:24.907Z",
+                    "isImportedFromLibrary": false
+                }
+            ],
+            "resources": [],
+            "deleted": false,
+            "__v": 0,
+            "description": "Project 1 description"
+        }
+    } */
+
+	/**
+	 * get solution details
+	 * @method
+	 * @name details
+	 * @param {Object} req - requested data.
+	 * @param {String} req.params._id - solution Id
+	 * @returns {Array}
+	 */
+
+	async details(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let solutionData = await solutionsHelper.details(
+					req.params._id,
+					req.body,
+					req.userDetails.userInformation.userId,
+					req.userDetails.userToken
+				)
+				return resolve(solutionData)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 }

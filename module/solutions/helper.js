@@ -17,6 +17,9 @@ const appsPortalBaseUrl = process.env.APP_PORTAL_BASE_URL + '/'
 const projectQueries = require(DB_QUERY_BASE_PATH + '/projects')
 const filesHelpers = require(MODULES_BASE_PATH + '/files/helper')
 const entitiesService = require(GENERICS_FILES_PATH + '/services/entity-management')
+const projectTemplateQueries = require(DB_QUERY_BASE_PATH + '/projectTemplates')
+const projectTemplatesHelper = require(MODULES_BASE_PATH + '/project/templates/helper')
+const programUsersHelper = require(MODULES_BASE_PATH + '/programUsers/helper')
 
 /**
  * SolutionsHelper
@@ -2982,6 +2985,118 @@ module.exports = class SolutionsHelper {
 					message: CONSTANTS.apiResponses.SOLUTION_DETAILS_FETCHED,
 					success: true,
 					data: solutionData[0],
+				})
+			} catch (error) {
+				return resolve({
+					success: false,
+					status: error.status ? error.status : HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message,
+				})
+			}
+		})
+	}
+
+	/**
+	 * Fetch template observation based on solution Id.
+	 * @method
+	 * @name details
+	 * @param {String} solutionId - Solution Id.
+	 * @returns {Object} - Details of the solution.
+	 */
+
+	static details(solutionId, bodyData = {}, userId = '', userToken = '') {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let solutionData = await solutionsQueries.solutionsDocument({ _id: solutionId }, [
+					'type',
+					'projectTemplateId',
+					'programId',
+				])
+
+				if (!Array.isArray(solutionData) || solutionData.length < 1) {
+					return resolve({
+						message: CONSTANTS.apiResponses.SOLUTION_NOT_FOUND,
+						result: [],
+					})
+				}
+
+				solutionData = solutionData[0]
+				let templateOrQuestionDetails
+				//this will get wether user is targeted to the solution or not based on user Role Information
+				const isSolutionTargeted = await this.isTargetedBasedOnUserProfile(solutionId, bodyData)
+
+				if (solutionData.type === CONSTANTS.common.IMPROVEMENT_PROJECT) {
+					if (!solutionData.projectTemplateId) {
+						throw {
+							message: CONSTANTS.apiResponses.PROJECT_TEMPLATE_ID_NOT_FOUND,
+						}
+					}
+					templateOrQuestionDetails = await projectTemplatesHelper.details(
+						solutionData.projectTemplateId,
+						'',
+						userId,
+						isSolutionTargeted.result.isATargetedSolution ? false : true
+					)
+
+					// await improvementProjectService.getTemplateDetail(
+					//   solutionData.projectTemplateId,
+					//   userToken,
+					//   isSolutionTargeted.result.isATargetedSolution ? false : true
+					// );
+				}
+				//  else if (
+				//   solutionData.type === CONSTANTS.common.OBSERVATION ||
+				//   solutionData.type === CONSTANTS.common.SURVEY
+				// ) {
+				//   templateOrQuestionDetails = await surveyService.getQuestions(
+				// 	solutionData._id,
+				// 	userToken
+				//   );
+				// }
+				else {
+					templateOrQuestionDetails = {
+						status: HTTP_STATUS_CODE.bad_request.status,
+						message: CONSTANTS.apiResponses.SOLUTION_TYPE_INVALID,
+						result: {},
+					}
+				}
+
+				if (solutionData.programId) {
+					// add ["rootOrganisations","requestForPIIConsent","programJoined"] values to response. Based on these values front end calls PII consent
+					let programData = await programQueries.programsDocument(
+						{
+							_id: solutionData.programId,
+						},
+						['rootOrganisations', 'requestForPIIConsent', 'name']
+					)
+					programData = programData[0]
+					templateOrQuestionDetails.data.rootOrganisations = programData.rootOrganisations
+						? programData.rootOrganisations
+						: ''
+					if (programData.hasOwnProperty('requestForPIIConsent')) {
+						templateOrQuestionDetails.data.requestForPIIConsent = programData.requestForPIIConsent
+					}
+					// We are passing programId and programName with the response because front end require these values to show program join pop-up in case of survey link flow
+					// In 6.0.0 release these values only used for solutions of  type survey in front-end side. But Backend is not adding any restrictions based on solution type.
+					// If solution have programId then we will pass below values with the response, irrespective of solution type
+					templateOrQuestionDetails.data.programId = solutionData.programId
+					templateOrQuestionDetails.data.programName = programData.name
+				}
+
+				//Check data present in programUsers collection.
+				//checkForUserJoinedProgramAndConsentShared will returns an object which contain joinProgram and consentShared status
+				let programJoinStatus = await programUsersHelper.checkForUserJoinedProgramAndConsentShared(
+					solutionData.programId,
+					userId
+				)
+				templateOrQuestionDetails.data.programJoined = programJoinStatus.joinProgram
+				templateOrQuestionDetails.data.consentShared = programJoinStatus.consentShared
+
+				return resolve({
+					success: true,
+					message: templateOrQuestionDetails.message,
+					data: templateOrQuestionDetails.data,
+					result: templateOrQuestionDetails.data,
 				})
 			} catch (error) {
 				return resolve({
