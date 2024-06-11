@@ -3001,6 +3001,8 @@ module.exports = class SolutionsHelper {
 	 * @method
 	 * @name details
 	 * @param {String} solutionId - Solution Id.
+	 * @param {Object} bodyData - Body data.
+	 * @param {String} userId - User Id.
 	 * @returns {Object} - Details of the solution.
 	 */
 
