@@ -5,6 +5,8 @@
  * Description : Project templates helper functionality.
  */
 
+const { ObjectId } = require('mongodb')
+
 /**
  * ProjectTemplatesHelper
  * @class
@@ -924,7 +926,7 @@ module.exports = class ProjectTemplatesHelper {
 				// }
 
 				if (templateId) {
-					let validateTemplateId = UTILS.isValidMongoId(templateId)
+					let validateTemplateId = UTILS.isValidMongoId(templateId.toString())
 					if (validateTemplateId) {
 						findQuery['_id'] = templateId
 					} else {
@@ -1003,7 +1005,7 @@ module.exports = class ProjectTemplatesHelper {
 				//     link : solutionsResult.link
 				// }
 				return resolve({
-					success: false,
+					success: true,
 					data: result.data,
 					message: CONSTANTS.apiResponses.PROJECT_TEMPLATE_DETAILS_FETCHED,
 				})

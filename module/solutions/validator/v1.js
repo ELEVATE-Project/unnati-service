@@ -106,6 +106,18 @@ module.exports = (req) => {
 				.isMongoId()
 				.withMessage('Invalid solution ID')
 		},
+		details: function () {
+			req
+				.checkParams('_id')
+				.exists()
+				.withMessage('required solution id')
+				.isMongoId()
+				.withMessage('Invalid solution ID'),
+				req.checkBody('entities').exists().withMessage('required entities')
+			req.checkBody('role').exists().withMessage('roles required')
+			req.checkBody('entityType').exists().withMessage('entityType required')
+			req.checkBody('entityTypeId').exists().withMessage('entityTypeId required')
+		},
 	}
 
 	if (solutionsValidator[req.params.method]) {
