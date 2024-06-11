@@ -3004,7 +3004,7 @@ module.exports = class SolutionsHelper {
 	 * @returns {Object} - Details of the solution.
 	 */
 
-	static details(solutionId, bodyData = {}, userId = '', userToken = '') {
+	static details(solutionId, bodyData = {}, userId = '') {
 		return new Promise(async (resolve, reject) => {
 			try {
 				let solutionData = await solutionsQueries.solutionsDocument({ _id: solutionId }, [
@@ -3037,23 +3037,7 @@ module.exports = class SolutionsHelper {
 						userId,
 						isSolutionTargeted.result.isATargetedSolution ? false : true
 					)
-
-					// await improvementProjectService.getTemplateDetail(
-					//   solutionData.projectTemplateId,
-					//   userToken,
-					//   isSolutionTargeted.result.isATargetedSolution ? false : true
-					// );
-				}
-				//  else if (
-				//   solutionData.type === CONSTANTS.common.OBSERVATION ||
-				//   solutionData.type === CONSTANTS.common.SURVEY
-				// ) {
-				//   templateOrQuestionDetails = await surveyService.getQuestions(
-				// 	solutionData._id,
-				// 	userToken
-				//   );
-				// }
-				else {
+				} else {
 					templateOrQuestionDetails = {
 						status: HTTP_STATUS_CODE.bad_request.status,
 						message: CONSTANTS.apiResponses.SOLUTION_TYPE_INVALID,

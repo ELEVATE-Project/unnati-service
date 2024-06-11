@@ -1118,8 +1118,7 @@ module.exports = class Solutions extends Abstract {
 				let solutionData = await solutionsHelper.details(
 					req.params._id,
 					req.body,
-					req.userDetails.userInformation.userId,
-					req.userDetails.userToken
+					req.userDetails.userInformation.userId
 				)
 				return resolve(solutionData)
 			} catch (error) {
