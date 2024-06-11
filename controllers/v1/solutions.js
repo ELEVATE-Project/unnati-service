@@ -1022,11 +1022,16 @@ module.exports = class Solutions extends Abstract {
      * @apiUse successBody
      * @apiUse errorBody
      * @apiParamExample {json} Request:
-     * {
-     *   "role" : "HM,DEO",
-         "state" : "236f5cff-c9af-4366-b0b6-253a1789766a",
-        "district" : "1dcbc362-ec4c-4559-9081-e0c2864c2931",
-        "school" : "c5726207-4f9f-4f45-91f1-3e9e8e84d824"
+        {
+            "entityType" : "block",
+            "entityTypeId" : "5f32d8228e0dc8312404056e",
+            "entities" : [
+                "5fd1b52ab53a6416aaeefc80",
+                "5fd098e2e049735a86b748ac",
+                "5fd1b52ab53a6416aaeefc83",
+                "5fd1b52ab53a6416aaeefb20"
+            ],
+            "role" : "BEO,HM"
         }
     * @apiParamExample {json} Response:
     * {
