@@ -1107,9 +1107,10 @@ module.exports = class Solutions extends Abstract {
 	 * get solution details
 	 * @method
 	 * @name details
-	 * @param {Object} req - requested data.
 	 * @param {String} req.params._id - solution Id
-	 * @returns {Array}
+	 * @param {Object} req.body - requested data.
+	 * @param {String} req.userDetails.userInformation.userId - User Id.
+	 * @returns {Object} result.
 	 */
 
 	async details(req) {
