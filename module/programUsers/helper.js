@@ -19,8 +19,8 @@ module.exports = class ProgramUsersHelper {
 	 * check if user joined a program or not and consentShared
 	 * @method
 	 * @name checkForUserJoinedProgramAndConsentShared
-	 * @param {String} programId
-	 * @param {String} userId
+	 * @param {String} programId - Program Id.
+	 * @param {String} userId - User Id
 	 * @returns {Object} result.
 	 */
 
