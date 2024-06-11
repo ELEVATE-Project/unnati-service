@@ -926,7 +926,6 @@ module.exports = class ProjectTemplatesHelper {
 				// }
 
 				if (templateId) {
-					console.log(templateId)
 					let validateTemplateId = UTILS.isValidMongoId(templateId.toString())
 					if (validateTemplateId) {
 						findQuery['_id'] = templateId
