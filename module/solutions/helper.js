@@ -566,7 +566,6 @@ module.exports = class SolutionsHelper {
 				let matchQuery = {
 					isDeleted: false,
 				}
-
 				// if (type == CONSTANTS.common.SURVEY) {
 				//   matchQuery["status"] = {
 				//     $in: [CONSTANTS.common.ACTIVE_STATUS, CONSTANTS.common.INACTIVE],
@@ -640,7 +639,6 @@ module.exports = class SolutionsHelper {
 						$arrayElemAt: ['$totalCount.count', 0],
 					},
 				}
-
 				let solutionDocuments = await solutionsQueries.getAggregate([
 					{ $match: matchQuery },
 					{
@@ -689,7 +687,6 @@ module.exports = class SolutionsHelper {
 				if (!queryData.success) {
 					return resolve(queryData)
 				}
-
 				let matchQuery = queryData.data
 
 				if (type === '' && subType === '') {
@@ -1164,7 +1161,7 @@ module.exports = class SolutionsHelper {
 		return new Promise(async (resolve, reject) => {
 			try {
 				let userPrivateProgram = {}
-				let dateFormat = gen.utils.epochTime()
+				let dateFormat = UTILS.epochTime()
 				let parentSolutionInformation = {}
 
 				createADuplicateSolution = UTILS.convertStringToBoolean(createADuplicateSolution)
@@ -2235,7 +2232,7 @@ module.exports = class SolutionsHelper {
 	 * @returns {Object} List of library projects.
 	 */
 
-	static projects(query, pageSize, pageNo, searchQuery, fieldsArray, groupBy = '') {
+	static projects(query, searchQuery, fieldsArray, groupBy = '') {
 		return new Promise(async (resolve, reject) => {
 			try {
 				let matchQuery = {
@@ -2271,7 +2268,10 @@ module.exports = class SolutionsHelper {
 					{
 						$facet: {
 							totalCount: [{ $count: 'count' }],
-							data: [{ $skip: pageSize * (pageNo - 1) }, { $limit: pageSize }],
+							data: [
+								{ $skip: CONSTANTS.common.DEFAULT_PAGE_SIZE * (CONSTANTS.common.DEFAULT_PAGE_NO - 1) },
+								{ $limit: CONSTANTS.common.DEFAULT_PAGE_SIZE },
+							],
 						},
 					},
 					{
@@ -2354,7 +2354,7 @@ module.exports = class SolutionsHelper {
 	 * @returns {Object}
 	 */
 
-	static assignedProjects(userId, pageSize, pageNo, search, filter) {
+	static assignedProjects(userId, search, filter) {
 		return new Promise(async (resolve, reject) => {
 			try {
 				let query = {
@@ -2365,7 +2365,7 @@ module.exports = class SolutionsHelper {
 				let searchQuery = []
 
 				if (search !== '') {
-					searchQuery = [{ name: new RegExp(search, 'i') }, { description: new RegExp(search, 'i') }]
+					searchQuery = [{ title: new RegExp(search, 'i') }, { description: new RegExp(search, 'i') }]
 				}
 
 				if (filter && filter !== '') {
@@ -2382,7 +2382,7 @@ module.exports = class SolutionsHelper {
 						query['referenceFrom'] = CONSTANTS.common.LINK
 					}
 				}
-				let projects = await this.projects(query, pageSize, pageNo, searchQuery, [
+				let projects = await this.projects(query, searchQuery, [
 					'name',
 					'title',
 					'description',
@@ -2497,12 +2497,12 @@ module.exports = class SolutionsHelper {
 	 * @returns {Object} - Details of the solution.
 	 */
 
-	static assignedUserSolutions(solutionType, userId, search, filter, pageSize, pageNo, surveyReportPage = '') {
+	static assignedUserSolutions(solutionType, userId, search, filter) {
 		return new Promise(async (resolve, reject) => {
 			try {
 				let userAssignedSolutions = {}
 				if (solutionType === CONSTANTS.common.IMPROVEMENT_PROJECT) {
-					userAssignedSolutions = await this.assignedProjects(userId, pageSize, pageNo, search, filter)
+					userAssignedSolutions = await this.assignedProjects(userId, search, filter)
 				} else {
 					throw {
 						status: HTTP_STATUS_CODE.bad_request.status,
@@ -2541,16 +2541,13 @@ module.exports = class SolutionsHelper {
 	) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				let assignedSolutions = await this.assignedUserSolutions(
-					solutionType,
-					userId,
-					search,
-					filter,
-					pageSize,
-					pageNo,
-					surveyReportPage
-				)
-
+				let assignedSolutions = await this.assignedUserSolutions(solutionType, userId, search, filter)
+				if (!assignedSolutions.success) {
+					throw {
+						status: HTTP_STATUS_CODE.bad_request.status,
+						message: assignedSolutions.message,
+					}
+				}
 				let totalCount = 0
 				let mergedData = []
 				let solutionIds = []
@@ -2622,36 +2619,29 @@ module.exports = class SolutionsHelper {
 						solutionType,
 						'',
 						'',
-						// CONSTANTS.common.DEFAULT_PAGE_SIZE,
-						pageSize,
-						// CONSTANTS.common.DEFAULT_PAGE_NO,
-						pageNo,
+						CONSTANTS.common.DEFAULT_PAGE_SIZE,
+						CONSTANTS.common.DEFAULT_PAGE_NO,
 						search
 					)
 				}
-
 				if (targetedSolutions.success) {
 					if (targetedSolutions.data.data && targetedSolutions.data.data.length > 0) {
 						totalCount += targetedSolutions.data.count
 
-						if (mergedData.length !== pageSize) {
-							targetedSolutions.data.data.forEach((targetedSolution) => {
-								targetedSolution.solutionId = targetedSolution._id
-								targetedSolution._id = ''
-								targetedSolution['creator'] = targetedSolution.creator ? targetedSolution.creator : ''
+						// removing if condition check here because if mergedData.length == pageSize, solutions wont get added to mergedData though we have data in targetedSoltions,
+						// if (mergedData.length !== pageSize) {
+						targetedSolutions.data.data.forEach((targetedSolution) => {
+							targetedSolution.solutionId = targetedSolution._id
+							targetedSolution._id = ''
+							targetedSolution['creator'] = targetedSolution.creator ? targetedSolution.creator : ''
 
-								if (solutionType === CONSTANTS.common.SURVEY) {
-									targetedSolution.isCreator = false
-								}
-
-								mergedData.push(targetedSolution)
-								delete targetedSolution.type
-								delete targetedSolution.externalId
-							})
-						}
+							mergedData.push(targetedSolution)
+							delete targetedSolution.type
+							delete targetedSolution.externalId
+						})
+						// }
 					}
 				}
-
 				if (mergedData.length > 0) {
 					let startIndex = pageSize * (pageNo - 1)
 					let endIndex = startIndex + pageSize
