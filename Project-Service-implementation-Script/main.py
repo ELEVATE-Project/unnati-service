@@ -409,7 +409,6 @@ def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
                         userDetails = [""] #mocking this API call as we have to work more in the user service to enable user search
                         
                         # OrgName=userDetails[4]
-                        # orgIds=fetchOrgId(environment, accessToken, parentFolder, OrgName)
                         creatorKeyCloakId = userDetails[0]
                         # creatorName = userDetails[2]
                         
@@ -496,9 +495,6 @@ def createFileStructForProgram(programFile):
     return returnPathStr
 
 # Function create File structure for Solutions
-
-
-
 def createFileStructre(MainFilePath, addObservationSolution):
     if not os.path.isdir(MainFilePath + '/SolutionFiles'):
         os.mkdir(MainFilePath + '/SolutionFiles')
@@ -620,7 +616,6 @@ def getProgramInfo(accessTokenUser, solutionName_for_folder_path, programNameInp
                     isAPrivateProgram = eachPgm['isAPrivateProgram']
                     getProgramDetails.append([programID, programExternalId, programDescription, isAPrivateProgram])
                     if len(getProgramDetails) == 0:
-                        print("Total " + str(len(getProgramDetails)) + " backend programs found with the name : " + programName.lstrip().rstrip())
                         messageArr.append("Total " + str(len(getProgramDetails)) + " backend programs found with the name : " + programName.lstrip().rstrip())
                         createAPILog(solutionName_for_folder_path, messageArr)
                         fileheader = ["program find api is running","found"+str(len(
@@ -630,7 +625,6 @@ def getProgramInfo(accessTokenUser, solutionName_for_folder_path, programNameInp
                         createAPILog(solutionName_for_folder_path, messageArr)
                         terminatingMessage("Aborting...")
                     elif len(getProgramDetails) > 1:
-                        print("Total " + str(len(getProgramDetails)) + " backend programs found with the name : " + programName.lstrip().rstrip())
                         messageArr.append("Total " + str(len(getProgramDetails)) + " backend programs found with the name : " + programName.lstrip().rstrip())
                         createAPILog(solutionName_for_folder_path, messageArr)
                     
@@ -674,6 +668,7 @@ def createAPILog(solutionName_for_folder_path, messageArr):
         API_log.write("\n")
     API_log.close()
 
+# Logs API check messages to a CSV file, creating the file with a header if it doesn't already exist.
 def apicheckslog(solutionName_for_folder_path, messageArr):
     file_exists = solutionName_for_folder_path + '/apiHitLogs/apiLogs.csv'
     # global fileheader
@@ -687,6 +682,7 @@ def apicheckslog(solutionName_for_folder_path, messageArr):
         writer = csv.writer(file, quoting=csv.QUOTE_NONNUMERIC, delimiter=',',lineterminator='\n')
         writer.writerows([messageArr])
 
+# Validates an email address using a regular expression.
 def checkEmailValidation(email):
     if (re.search(regex, email)):
         return True
@@ -727,61 +723,12 @@ def fetchUserDetails(environment, accessToken, dikshaId):
         terminatingMessage("User fetch API failed. Check logs.")
     return [userKeycloak, userName, firstName,roledetails,rootOrgName,rootOrgId]
 
-
-# fetch org Ids 
-def fetchOrgId(environment, accessToken, parentFolder, OrgName):
-    url = config.get(environment, 'elevateuserhost') + config.get(environment, 'fetchOrgDetails')
-    messageArr = ["Org search API called."]
-    headers = {'Content-Type': 'application/json',
-               'Authorization': config.get(environment, 'Authorization'),
-               'x-authenticated-user-token': accessToken}
-    orgIds = []
-    organisations = str(OrgName).split(",")
-    for org in organisations:
-        orgBody = {"id": "",
-                   "params": {
-                       "status": "success"
-                   },
-                   "request": {
-                       "filters": {
-                           "orgName": str(org).strip()
-                       }
-                   }}
-
-        responseOrgSearch = requests.request("POST", url, headers=headers, data=json.dumps(orgBody))
-        if responseOrgSearch.status_code == 200:
-            responseOrgSearch = responseOrgSearch.json()
-            if responseOrgSearch['result']['response']['content']:
-                orgId = responseOrgSearch['result']['response']['content'][0]['id']
-                orgIds.append(orgId)
-                messageArr.append("orgApi : " + str(url))
-                messageArr.append("orgBody : " + str(orgBody))
-                messageArr.append("orgAPI response: " + str(responseOrgSearch))
-                messageArr.append("orgIds : " + str(orgIds))
-                
-            
-            else:
-                messageArr.append("orgApi : " + str(url))
-                messageArr.append("orgBody : " + str(orgBody))
-                messageArr.append("orgAPI response: " + str(responseOrgSearch))
-                createAPILog(parentFolder, messageArr)
-                terminatingMessage("Given Organisation/ State tenant is not present in DIKSHA platform.")
-                
-        else:
-            messageArr.append("orgApi : " + str(url))
-            messageArr.append("headers : " + str(headers))
-            messageArr.append("orgBody : " + str(orgBody))
-            createAPILog(parentFolder, messageArr)
-            terminatingMessage("Organisation/ State tenant fetch API failed. Check logs.")
-    return orgIds
-
-
 # Print message and terminate the program
 def terminatingMessage(msg):
     print(msg)
     sys.exit()
 
-
+# Define a function to fetch entity IDs
 def fetchEntityId(solutionName_for_folder_path, accessToken, entitiesNameList, scopeEntityType):
     urlFetchEntityListApi = config.get(environment, 'elevateentityhost')+config.get(environment, 'searchForLocation')
     headerFetchEntityListApi = {
@@ -836,6 +783,7 @@ def fetchEntityId(solutionName_for_folder_path, accessToken, entitiesNameList, s
         createAPILog(solutionName_for_folder_path, messageArr)
         terminatingMessage("---> Error in location search.")
 
+# Fetches entity IDs based on the given entity names and scope entity type.
 def fetchScopeRole(solutionName_for_folder_path, accessToken, roleNameList):
     urlFetchRolesListApi = config.get(environment, 'INTERNAL_KONG_IP') + config.get(environment, 'listOfRolesApi')
     headerFetchRolesListApi = {
@@ -894,6 +842,7 @@ def fetchScopeRole(solutionName_for_folder_path, accessToken, roleNameList):
     return listOfFoundRoles
 
 
+# Function to validate sheets in an Excel file
 def validateSheets(filePathAddObs, accessToken, parentFolder):
     global criteriaLevelsReport, scopeRoles, criteriaLevels, scopeEntityType , ccRootOrgName , ccRootOrgId
     criteriaLevels = list()
@@ -1454,6 +1403,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                         Authoriseddesifnation1 = dictDetailsEnv['Authorised Designation - 1'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Authorised Designation - 1'] else terminatingMessage("\"Authorised Designation - 1\" must not be Empty in \"Certificate details\" sheet")
 
     return typeofSolutin
+
 # function to upload criteria 
 def criteriaUpload(solutionName_for_folder_path, wbObservation, millisAddObs, accessToken, tabName, projectDrivenFlag):
     criteriaColNames = ["criteriaId", "criteria_name"]
@@ -1588,7 +1538,7 @@ def criteriaUpload(solutionName_for_folder_path, wbObservation, millisAddObs, ac
         createAPILog(solutionName_for_folder_path, messageArr)
         terminatingMessage("Criteria Upload failed.")
 
-
+# Define the function frameWorkUpload
 def frameWorkUpload(solutionName_for_folder_path, wbObservation, millisAddObs, accessToken):
     global criteriaLevelsReport
     dateTime = datetime.now()
@@ -1748,111 +1698,7 @@ def frameWorkUpload(solutionName_for_folder_path, wbObservation, millisAddObs, a
               'status_code response from api is ' + str(responseFrameworkUploadApi.status_code))
         sys.exit()
 
-
-def themesUpload(solutionName_for_folder_path, wbObservation, millisAddObs, accessToken, frameworkExternalId,obsWORubWS):
-    global dictCritLookUp
-    with open(solutionName_for_folder_path + '/criteriaUpload/uploadInternalIdsSheet.csv', 'r',encoding='utf-8') as criteriaInternalFile:
-        criteriaInternalReader = csv.DictReader(criteriaInternalFile)
-        for crit in criteriaInternalReader:
-            dictCritLookUp[crit['Criteria External Id']] = crit['Criteria Internal Id']
-    if obsWORubWS:
-        print("Themes Observation without rubrics with scores")
-        themeUploadFieldnames = ["theme", "aoi", "indicators", "criteriaInternalId"]
-        themesUploadCsv = dict()
-        for dictCritLookUpKey, dictCritLookUpValue in dictCritLookUp.items():
-            themesUploadCsv['theme'] = "Observation Theme" + "###" + "OB" + "###40"
-            themesUploadCsv['aoi'] = ""
-            themesUploadCsv['indicators'] = ""
-            themesUploadCsv['criteriaInternalId'] = dictCritLookUpValue + "###40"
-            themeFilePath = solutionName_for_folder_path + '/themeUpload/'
-            file_exists = os.path.isfile(solutionName_for_folder_path + '/themeUpload/uploadSheet.csv')
-
-            if not os.path.exists(themeFilePath):
-                os.mkdir(themeFilePath)
-            with open(solutionName_for_folder_path + '/themeUpload/uploadSheet.csv', 'a',encoding='utf-8') as themeUploadFile:
-                writerthemeUpload = csv.DictWriter(themeUploadFile, fieldnames=list(themeUploadFieldnames),
-                                                   lineterminator='\n')
-                if not file_exists:
-                    writerthemeUpload.writeheader()
-                writerthemeUpload.writerow(themesUploadCsv)
-
-    else:
-        frameWorkSheet = wbObservation.sheet_by_name('framework')
-        keys = [frameWorkSheet.cell(1, col_index).value for col_index in range(frameWorkSheet.ncols)]
-        themeUploadFieldnames = ["theme", "aoi", "indicators", "criteriaInternalId"]
-        themesUploadCsv = dict()
-        for row_index in range(2, frameWorkSheet.nrows):
-            dictCriteria = {keys[col_index]: frameWorkSheet.cell(row_index, col_index).value for col_index in
-                            range(frameWorkSheet.ncols)}
-            themesUploadCsv['theme'] = dictCriteria['Domain Name'].encode('utf-8').decode('utf-8') + "###" + dictCriteria['Domain ID'] + "###40"
-            themesUploadCsv['aoi'] = ""
-            themesUploadCsv['indicators'] = ""
-            themesUploadCsv['criteriaInternalId'] = dictCritLookUp[dictCriteria['Criteria ID'].strip() + '_' + str(
-                millisAddObs)] + "###40"  # if dictCriteria['Criteria ID'] else  ""
-            themeFilePath = solutionName_for_folder_path + '/themeUpload/'
-            file_exists = os.path.isfile(solutionName_for_folder_path + '/themeUpload/uploadSheet.csv')
-
-            if not os.path.exists(themeFilePath):
-                os.mkdir(themeFilePath)
-            with open(solutionName_for_folder_path + '/themeUpload/uploadSheet.csv', 'a',encoding='utf-8') as themeUploadFile:
-                writerthemeUpload = csv.DictWriter(themeUploadFile, fieldnames=list(themeUploadFieldnames),
-                                                   lineterminator='\n')
-                if not file_exists:
-                    writerthemeUpload.writeheader()
-                writerthemeUpload.writerow(themesUploadCsv)
-
-    urlThemesUploadApi = config.get(environment, 'INTERNAL_KONG_IP')+config.get(environment, 'themeUploadApiUrl') + frameworkExternalId
-    headerThemesUploadApi = {'Authorization': config.get(environment, 'Authorization'),
-                             'X-authenticated-user-token': accessToken,
-                             'X-Channel-id': config.get(environment, 'X-Channel-id')}
-    filesThemes = {'themes': open(solutionName_for_folder_path + '/themeUpload/uploadSheet.csv', 'rb')}
-    responseThemeUploadApi = requests.post(url=urlThemesUploadApi, headers=headerThemesUploadApi, files=filesThemes)
-    messageArr = ["Themes upload sheet prepared.",
-                  "File path : " + solutionName_for_folder_path + '/themeUpload/uploadSheet.csv',
-                  "Theme upload to framework API called.", "URL : " + urlThemesUploadApi,
-                  "Status code : " + str(responseThemeUploadApi.status_code)]
-    createAPILog(solutionName_for_folder_path, messageArr)
-    if responseThemeUploadApi.status_code == 200:
-        print('Theme UploadApi Success')
-        with open(solutionName_for_folder_path + '/themeUpload/uploadInternalIdsSheet.csv', 'w+',encoding='utf-8') as criteriaRes:
-            criteriaRes.write(responseThemeUploadApi.text)
-    else:
-        messageArr = ["Themes upload failed.", "Response : " + str(responseThemeUploadApi.text)]
-        createAPILog(solutionName_for_folder_path, messageArr)
-        terminatingMessage("Theme upload failed.")
-
-
-def createSolutionFromFramework(solutionName_for_folder_path, accessToken, frameworkExternalId):
-    urlCreateSolutionApi = config.get(environment, 'INTERNAL_KONG_IP')+ config.get(environment, 'solutionCreationApiUrl')
-    headerCreateSolutionApi = {
-        'Content-Type': config.get(environment, 'Content-Type'),
-        'Authorization': config.get(environment, 'Authorization'),
-        'X-authenticated-user-token': accessToken,
-        'X-Channel-id': config.get(environment, 'X-Channel-id')
-    }
-    queryparamsCreateSolutionApi = '?frameworkId=' + str(frameworkExternalId) + '&entityType=' + entityType
-    responseCreateSolutionApi = requests.post(url=urlCreateSolutionApi + queryparamsCreateSolutionApi,
-                                              headers=headerCreateSolutionApi)
-
-    messageArr = ["Solution Created from Framework.",
-                  "URL : " + str(urlCreateSolutionApi + queryparamsCreateSolutionApi),
-                  "Status Code : " + str(responseCreateSolutionApi.status_code),
-                  "Response : " + str(responseCreateSolutionApi.text)]
-    createAPILog(solutionName_for_folder_path, messageArr)
-    messageArr = []
-    if responseCreateSolutionApi.status_code == 200:
-        responseCreateSolutionApi = responseCreateSolutionApi.json()
-        solutionId = responseCreateSolutionApi['result']['templateId']
-        messageArr.append("Parent Solution Generated : " + str(solutionId))
-        print("Parent Solution Generated : " + str(solutionId))
-        createAPILog(solutionName_for_folder_path, messageArr)
-    else:
-        messageArr.append("Solution from framework api failed.")
-        createAPILog(solutionName_for_folder_path, messageArr)
-        terminatingMessage("Solution from framework api failed.")
-    return solutionId
-
-
+# Define a function to update a solution
 def solutionUpdate(solutionName_for_folder_path, accessToken, solutionId, bodySolutionUpdate):
     solutionUpdateApi = config.get(environment, 'elevateprojecthost') + config.get(environment, 'solutionUpdateApi') + str(solutionId)
     headerUpdateSolutionApi = {
@@ -2613,7 +2459,7 @@ def questionUpload(filePathAddObs, solutionName_for_folder_path, frameworkExtern
         createAPILog(solutionName_for_folder_path, messageArr)
         terminatingMessage("Question Upload failed.")
 
-
+# Define a function to upload criteria rubrics
 def uploadCriteriaRubrics(solutionName_for_folder_path, wbObservation, millisAddObs, accessToken, frameworkExternalId,
                           withRubricsFlag):
     if withRubricsFlag:
@@ -2712,32 +2558,7 @@ def uploadCriteriaRubrics(solutionName_for_folder_path, wbObservation, millisAdd
         createAPILog(solutionName_for_folder_path, messageArr)
         terminatingMessage("Criteria Rubric upload Failed.")
 
-
-def fetchSolutionCriteria(solutionName_for_folder_path, observationId, accessToken):
-    url = config.get(environment, 'INTERNAL_KONG_IP') + config.get(environment, 'ferchSolutionCriteria') + observationId
-
-    headers = {
-        'Authorization': config.get(environment, 'Authorization'),
-        'X-authenticated-user-token': accessToken,
-        'internal-access-token': config.get(environment, 'internal-access-token')
-    }
-
-    response = requests.request("POST", url, headers=headers)
-    messageArr = ["Criteria solution fetch API called.", "Status Code  : " + str(response.status_code), "URL : " + url]
-    createAPILog(solutionName_for_folder_path, messageArr)
-
-    os.mkdir(solutionName_for_folder_path + "/solutionCriteriaFetch/")
-    if response.status_code == 200:
-        print("Solution criteria fetched.")
-        with open(solutionName_for_folder_path + "/solutionCriteriaFetch/solutionCriteriaDetails.csv",
-                  'w+',encoding='utf-8') as solutionCriteriaFetch:
-            solutionCriteriaFetch.write(response.text)
-    else:
-        messageArr = ["Criteria solution fetch API failed.", "Response  : " + str(response.text)]
-        createAPILog(solutionName_for_folder_path, messageArr)
-        terminatingMessage("Solution criteria fetch failed. Status Code : " + str(response.status_code))
-
-
+# Function to upload theme rubrics
 def uploadThemeRubrics(solutionName_for_folder_path, wbObservation, accessToken, frameworkExternalId, withRubricsFlag):
     themeRubricUploadFieldnames = ["externalId", "name", "weightage"]
     themeRubricsFilePath = os.path.join(solutionName_for_folder_path, "themeRubrics/")
@@ -2815,7 +2636,7 @@ def uploadThemeRubrics(solutionName_for_folder_path, wbObservation, accessToken,
             'theme rubric upload api failed in ' + environment + ' status_code response from api is ' + str(
                 responseThemeRubricUploadApi.status_code))
 
-
+# Function to fetch solution details from program sheet
 def fetchSolutionDetailsFromProgramSheet(solutionName_for_folder_path, programFile, solutionId, accessToken):
     global solutionRolesArray, solutionStartDate, solutionEndDate
     urlFetchSolutionApi = config.get(environment, 'elevateprojecthost') + config.get(environment, 'fetchSolutionDoc') + solutionId
@@ -2858,7 +2679,7 @@ def fetchSolutionDetailsFromProgramSheet(solutionName_for_folder_path, programFi
                 solutionEndDate = resourceDetailsSheet["H" + str(row)].value
     return [solutionRolesArray, solutionStartDate, solutionEndDate]
 
-
+# Function to prepare program success sheet
 def prepareProgramSuccessSheet(MainFilePath, solutionName_for_folder_path, programFile, solutionExternalId, solutionId,accessToken):
     urlFetchSolutionApi = config.get(environment, 'elevateprojecthost') + config.get(environment, 'fetchSolutionDoc') + solutionId
     headerFetchSolutionApi = {
@@ -2952,7 +2773,7 @@ def prepareProgramSuccessSheet(MainFilePath, solutionName_for_folder_path, progr
 
 
 
-
+# Function to prepare program success sheet
 def prepareProgramSuccessProjectSheet(MainFilePath, solutionName_for_folder_path, programFile, accessToken):
     # Check if the success sheet already exists
     success_sheet_path = os.path.join(MainFilePath, str(programFile).replace(".xlsx", "") + '-SuccessSheet.xlsx')
@@ -2964,6 +2785,7 @@ def prepareProgramSuccessProjectSheet(MainFilePath, solutionName_for_folder_path
         xfile.save(success_sheet_path)
         print("Program success sheet is created")
 
+# Function to prepare program success sheet
 def prepareProgramSuccessSheetcsv(MainFilePath, solutionName_for_folder_path, programFile, solutionId,accessToken):
     urlFetchSolutionApi = config.get(environment, 'elevateprojecthost') + config.get(environment, 'fetchSolutionDoc') + solutionId
     headerFetchSolutionApi = {
@@ -3054,7 +2876,8 @@ def prepareProgramSuccessSheetcsv(MainFilePath, solutionName_for_folder_path, pr
         messageArr.append("Response : " + str(responseFetchSolutionLinkApi.text))
         createAPILog(solutionName_for_folder_path, messageArr)
         sys.exit()
-
+        
+# Prepares a success sheet by updating and copying an existing Excel workbook with additional details.
 def prepareSuccessSheet(solutionName_for_folder_path, filePathAddObs, observationExternalId, millisAddObs):
     updateSuccessWorkBook = xlrd.open_workbook(filePathAddObs, on_demand=True)
     updateWbNumberOfSheets = updateSuccessWorkBook.nsheets
@@ -3174,41 +2997,7 @@ def prepareSuccessSheet(solutionName_for_folder_path, filePathAddObs, observatio
     workbookXlsxWriter.close()
     print("Success sheet prepared.")
 
-
-def createChild(solutionName_for_folder_path, observationExternalId, accessToken):
-    childObservationExternalId = str(observationExternalId + "_CHILD")
-    urlSol_prog_mapping = config.get(environment, 'INTERNAL_KONG_IP') + config.get(environment,'solutionToprogramMAppingApiUrl') + "?solutionId=" + observationExternalId + "&entityType=" + entityType
-    
-    payloadSol_prog_mapping = {
-        "externalId": childObservationExternalId,
-        "name": solutionName.lstrip().rstrip(),
-        "description": solutionDescription.lstrip().rstrip(),
-        "programExternalId": programExternalId
-    }
-    headersSol_prog_mapping = {'Authorization': config.get(environment, 'Authorization'),
-                               'X-authenticated-user-token': accessToken,
-                               'Content-Type': config.get(environment, 'Content-Type')}
-    responseSol_prog_mapping = requests.request("POST", urlSol_prog_mapping, headers=headersSol_prog_mapping,
-                                                data=json.dumps(payloadSol_prog_mapping))
-    messageArr = ["Create child API called.", "URL : " + urlSol_prog_mapping,
-                  "Status code : " + str(responseSol_prog_mapping.status_code),
-                  "Response : " + responseSol_prog_mapping.text, "body : " + str(payloadSol_prog_mapping)]
-    if responseSol_prog_mapping.status_code == 200:
-        print("Solution mapped to program : " + programName)
-        print("Child solution : " + childObservationExternalId)
-
-        responseSol_prog_mapping = responseSol_prog_mapping.json()
-        child_id = responseSol_prog_mapping['result']['_id']
-        createAPILog(solutionName_for_folder_path, messageArr)
-        return [child_id, childObservationExternalId]
-    else:
-        print("Unable to create child solution")
-
-        messageArr.append("Unable to create child solution")
-        createAPILog(solutionName_for_folder_path, messageArr)
-        return False
-
-
+# Function to create survey solution
 def createSurveySolution(parentFolder, wbSurvey, accessToken):
     sheetNames1 = wbSurvey.sheet_names()
     for sheetEnv in sheetNames1:
@@ -3306,348 +3095,7 @@ def createSurveySolution(parentFolder, wbSurvey, accessToken):
                         else:
                             terminatingMessage("Survey creation Failed, check logs!")
 
-# upload survey questions 
-def uploadSurveyQuestions(parentFolder, wbSurvey, addObservationSolution, accessToken, surveySolutionExternalId, surveyParentSolutionId,millisecond):
-    sheetNam = wbSurvey.sheet_names()
-    stDt = None
-    enDt = None
-    shCnt = 0
-    for i in sheetNam:
-        if i.strip().lower() == 'questions':
-            sheetNam1 = wbSurvey.sheets()[shCnt]
-        shCnt = shCnt + 1
-    dataSort = [sheetNam1.row_values(i) for i in range(sheetNam1.nrows)]
-    labels = dataSort[1]
-    dataSort = dataSort[2:]
-    dataSort.sort(key=lambda x: int(x[0]))
-    openWorkBookSort1 = xl_copy(wbSurvey)
-    sheet1 = openWorkBookSort1.add_sheet('questions_sequence_sorted')
-
-    for idx, label in enumerate(labels):
-        sheet1.write(0, idx, label)
-
-    for idx_r, row in enumerate(dataSort):
-        for idx_c, value in enumerate(row):
-            sheet1.write(idx_r + 1, idx_c, value)
-    newFileName = str(addObservationSolution)
-    openWorkBookSort1.save(newFileName)
-    openNewFile = xlrd.open_workbook(newFileName, on_demand=True)
-    wbSurvey = openNewFile
-    sheetNames = wbSurvey.sheet_names()
-    for sheet2 in sheetNames:
-        if sheet2.strip().lower() == 'questions_sequence_sorted':
-            questionsList = []
-            questionsSheet = wbSurvey.sheet_by_name(sheet2.lower())
-            keys2 = [questionsSheet.cell(0, col_index2).value for col_index2 in
-                     range(questionsSheet.ncols)]
-            for row_index2 in range(1, questionsSheet.nrows):
-                d2 = {keys2[col_index2]: questionsSheet.cell(row_index2, col_index2).value
-                      for col_index2 in range(questionsSheet.ncols)}
-                questionsList.append(d2)
-            questionSeqByEcmArr = []
-            quesSeqCnt = 1.0
-            questionUploadFieldnames = []
-            questionUploadFieldnames = ['solutionId', 'instanceParentQuestionId','hasAParentQuestion', 'parentQuestionOperator','parentQuestionValue', 'parentQuestionId','externalId', 'question0', 'question1', 'tip','hint', 'instanceIdentifier', 'responseType','dateFormat', 'autoCapture', 'validation','validationIsNumber', 'validationRegex','validationMax', 'validationMin', 'file','fileIsRequired', 'fileUploadType','allowAudioRecording', 'minFileCount','maxFileCount', 'caption', 'questionGroup','modeOfCollection', 'accessibility', 'showRemarks','rubricLevel', 'isAGeneralQuestion', 'R1','R1-hint', 'R2', 'R2-hint', 'R3', 'R3-hint', 'R4','R4-hint', 'R5', 'R5-hint', 'R6', 'R6-hint', 'R7','R7-hint', 'R8', 'R8-hint', 'R9', 'R9-hint', 'R10','R10-hint', 'R11', 'R11-hint', 'R12', 'R12-hint','R13', 'R13-hint', 'R14', 'R14-hint', 'R15','R15-hint', 'R16', 'R16-hint', 'R17', 'R17-hint','R18', 'R18-hint', 'R19', 'R19-hint', 'R20','R20-hint', 'sectionHeader', 'page','questionNumber', '_arrayFields']
-
-            for ques in questionsList:
-
-                questionFilePath = parentFolder + '/questionUpload/'
-                file_exists_ques = os.path.isfile(
-                    parentFolder + '/questionUpload/uploadSheet.csv')
-                if not os.path.exists(questionFilePath):
-                    os.mkdir(questionFilePath)
-                with open(parentFolder + '/questionUpload/uploadSheet.csv', 'a',
-                          encoding='utf-8') as questionUploadFile:
-                    writerQuestionUpload = csv.DictWriter(questionUploadFile, fieldnames=questionUploadFieldnames, lineterminator='\n')
-                    if not file_exists_ques:
-                        writerQuestionUpload.writeheader()
-                    questionFileObj = {}
-                    surveyExternalId = None
-                    questionFileObj['solutionId'] = surveySolutionExternalId
-                    if ques['instance_parent_question_id'].encode('utf-8').decode('utf-8'):
-                        questionFileObj['instanceParentQuestionId'] = ques[
-                                                                          'instance_parent_question_id'].strip() + '_' + str(
-                            millisecond)
-                    else:
-                        questionFileObj['instanceParentQuestionId'] = 'NA'
-                    if ques['parent_question_id'].encode('utf-8').decode('utf-8').strip():
-                        questionFileObj['hasAParentQuestion'] = 'YES'
-                        if ques['show_when_parent_question_value_is'] == 'or':
-                            questionFileObj['parentQuestionOperator'] = '||'
-                        else:
-                            questionFileObj['parentQuestionOperator'] = ques['show_when_parent_question_value_is']
-                        if type(ques['parent_question_value']) != str:
-                            if (ques['parent_question_value'] and ques[
-                                'parent_question_value'].is_integer() == True):
-                                questionFileObj['parentQuestionValue'] = int(ques['parent_question_value'])
-                            elif (ques['parent_question_value'] and ques[
-                                'parent_question_value'].is_integer() == False):
-                                questionFileObj['parentQuestionValue'] = ques['parent_question_value']
-                        else:
-                            questionFileObj['parentQuestionValue'] = ques['parent_question_value']
-                            questionFileObj['parentQuestionId'] = ques['parent_question_id'].encode('utf-8').decode('utf-8').strip() + '_' + str(
-                                millisecond)
-                    else:
-                        questionFileObj['hasAParentQuestion'] = 'NO'
-                        questionFileObj['parentQuestionOperator'] = None
-                        questionFileObj['parentQuestionValue'] = None
-                        questionFileObj['parentQuestionId'] = None
-                    questionFileObj['externalId'] = ques['question_id'].strip() + '_' + str(millisecond)
-                    if quesSeqCnt == ques['question_sequence']:
-                        questionSeqByEcmArr.append(ques['question_id'].strip() + '_' + str(millisecond))
-                        quesSeqCnt = quesSeqCnt + 1.0
-                    if ques['question_language1']:
-                        questionFileObj['question0'] = ques['question_language1'].encode('utf-8').decode('utf-8')
-                    else:
-                        questionFileObj['question0'] = None
-                    if ques['question_language2']:
-                        questionFileObj['question1'] = ques['question_language2'].encode('utf-8').decode('utf-8')
-                    else:
-                        questionFileObj['question1'] = None
-                    if ques['question_tip']:
-                        questionFileObj['tip'] = ques['question_tip'].encode('utf-8').decode('utf-8')
-                    else:
-                        questionFileObj['tip'] = None
-                    if ques['question_hint']:
-                        questionFileObj['hint'] = ques['question_hint'].encode('utf-8').decode('utf-8')
-                    else:
-                        questionFileObj['hint'] = None
-                    if ques['instance_identifier']:
-                        questionFileObj['instanceIdentifier'] = ques['instance_identifier'].encode('utf-8').decode('utf-8')
-                    else:
-                        questionFileObj['instanceIdentifier'] = None
-                    if ques['question_response_type'].strip().lower():
-                        questionFileObj['responseType'] = ques['question_response_type'].strip().lower()
-                    if ques['question_response_type'].strip().lower() == 'date':
-                        questionFileObj['dateFormat'] = "DD-MM-YYYY"
-                    else:
-                        questionFileObj['dateFormat'] = None
-                    if ques['question_response_type'].strip().lower() == 'date':
-                        if ques['date_auto_capture'] and ques['date_auto_capture'] == 1:
-                            questionFileObj['autoCapture'] = 'TRUE'
-                        elif ques['date_auto_capture'] and ques['date_auto_capture'] == 0:
-                            questionFileObj['autoCapture'] = 'false'
-                        else:
-                            questionFileObj['autoCapture'] = 'false'
-                    else:
-                        questionFileObj['autoCapture'] = None
-                    if ques['response_required']:
-                        if ques['response_required'] == 1:
-                            questionFileObj['validation'] = 'TRUE'
-                        elif ques['response_required'] == 0:
-                            questionFileObj['validation'] = 'FALSE'
-                    else:
-                        questionFileObj['validation'] = 'FALSE'
-                    if ques['question_response_type'].strip().lower() == 'number':
-                        questionFileObj['validationIsNumber'] = 'TRUE'
-                        questionFileObj['validationRegex'] = 'isNumber'
-                        if (ques['max_number_value'] and ques['max_number_value'].is_integer() == True):
-                            questionFileObj['validationMax'] = int(ques['max_number_value'])
-                        elif (ques['max_number_value'] and ques['max_number_value'].is_integer() == False):
-                            questionFileObj['validationMax'] = ques['max_number_value']
-                        else:
-                            questionFileObj['validationMax'] = 10000
-
-                        if (ques['min_number_value'] and ques['min_number_value'].is_integer() == True):
-                            questionFileObj['validationMin'] = int(ques['min_number_value'])
-                        elif (ques['min_number_value'] and ques['min_number_value'].is_integer() == False):
-                            questionFileObj['validationMin'] = ques['min_number_value']
-                        else:
-                            questionFileObj['validationMax'] = 10000
-
-                        if (ques['min_number_value'] and ques['min_number_value'].is_integer() == True):
-                            questionFileObj['validationMin'] = int(ques['min_number_value'])
-                        elif (ques['min_number_value'] and ques['min_number_value'].is_integer() == False):
-                            questionFileObj['validationMin'] = ques['min_number_value']
-                        else:
-                            questionFileObj['validationMin'] = 0
-
-                    elif ques['question_response_type'].strip().lower() == 'slider':
-                        questionFileObj['validationIsNumber'] = None
-                        questionFileObj['validationRegex'] = 'isNumber'
-                        if (ques['max_number_value'] and ques['max_number_value'].is_integer() == True):
-                            questionFileObj['validationMax'] = int(ques['max_number_value'])
-                        elif (ques['max_number_value'] and ques['max_number_value'].is_integer() == False):
-                            questionFileObj['validationMax'] = ques['max_number_value']
-                        else:
-                            questionFileObj['validationMax'] = 5
-
-                        if (ques['min_number_value'] and ques['min_number_value'].is_integer() == True):
-                            questionFileObj['validationMin'] = int(ques['min_number_value'])
-                        elif (ques['min_number_value'] and ques['min_number_value'].is_integer() == False):
-                            questionFileObj['validationMin'] = ques['min_number_value']
-                        else:
-                            questionFileObj['validationMin'] = 0
-                    else:
-                        questionFileObj['validationIsNumber'] = None
-                        questionFileObj['validationRegex'] = None
-                        questionFileObj['validationMax'] = None
-                        questionFileObj['validationMin'] = None
-                    if ques['file_upload'] == 1:
-                        questionFileObj['file'] = 'Snapshot'
-                        questionFileObj['fileIsRequired'] = 'TRUE'
-                        questionFileObj['fileUploadType'] = 'image/jpeg,docx,pdf,ppt'
-                        questionFileObj['minFileCount'] = 0
-                        questionFileObj['maxFileCount'] = 10
-                    elif ques['file_upload'] == 0:
-                        questionFileObj['file'] = 'NA'
-                        questionFileObj['fileIsRequired'] = None
-                        questionFileObj['fileUploadType'] = None
-                        questionFileObj['minFileCount'] = None
-                        questionFileObj['maxFileCount'] = None
-
-                    questionFileObj['caption'] = 'FALSE'
-                    questionFileObj['questionGroup'] = 'A1'
-                    questionFileObj['modeOfCollection'] = 'onfield'
-                    questionFileObj['accessibility'] = 'No'
-                    if ques['show_remarks'] == 1:
-                        questionFileObj['showRemarks'] = 'TRUE'
-                    elif ques['show_remarks'] == 0:
-                        questionFileObj['showRemarks'] = 'FALSE'
-                    questionFileObj['rubricLevel'] = None
-                    questionFileObj['isAGeneralQuestion'] = None
-                    if ques['question_response_type'].strip().lower() == 'radio' or ques[
-                        'question_response_type'].strip() == 'multiselect':
-                        for quesIndex in range(1, 21):
-                            if type(ques['response(R' + str(quesIndex) + ')']) != str:
-                                if (ques['response(R' + str(quesIndex) + ')'] and ques[
-                                    'response(R' + str(quesIndex) + ')'].is_integer() == True):
-                                    questionFileObj['R' + str(quesIndex) + ''] = int(
-                                        ques['response(R' + str(quesIndex) + ')'])
-                                elif (ques['response(R' + str(quesIndex) + ')'] and ques[
-                                    'response(R' + str(quesIndex) + ')'].is_integer() == False):
-                                    questionFileObj['R' + str(quesIndex) + ''] = ques[
-                                        'response(R' + str(quesIndex) + ')']
-                            else:
-                                questionFileObj['R' + str(quesIndex) + ''] = ques[
-                                    'response(R' + str(quesIndex) + ')']
-
-                            if type(ques['response(R' + str(quesIndex) + ')_hint']) != str:
-                                if (ques['response(R' + str(quesIndex) + ')_hint'] and ques[
-                                    'response(R' + str(quesIndex) + ')_hint'].is_integer() == True):
-                                    questionFileObj['R' + str(quesIndex) + '-hint'] = int(
-                                        ques['response(R' + str(quesIndex) + ')_hint'])
-                                elif (ques['response(R' + str(quesIndex) + ')_hint'] and ques[
-                                    'response(R' + str(quesIndex) + ')_hint'].is_integer() == False):
-                                    questionFileObj['R' + str(quesIndex) + '-hint'] = ques[
-                                        'response(R' + str(quesIndex) + ')_hint']
-                            else:
-                                questionFileObj['R' + str(quesIndex) + '-hint'] = ques[
-                                    'response(R' + str(quesIndex) + ')_hint']
-                            questionFileObj['_arrayFields'] = 'parentQuestionValue'
-                    else:
-                        for quesIndex in range(1, 21):
-                            questionFileObj['R' + str(quesIndex)] = None
-                            questionFileObj['R' + str(quesIndex) + '-hint'] = None
-                    if ques['section_header']:
-                        questionFileObj['sectionHeader'] = ques['section_header'].encode('utf-8').decode('utf-8')
-                    else:
-                        questionFileObj['sectionHeader'] = None
-
-                    questionFileObj['page'] = ques['page']
-                    if type(ques['question_number']) != str:
-                        if ques['question_number'] and ques['question_number'].is_integer() == True:
-                            questionFileObj['questionNumber'] = int(ques['question_number'])
-                        elif ques['question_number']:
-                            questionFileObj['questionNumber'] = ques['question_number']
-                        else:
-                            questionFileObj['questionNumber'] = ques['question_number']
-                    writerQuestionUpload.writerow(questionFileObj)
-                    
-            urlQuestionsUploadApi = config.get(environment, 'INTERNAL_KONG_IP')+ config.get(environment, 'questionUploadApiUrl')
-            headerQuestionUploadApi = {
-                'Authorization': config.get(environment, 'Authorization'),
-                'X-authenticated-user-token': accessToken,
-                'X-Channel-id': config.get(environment, 'X-Channel-id')
-            }
-            filesQuestion = {
-                'questions': open(parentFolder + '/questionUpload/uploadSheet.csv', 'rb')
-            }
-            responseQuestionUploadApi = requests.post(url=urlQuestionsUploadApi,
-                                                      headers=headerQuestionUploadApi, files=filesQuestion)
-            if responseQuestionUploadApi.status_code == 200:
-                print('Question upload Success')
-
-                messageArr = ["********* Question Upload api *********", "URL : " + urlQuestionsUploadApi,
-                              "Path : " + str(parentFolder) + str('/questionUpload/uploadSheet.csv'),
-                              "Status code : " + str(responseQuestionUploadApi.status_code),
-                              "Response : " + responseQuestionUploadApi.text]
-                createAPILog(parentFolder, messageArr)
-                messageArr1 = ["Questions","Question upload Success","Passed",str(responseQuestionUploadApi.status_code)]
-                apicheckslog(parentFolder,messageArr1)
-
-                with open(parentFolder + '/questionUpload/uploadInternalIdsSheet.csv', 'w+',encoding='utf-8') as questionRes:
-                    questionRes.write(responseQuestionUploadApi.text)
-                urlImportSoluTemplate = config.get(environment, 'INTERNAL_KONG_IP') + config.get(environment,'importSurveySolutionTemplateUrl') + str(surveyParentSolutionId) + "?appName=manage-learn"
-                headerImportSoluTemplateApi = {
-                    'Authorization': config.get(environment, 'Authorization'),
-                    'X-authenticated-user-token': accessToken,
-                    'X-Channel-id': config.get(environment, 'X-Channel-id')
-                }
-                responseImportSoluTemplateApi = requests.get(url=urlImportSoluTemplate,
-                                                             headers=headerImportSoluTemplateApi)
-                if responseImportSoluTemplateApi.status_code == 200:
-                    print('Creating Child Success')
-
-                    messageArr = ["********* Creating Child api *********", "URL : " + urlImportSoluTemplate,
-                                  "Status code : " + str(responseImportSoluTemplateApi.status_code),
-                                  "Response : " + responseImportSoluTemplateApi.text]
-                    createAPILog(parentFolder, messageArr)
-                    responseImportSoluTemplateApi = responseImportSoluTemplateApi.json()
-                    solutionIdSuc = responseImportSoluTemplateApi["result"]["solutionId"]
-                    urlSurveyProgramMapping = config.get(environment, 'INTERNAL_KONG_IP') + config.get(environment, "importSurveySolutionToProgramUrl") + str(solutionIdSuc) + "?programId=" + programExternalId.lstrip().rstrip()
-                    headeSurveyProgramMappingApi = {
-                        'Authorization': config.get(environment, 'Authorization'),
-                        'X-authenticated-user-token': accessToken,
-                        'X-Channel-id': config.get(environment, 'X-Channel-id')
-                    }
-                    responseSurveyProgramMappingApi = requests.get(url=urlSurveyProgramMapping,headers=headeSurveyProgramMappingApi)
-                    if responseSurveyProgramMappingApi.status_code == 200:
-                        print('Program Mapping Success')
-                        
-                        messageArr = ["********* Program mapping api *********", "URL : " + urlSurveyProgramMapping,
-                                      "Status code : " + str(responseSurveyProgramMappingApi.status_code),
-                                      "Response : " + responseSurveyProgramMappingApi.text]
-                        createAPILog(parentFolder, messageArr)
-                        surveyLink = None
-                        solutionIdSuc = None
-                        surveyExternalIdSuc = None
-                        surveyLink = responseImportSoluTemplateApi["result"]["link"]
-                        solutionIdSuc = responseImportSoluTemplateApi["result"]["solutionId"]
-                        solutionExtIdSuc = responseImportSoluTemplateApi["result"]["solutionExternalId"]
-                        print("Survey Child Id : " + str(solutionExtIdSuc))
-                        solutionDetails = fetchSolutionDetailsFromProgramSheet(parentFolder, programFile, solutionIdSuc,
-                                                                               accessToken)
-                        scopeEntities = entitiesPGMID
-                        scopeRoles = solutionDetails[0]
-                        surveyScopeBody = {
-                            "scope": {"entityType": scopeEntityType, "entities": scopeEntities, "roles": scopeRoles}}
-                        solutionUpdate(parentFolder, accessToken, solutionIdSuc, surveyScopeBody)
-                        prepareProgramSuccessSheet(MainFilePath, parentFolder, programFile, solutionExtIdSuc,
-                                                   solutionIdSuc, accessToken)
-                        
-                        print('Survey Successfully Added')
-                    else:
-                        print('Program Mapping Failed')
-                        messageArr = ["********* Program mapping api *********", "URL : " + urlSurveyProgramMapping,
-                                      "Status code : " + str(responseSurveyProgramMappingApi.status_code),
-                                      "Response : " + responseSurveyProgramMappingApi.text]
-                        createAPILog(parentFolder, messageArr)
-                else:
-                    print('Creating Child API Failed')
-                    messageArr = ["********* Program mapping api *********", "URL : " + urlImportSoluTemplate,
-                                  "Status code : " + str(responseImportSoluTemplateApi.status_code),
-                                  "Response : " + responseImportSoluTemplateApi.text]
-                    createAPILog(parentFolder, messageArr)
-            else:
-                print('QuestionUploadApi Failed')
-                messageArr = ["********* Question Upload api *********", "URL : " + urlQuestionsUploadApi,
-                              "Path : " + str(parentFolder) + str('/questionUpload/uploadSheet.csv'),
-                              "Status code : " + str(responseQuestionUploadApi.status_code),
-                              "Response : " + responseQuestionUploadApi.text]
-                createAPILog(parentFolder, messageArr)
-
-
+# Function to check entity of solution
 def checkEntityOfSolution(projectName_for_folder_path, solutionNameOrId, accessToken):
     searchSolutionurl = config.get(environment, 'elevateprojecthost') + config.get(environment,'fetchSolutionDetails') + "observation&page=1&limit=100&search=" + solutionNameOrId
 
@@ -3710,7 +3158,7 @@ def checkEntityOfSolution(projectName_for_folder_path, solutionNameOrId, accessT
         terminatingMessage("search solution api is failed")
     return [solutionEntityType, solutionExternalId]
 
-
+# Function to prepare project and task
 def prepareProjectAndTasksSheets(project_inputFile, projectName_for_folder_path, accessToken):
     millisecond = int(time.time() * 1000)
     projectFilePath = projectName_for_folder_path + '/projectUpload/'
@@ -3910,7 +3358,7 @@ def prepareProjectAndTasksSheets(project_inputFile, projectName_for_folder_path,
         #    subtaskname2 = str(dictTasksDetails["Subtask"]).encode('utf-8').decode('utf-8').strip()
 
     
-
+# Function to upload sheet
 def projectUpload(projectFile, projectName_for_folder_path, accessToken):
     urlProjectUploadApi = config.get(environment, 'elevateprojecthost') + config.get(environment, 'projectUploadApi')
     headerProjectUploadApi = {
@@ -3940,6 +3388,7 @@ def projectUpload(projectFile, projectName_for_folder_path, accessToken):
         createAPILog(projectName_for_folder_path, messageArr)
         sys.exit()
 
+# Function to upload task sheet
 def taskUpload(projectFile, projectName_for_folder_path, accessToken):
     projectInternalfile = open(projectName_for_folder_path + '/projectUpload/projectInternal.csv', mode='r',encoding='utf-8')
     projectInternalfile = csv.DictReader(projectInternalfile)
@@ -4006,7 +3455,7 @@ def taskUpload(projectFile, projectName_for_folder_path, accessToken):
             createAPILog(projectName_for_folder_path, messageArr)
             terminatingMessage("--->Tasks Upload failed.")
 
-
+# Function to fetch certification base template
 def fetchCertificateBaseTemplate(filePathAddProject,accessToken,projectName_for_folder_path):
     wbproject = xlrd.open_workbook(filePathAddProject, on_demand=True)
     projectsheetforcertificate = wbproject.sheet_names()
@@ -4118,7 +3567,6 @@ def prepareaddingcertificatetemp(filePathAddProject, projectName_for_folder_path
     
 # This function is used to create json format to create certificate
 # This function is used to add SVG to the certificate based on type of certificate
-
 def prepareaddingcertificatetemp(filePathAddProject, projectName_for_folder_path, accessToken, solutionId, programID,baseTemplate_id):
     wbproject = xlrd.open_workbook(filePathAddProject, on_demand=True)
     projectsheetforcertificate = wbproject.sheet_names()
@@ -4556,6 +4004,7 @@ def editsvg(accessToken,filePathAddProject,projectName_for_folder_path,baseTempl
                 else:
                     print("-->Error in downloading SVG file please check logs<--")
 
+# Function to create solution and map
 def solutionCreationAndMapping(projectName_for_folder_path, entityToUpload, listOfFoundRoles, accessToken):
     SolutionFilePath = projectName_for_folder_path + '/solutionDetails/'
     if not os.path.exists(SolutionFilePath):
@@ -4833,6 +4282,7 @@ def downloadlogosign(filePathAddProject,projectName_for_folder_path):
                 else:
                     print("--->Logos and signature downlading are failed(check if drive link are  Anyone with the link or not)<---")
 
+# Main function were all the function def are called
 def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isProgramnamePresent, isCourse,
              scopeEntityType=scopeEntityType):
     scopeEntityType = scopeEntityType
@@ -4851,14 +4301,10 @@ def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isP
             else:
                 impLedObsFlag = False
             criteriaUpload(parentFolder, wbObservation, millisecond, accessToken, "framework", impLedObsFlag)
-            # userDetails = fetchUserDetails(environment, accessToken, dikshaLoginId)
             matchedShikshalokamLoginId = userDetails[0]
             
             frameworkExternalId = frameWorkUpload(parentFolder, wbObservation, millisecond, accessToken)
             observationExternalId = frameworkExternalId + "-OBSERVATION-TEMPLATE"
-            themesUpload(parentFolder, wbObservation, millisecond, accessToken, frameworkExternalId, False)
-            solutionId = createSolutionFromFramework(parentFolder, accessToken, frameworkExternalId)
-
             ecmsSheet = wbObservation.sheet_by_name('ECMs or Domains')
             keys = [ecmsSheet.cell(1, col_index).value for col_index in range(ecmsSheet.ncols)]
             ecm_update = dict()
@@ -4900,7 +4346,6 @@ def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isP
             if not pointBasedValue.lower() == "null":
                 bodySolutionUpdate = {"isRubricDriven": True}
                 solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
-                fetchSolutionCriteria(parentFolder, observationExternalId, accessToken)
                 uploadCriteriaRubrics(parentFolder, wbObservation, millisecond, accessToken, frameworkExternalId, True)
                 uploadThemeRubrics(parentFolder, wbObservation, accessToken, frameworkExternalId, True)
             else:
@@ -4919,7 +4364,6 @@ def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isP
                     "endDate": endDateArr[2] + "-" + endDateArr[1] + "-" + endDateArr[0] + " 23:59:59"}
                 solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
             if isProgramnamePresent:
-                childId = createChild(parentFolder, observationExternalId, accessToken)
                 if childId[0]:
                     solutionDetails = fetchSolutionDetailsFromProgramSheet(parentFolder, programFile, childId[0],
                                                                            accessToken)
@@ -4950,8 +4394,6 @@ def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isP
             
             frameworkExternalId = frameWorkUpload(parentFolder, wbObservation, millisecond, accessToken)
             observationExternalId = frameworkExternalId + "-OBSERVATION-TEMPLATE"
-            themesUpload(parentFolder, wbObservation, millisecond, accessToken, frameworkExternalId, True)
-            solutionId = createSolutionFromFramework(parentFolder, accessToken, frameworkExternalId)
             sectionsObj = {"sections": {'S1': 'Observation Question'}}
             solutionUpdate(parentFolder, accessToken, solutionId, sectionsObj)
             ecmObj = {}
@@ -4963,7 +4405,6 @@ def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isP
             solutionUpdate(parentFolder, accessToken, solutionId, ecmObj)
             questionUpload(addObservationSolution, parentFolder, frameworkExternalId, millisecond, accessToken,
                            solutionId, typeofSolution)
-            fetchSolutionCriteria(parentFolder, observationExternalId, accessToken)
             if not pointBasedValue.lower() == "null":
                 uploadCriteriaRubrics(parentFolder, wbObservation, millisecond, accessToken, frameworkExternalId, False)
                 uploadThemeRubrics(parentFolder, wbObservation, accessToken, frameworkExternalId, False)
@@ -4985,7 +4426,6 @@ def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isP
                     "endDate": endDateArr[2] + "-" + endDateArr[1] + "-" + endDateArr[0] + " 23:59:59"}
                 solutionUpdate(parentFolder, accessToken, solutionId, bodySolutionUpdate)
             if isProgramnamePresent:
-                childId = createChild(parentFolder, observationExternalId, accessToken)
                 if childId[0]:
                     solutionDetails = fetchSolutionDetailsFromProgramSheet(parentFolder, programFile, childId[0],
                                                                            accessToken)
@@ -5015,8 +4455,6 @@ def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isP
             surTempExtID = surveyResp[1]
             bodySolutionUpdate = {"status": "active", "isDeleted": False}
             solutionUpdate(parentFolder, accessToken, surveyResp[0], bodySolutionUpdate)
-            uploadSurveyQuestions(parentFolder, wbObservation, addObservationSolution, accessToken, surTempExtID,
-                                  surveyResp[0], millisecond)
         elif typeofSolution == 4:
             wbprogram = xlrd.open_workbook(programFile, on_demand=True)
             programSheetNames = wbprogram.sheet_names()
@@ -5056,6 +4494,8 @@ def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isP
                         entityType = "school"
 
             try:
+
+                # Adds a project by processing the input file, creating necessary folders,copying files, and preparing project and task sheets.
                 def addProjectFunc(filePathAddProject, projectName_for_folder_path, millisAddObs,validateSheets):
                     print('Add Project Function Called')
                     try:
