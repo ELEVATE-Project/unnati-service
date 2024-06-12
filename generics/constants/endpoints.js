@@ -57,6 +57,5 @@ module.exports = {
 	FIND_ENTITY_DOCUMENTS: '/v1/entities/find',
 	FIND_ENTITY_TYPE_DOCUMENTS: '/v1/entityTypes/find',
 	ORGANIZATION_READ: '/v1/organization/read',
-	USER_SERVICE_URL: 'http://localhost:3001/user/v1/user/read/',
-	ENTITY_MANAGEMENT_SERVICE_URL: 'http://localhost:5001/entity/v1/entities/find',
+	USER_SERVICE_URL: '/user/v1/user/read/',
 }
