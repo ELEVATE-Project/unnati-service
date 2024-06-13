@@ -159,8 +159,13 @@ module.exports = function () {
 
 		if (enviromentVariables[eachEnvironmentVariable].optional === false) {
 			if (!process.env[eachEnvironmentVariable] || process.env[eachEnvironmentVariable] == '') {
-				success = false
 				keyCheckPass = false
+				if (enviromentVariables[eachEnvironmentVariable].default) {
+					process.env[eachEnvironmentVariable] = enviromentVariables[eachEnvironmentVariable].default
+					keyCheckPass = true
+				} else {
+					success = false
+				}
 			} else if (
 				enviromentVariables[eachEnvironmentVariable].possibleValues &&
 				Array.isArray(enviromentVariables[eachEnvironmentVariable].possibleValues) &&
@@ -178,16 +183,6 @@ module.exports = function () {
 					].possibleValues.join(', ')}`
 				}
 			}
-		}
-
-		if (
-			(!process.env[eachEnvironmentVariable] || process.env[eachEnvironmentVariable] == '') &&
-			enviromentVariables[eachEnvironmentVariable].default &&
-			enviromentVariables[eachEnvironmentVariable].default != ''
-		) {
-			process.env[eachEnvironmentVariable] = enviromentVariables[eachEnvironmentVariable].default
-			success = true
-			keyCheckPass = true
 		}
 
 		if (!keyCheckPass) {
