@@ -27,7 +27,7 @@ exports.improvementProjectPdfGeneration = async function (responseData, userId) 
 
 		// Construct the full local path for the temporary folder
 		var imgPath = path.resolve(__dirname, '../../', currentTempFolder)
-
+		console.log('++++++++++++++++++++')
 		if (!fs.existsSync(imgPath)) {
 			fs.mkdirSync(imgPath)
 		}
@@ -36,6 +36,7 @@ exports.improvementProjectPdfGeneration = async function (responseData, userId) 
 			path.resolve(__dirname + '/../../public/css/bootstrap.min.css'),
 			imgPath + '/style.css'
 		)
+		console.log('++++++++++++++++++++***')
 
 		let subTasksCount = 0
 		let completedTaskCount = 0
@@ -66,6 +67,7 @@ exports.improvementProjectPdfGeneration = async function (responseData, userId) 
 				if (!fs.existsSync(dir)) {
 					fs.mkdirSync(dir)
 				}
+				console.log('++++++++++++++++++----++')
 
 				fs.writeFile(dir + '/index.html', dataEjsRender, function (errWriteFile, dataWriteFile) {
 					if (errWriteFile) {
