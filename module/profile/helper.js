@@ -1,4 +1,3 @@
-const axios = require('axios')
 // calling entities service for entity-managament
 const entityFind = require(GENERICS_FILES_PATH + '/services/entity-management')
 const profileRead = require(GENERICS_FILES_PATH + '/services/users')

@@ -1,5 +1,17 @@
+/**
+ * name : profile.js
+ * author : Mallanagouda R Biradar
+ * created-date : 13-Jun-2024
+ * Description :  profile Controller.
+ */
+
+// dependencies
 let profileHelper = require(MODULES_BASE_PATH + '/profile/helper')
 
+/**
+ * profile service.
+ * @class
+ */
 module.exports = class profile {
 	static get name() {
 		return 'profile'
