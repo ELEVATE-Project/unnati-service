@@ -20,38 +20,39 @@ const GotenbergConnection = require(SERVICES_BASE_PATH + '/gotenberg')
  * @param {String} userId 			- user identification
  * @returns {String} 				- returns pdf uploaded link.
  */
+
 exports.improvementProjectPdfGeneration = async function (responseData, userId) {
 	return new Promise(async function (resolve, reject) {
-		// construct a temp folder path
-		let currentTempFolder = 'tmp/' + uuidv4() + '--' + Math.floor(Math.random() * (10000 - 10 + 1) + 10)
-
-		// Construct the full local path for the temporary folder
-		var imgPath = path.resolve(__dirname, '../../', currentTempFolder)
-		console.log('++++++++++++++++++++')
-		if (!fs.existsSync(imgPath)) {
-			fs.mkdirSync(imgPath)
-		}
-
-		let bootstrapStream = await copyBootStrapFile(
-			path.resolve(__dirname + '/../../public/css/bootstrap.min.css'),
-			imgPath + '/style.css'
-		)
-		console.log('++++++++++++++++++++***')
-
-		let subTasksCount = 0
-		let completedTaskCount = 0
-		if (responseData.tasks.length > 0) {
-			responseData.tasks.forEach((element) => {
-				subTasksCount = subTasksCount + element.children.length
-				if (element.status == 'completed') {
-					completedTaskCount++
-				}
-			})
-		}
-
-		responseData.completedTaskCount = completedTaskCount
-
 		try {
+			// construct a temp folder path
+			let currentTempFolder = 'tmp/' + uuidv4() + '--' + Math.floor(Math.random() * (10000 - 10 + 1) + 10)
+
+			// Construct the full local path for the temporary folder
+			var imgPath = path.resolve(__dirname, '../../', currentTempFolder)
+			console.log('++++++++++++++++++++')
+			if (!fs.existsSync(imgPath)) {
+				fs.mkdirSync(imgPath)
+			}
+
+			let bootstrapStream = await copyBootStrapFile(
+				path.resolve(__dirname + '/../../public/css/bootstrap.min.css'),
+				imgPath + '/style.css'
+			)
+			console.log('++++++++++++++++++++***')
+
+			let subTasksCount = 0
+			let completedTaskCount = 0
+			if (responseData.tasks.length > 0) {
+				responseData.tasks.forEach((element) => {
+					subTasksCount = subTasksCount + element.children.length
+					if (element.status == 'completed') {
+						completedTaskCount++
+					}
+				})
+			}
+
+			responseData.completedTaskCount = completedTaskCount
+
 			let FormData = []
 
 			let obj = {
@@ -60,140 +61,316 @@ exports.improvementProjectPdfGeneration = async function (responseData, userId) 
 				response: responseData,
 			}
 			// find ejs file for html generation
-			ejs.renderFile(path.resolve(__dirname + '/../../views/improvementProjectTemplate.ejs'), {
-				data: obj,
-			}).then(function (dataEjsRender) {
-				var dir = imgPath
-				if (!fs.existsSync(dir)) {
-					fs.mkdirSync(dir)
+			const dataEjsRender = await ejs.renderFile(
+				path.resolve(__dirname + '/../../views/improvementProjectTemplate.ejs'),
+				{
+					data: obj,
 				}
-				console.log('++++++++++++++++++----++')
+			)
 
-				fs.writeFile(dir + '/index.html', dataEjsRender, function (errWriteFile, dataWriteFile) {
-					if (errWriteFile) {
-						throw errWriteFile
-					} else {
-						// generate pdf from html
-						let optionsHtmlToPdf = GotenbergConnection.getGotenbergConnection()
+			var dir = imgPath
+			if (!fs.existsSync(dir)) {
+				fs.mkdirSync(dir)
+			}
+			console.log('++++++++++++++++++----++')
 
-						optionsHtmlToPdf.formData = {
-							files: [],
-						}
-						FormData.push({
-							value: fs.createReadStream(dir + '/index.html'),
-							options: {
-								filename: 'index.html',
-							},
-						})
-						FormData.push({
-							value: fs.createReadStream(dir + '/style.css'),
-							options: {
-								filename: 'style.css',
-							},
-						})
-						optionsHtmlToPdf.formData.files = FormData
-						optionsHtmlToPdf.formData.paperHeight = 4.2
-						optionsHtmlToPdf.formData.emulatedMediaType = 'screen'
-						optionsHtmlToPdf.formData.marginRight = 0
-						optionsHtmlToPdf.formData.marginLeft = 0
-						optionsHtmlToPdf.formData.marginTop = 0
-						optionsHtmlToPdf.formData.marginBottom = 0
-						console.log('errorqqq++++++')
-						rp(optionsHtmlToPdf)
-							.then(function (responseHtmlToPdf) {
-								let pdfBuffer = Buffer.from(responseHtmlToPdf.body)
+			fs.writeFile(dir + '/index.html', dataEjsRender, async function (errWriteFile) {
+				if (errWriteFile) {
+					return reject(errWriteFile) // Reject the promise on error
+				} else {
+					// generate pdf from html
+					let optionsHtmlToPdf = GotenbergConnection.getGotenbergConnection()
 
-								if (responseHtmlToPdf.statusCode == 200) {
-									let pdfFile = uuidv4() + '.pdf'
-									console.log('errorqqq-----')
-									fs.writeFile(dir + '/' + pdfFile, pdfBuffer, 'binary', async function (err) {
-										if (err) {
-											console.log('errorqqq')
-											return console.log(err)
-										} else {
-											//pdfFile :  filename to upload
-											//userId : used to create directory to store the file
-											//dir : local file path to fetch the file
-											let uploadFileResponse = await uploadPdfToCloud(pdfFile, userId, dir)
+					optionsHtmlToPdf.formData = {
+						files: [],
+					}
+					FormData.push({
+						value: fs.createReadStream(dir + '/index.html'),
+						options: {
+							filename: 'index.html',
+						},
+					})
+					FormData.push({
+						value: fs.createReadStream(dir + '/style.css'),
+						options: {
+							filename: 'style.css',
+						},
+					})
+					optionsHtmlToPdf.formData.files = FormData
+					optionsHtmlToPdf.formData.paperHeight = 4.2
+					optionsHtmlToPdf.formData.emulatedMediaType = 'screen'
+					optionsHtmlToPdf.formData.marginRight = 0
+					optionsHtmlToPdf.formData.marginLeft = 0
+					optionsHtmlToPdf.formData.marginTop = 0
+					optionsHtmlToPdf.formData.marginBottom = 0
 
-											if (uploadFileResponse.success) {
-												console.log('yeaaherrorqqq')
-												// Get downloadable URL for the uploaded PDF
-												let pdfDownloadableUrl = await filesHelper.getDownloadableUrl(
-													uploadFileResponse.data
-												)
+					try {
+						const responseHtmlToPdf = await rp(optionsHtmlToPdf)
+						let pdfBuffer = Buffer.from(responseHtmlToPdf.body)
 
-												if (
-													pdfDownloadableUrl.result &&
-													Object.keys(pdfDownloadableUrl.result).length > 0
-												) {
-													fs.readdir(imgPath, (err, files) => {
-														if (err) throw err
-														let i = 0
-														// Delete all files in the temporary directory
-														for (const file of files) {
-															fs.unlink(path.join(imgPath, file), (err) => {
-																if (err) throw err
-															})
+						if (responseHtmlToPdf.statusCode == 200) {
+							let pdfFile = uuidv4() + '.pdf'
 
-															if (i == files.length) {
-																fs.unlink('../../' + currentTempFolder, (err) => {
-																	if (err) throw err
-																})
-																console.log(
-																	'path.dirname(filename).split(path.sep).pop()',
-																	path.dirname(file).split(path.sep).pop()
-																)
-															}
+							fs.writeFile(dir + '/' + pdfFile, pdfBuffer, 'binary', async function (err) {
+								if (err) {
+									console.log('errorqqq')
+									return reject(err) // Reject the promise on error
+								} else {
+									//pdfFile :  filename to upload
+									//userId : used to create directory to store the file
+									//dir : local file path to fetch the file
+									let uploadFileResponse = await uploadPdfToCloud(pdfFile, userId, dir)
 
-															i = i + 1
-														}
-													})
-													rimraf(imgPath, function () {
-														console.log('done')
+									if (uploadFileResponse.success) {
+										// Get downloadable URL for the uploaded PDF
+										let pdfDownloadableUrl = await filesHelper.getDownloadableUrl(
+											uploadFileResponse.data
+										)
+
+										if (
+											pdfDownloadableUrl.result &&
+											Object.keys(pdfDownloadableUrl.result).length > 0
+										) {
+											fs.readdir(imgPath, (err, files) => {
+												if (err) reject(err)
+												let i = 0
+												// Delete all files in the temporary directory
+												for (const file of files) {
+													fs.unlink(path.join(imgPath, file), (err) => {
+														if (err) reject(err)
 													})
 
-													return resolve({
-														success: CONSTANTS.common.SUCCESS,
-														message: pdfDownloadableUrl.message,
-														pdfUrl: pdfDownloadableUrl.result.url,
-													})
-												} else {
-													console.log('error')
-													return resolve({
-														status: CONSTANTS.common.STATUS_FAILURE,
-														message: pdfDownloadableUrl.message
-															? pdfDownloadableUrl.message
-															: CONSTANTS.common.COULD_NOT_GENERATE_PDF,
-														pdfUrl: '',
-													})
+													if (i == files.length) {
+														fs.unlink('../../' + currentTempFolder, (err) => {
+															if (err) reject(err)
+														})
+														console.log(
+															'path.dirname(filename).split(path.sep).pop()',
+															path.dirname(file).split(path.sep).pop()
+														)
+													}
+
+													i = i + 1
 												}
-											} else {
-												console.log('error167s')
-												return resolve({
-													status: CONSTANTS.common.STATUS_FAILURE,
-													message: pdfDownloadableUrl.message
-														? pdfDownloadableUrl.message
-														: CONSTANTS.common.COULD_NOT_GENERATE_PDF,
-													pdfUrl: '',
-												})
-											}
+											})
+											rimraf(imgPath, function () {
+												console.log('done')
+											})
+
+											return resolve({
+												success: CONSTANTS.common.SUCCESS,
+												message: pdfDownloadableUrl.message,
+												pdfUrl: pdfDownloadableUrl.result.url,
+											})
+										} else {
+											console.log('error')
+											return resolve({
+												status: CONSTANTS.common.STATUS_FAILURE,
+												message: pdfDownloadableUrl.message
+													? pdfDownloadableUrl.message
+													: CONSTANTS.common.COULD_NOT_GENERATE_PDF,
+												pdfUrl: '',
+											})
 										}
-									})
+									} else {
+										console.log('error167s')
+										return resolve({
+											status: CONSTANTS.common.STATUS_FAILURE,
+											message: pdfDownloadableUrl.message
+												? pdfDownloadableUrl.message
+												: CONSTANTS.common.COULD_NOT_GENERATE_PDF,
+											pdfUrl: '',
+										})
+									}
 								}
 							})
-							.catch((err) => {
-								console.log('error')
-								resolve(err)
-							})
+						}
+					} catch (err) {
+						console.log('error')
+						return reject(err) // Reject the promise on error
 					}
-				})
+				}
 			})
 		} catch (err) {
-			resolve(err)
+			return reject(err) // Reject the promise on error
 		}
 	})
 }
+
+// exports.improvementProjectPdfGeneration = async function (responseData, userId) {
+// 	return new Promise(async function (resolve, reject) {
+// 		// construct a temp folder path
+// 		let currentTempFolder = 'tmp/' + uuidv4() + '--' + Math.floor(Math.random() * (10000 - 10 + 1) + 10)
+
+// 		// Construct the full local path for the temporary folder
+// 		var imgPath = path.resolve(__dirname, '../../', currentTempFolder)
+// 		console.log('++++++++++++++++++++')
+// 		if (!fs.existsSync(imgPath)) {
+// 			fs.mkdirSync(imgPath)
+// 		}
+
+// 		let bootstrapStream = await copyBootStrapFile(
+// 			path.resolve(__dirname + '/../../public/css/bootstrap.min.css'),
+// 			imgPath + '/style.css'
+// 		)
+// 		console.log('++++++++++++++++++++***')
+
+// 		let subTasksCount = 0
+// 		let completedTaskCount = 0
+// 		if (responseData.tasks.length > 0) {
+// 			responseData.tasks.forEach((element) => {
+// 				subTasksCount = subTasksCount + element.children.length
+// 				if (element.status == 'completed') {
+// 					completedTaskCount++
+// 				}
+// 			})
+// 		}
+
+// 		responseData.completedTaskCount = completedTaskCount
+
+// 		try {
+// 			let FormData = []
+
+// 			let obj = {
+// 				subTasks: subTasksCount,
+// 				tasksArray: responseData.tasks,
+// 				response: responseData,
+// 			}
+// 			// find ejs file for html generation
+// 			ejs.renderFile(path.resolve(__dirname + '/../../views/improvementProjectTemplate.ejs'), {
+// 				data: obj,
+// 			}).then(function (dataEjsRender) {
+// 				var dir = imgPath
+// 				if (!fs.existsSync(dir)) {
+// 					fs.mkdirSync(dir)
+// 				}
+// 				console.log('++++++++++++++++++----++')
+
+// 				fs.writeFile(dir + '/index.html', dataEjsRender, function (errWriteFile, dataWriteFile) {
+// 					if (errWriteFile) {
+// 						throw errWriteFile
+// 					} else {
+// 						// generate pdf from html
+// 						let optionsHtmlToPdf = GotenbergConnection.getGotenbergConnection()
+
+// 						optionsHtmlToPdf.formData = {
+// 							files: [],
+// 						}
+// 						FormData.push({
+// 							value: fs.createReadStream(dir + '/index.html'),
+// 							options: {
+// 								filename: 'index.html',
+// 							},
+// 						})
+// 						FormData.push({
+// 							value: fs.createReadStream(dir + '/style.css'),
+// 							options: {
+// 								filename: 'style.css',
+// 							},
+// 						})
+// 						optionsHtmlToPdf.formData.files = FormData
+// 						optionsHtmlToPdf.formData.paperHeight = 4.2
+// 						optionsHtmlToPdf.formData.emulatedMediaType = 'screen'
+// 						optionsHtmlToPdf.formData.marginRight = 0
+// 						optionsHtmlToPdf.formData.marginLeft = 0
+// 						optionsHtmlToPdf.formData.marginTop = 0
+// 						optionsHtmlToPdf.formData.marginBottom = 0
+// 						console.log('errorqqq++++++')
+// 						rp(optionsHtmlToPdf)
+// 							.then(function (responseHtmlToPdf) {
+// 								let pdfBuffer = Buffer.from(responseHtmlToPdf.body)
+
+// 								if (responseHtmlToPdf.statusCode == 200) {
+// 									let pdfFile = uuidv4() + '.pdf'
+// 									console.log('errorqqq-----')
+// 									fs.writeFile(dir + '/' + pdfFile, pdfBuffer, 'binary', async function (err) {
+// 										if (err) {
+// 											console.log('errorqqq')
+// 											return console.log(err)
+// 										} else {
+// 											//pdfFile :  filename to upload
+// 											//userId : used to create directory to store the file
+// 											//dir : local file path to fetch the file
+// 											let uploadFileResponse = await uploadPdfToCloud(pdfFile, userId, dir)
+
+// 											if (uploadFileResponse.success) {
+// 												console.log('yeaaherrorqqq')
+// 												// Get downloadable URL for the uploaded PDF
+// 												let pdfDownloadableUrl = await filesHelper.getDownloadableUrl(
+// 													uploadFileResponse.data
+// 												)
+
+// 												if (
+// 													pdfDownloadableUrl.result &&
+// 													Object.keys(pdfDownloadableUrl.result).length > 0
+// 												) {
+// 													fs.readdir(imgPath, (err, files) => {
+// 														if (err) throw err
+// 														let i = 0
+// 														// Delete all files in the temporary directory
+// 														for (const file of files) {
+// 															fs.unlink(path.join(imgPath, file), (err) => {
+// 																if (err) throw err
+// 															})
+
+// 															if (i == files.length) {
+// 																fs.unlink('../../' + currentTempFolder, (err) => {
+// 																	if (err) throw err
+// 																})
+// 																console.log(
+// 																	'path.dirname(filename).split(path.sep).pop()',
+// 																	path.dirname(file).split(path.sep).pop()
+// 																)
+// 															}
+
+// 															i = i + 1
+// 														}
+// 													})
+// 													rimraf(imgPath, function () {
+// 														console.log('done')
+// 													})
+
+// 													return resolve({
+// 														success: CONSTANTS.common.SUCCESS,
+// 														message: pdfDownloadableUrl.message,
+// 														pdfUrl: pdfDownloadableUrl.result.url,
+// 													})
+// 												} else {
+// 													console.log('error')
+// 													return resolve({
+// 														status: CONSTANTS.common.STATUS_FAILURE,
+// 														message: pdfDownloadableUrl.message
+// 															? pdfDownloadableUrl.message
+// 															: CONSTANTS.common.COULD_NOT_GENERATE_PDF,
+// 														pdfUrl: '',
+// 													})
+// 												}
+// 											} else {
+// 												console.log('error167s')
+// 												return resolve({
+// 													status: CONSTANTS.common.STATUS_FAILURE,
+// 													message: pdfDownloadableUrl.message
+// 														? pdfDownloadableUrl.message
+// 														: CONSTANTS.common.COULD_NOT_GENERATE_PDF,
+// 													pdfUrl: '',
+// 												})
+// 											}
+// 										}
+// 									})
+// 								}
+// 							})
+// 							.catch((err) => {
+// 								console.log('error')
+// 								resolve(err)
+// 							})
+// 					}
+// 				})
+// 			})
+// 		} catch (err) {
+// 			resolve(err)
+// 		}
+// 	})
+// }
 
 /**
  * Improvement project taskspdf generation function.
