@@ -100,7 +100,7 @@ module.exports = class FilesHelper {
 						CONSTANTS.common.READ_PERMISSION, //permission PARAMS
 						true //true if filePath is passed
 					)
-
+					console.log('downloadableUrl : ', downloadableUrl)
 					if (!downloadableUrl.success) {
 						return resolve({
 							status: HTTP_STATUS_CODE.bad_request.status,
