@@ -1966,6 +1966,7 @@ module.exports = class UserProjectsHelper {
 				let response
 				// if projectpdf is requested generate that else project task pdf can be called
 				if (projectPdf) {
+					console.log('inside this function : ')
 					response = await common_handler.improvementProjectPdfGeneration(projectDocument, userId)
 				} else {
 					response = await common_handler.improvementProjectTaskPdfGeneration(projectDocument, userId)

@@ -106,6 +106,7 @@ exports.improvementProjectPdfGeneration = async function (responseData, userId) 
 
 									fs.writeFile(dir + '/' + pdfFile, pdfBuffer, 'binary', async function (err) {
 										if (err) {
+											console.log('errorqqq')
 											return console.log(err)
 										} else {
 											//pdfFile :  filename to upload
@@ -155,6 +156,7 @@ exports.improvementProjectPdfGeneration = async function (responseData, userId) 
 														pdfUrl: pdfDownloadableUrl.result.url,
 													})
 												} else {
+													console.log('error')
 													return resolve({
 														status: CONSTANTS.common.STATUS_FAILURE,
 														message: pdfDownloadableUrl.message
@@ -164,6 +166,7 @@ exports.improvementProjectPdfGeneration = async function (responseData, userId) 
 													})
 												}
 											} else {
+												console.log('error167s')
 												return resolve({
 													status: CONSTANTS.common.STATUS_FAILURE,
 													message: pdfDownloadableUrl.message
@@ -177,6 +180,7 @@ exports.improvementProjectPdfGeneration = async function (responseData, userId) 
 								}
 							})
 							.catch((err) => {
+								console.log('error')
 								resolve(err)
 							})
 					}
