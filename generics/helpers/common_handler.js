@@ -300,21 +300,25 @@ exports.improvementProjectPdfGeneration = async function (responseData, userId) 
 												let pdfDownloadableUrl = await filesHelper.getDownloadableUrl(
 													uploadFileResponse.data
 												)
-
+												console.log('pdfDownloadableUrl', pdfDownloadableUrl)
 												if (
 													pdfDownloadableUrl.result &&
 													Object.keys(pdfDownloadableUrl.result).length > 0
 												) {
 													fs.readdir(imgPath, (err, files) => {
+														console.log('check 1')
 														if (err) throw err
 														let i = 0
+														console.log('check 2')
 														// Delete all files in the temporary directory
 														for (const file of files) {
+															console.log('check 3')
 															fs.unlink(path.join(imgPath, file), (err) => {
 																if (err) throw err
 															})
 
 															if (i == files.length) {
+																console.log('check 4')
 																fs.unlink('../../' + currentTempFolder, (err) => {
 																	if (err) throw err
 																})
@@ -323,14 +327,14 @@ exports.improvementProjectPdfGeneration = async function (responseData, userId) 
 																	path.dirname(file).split(path.sep).pop()
 																)
 															}
-
+															console.log('check 5')
 															i = i + 1
 														}
 													})
 													rimraf(imgPath, function () {
 														console.log('done')
 													})
-
+													console.log('check 6')
 													return resolve({
 														success: CONSTANTS.common.SUCCESS,
 														message: pdfDownloadableUrl.message,
