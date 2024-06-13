@@ -72,7 +72,7 @@ keyWords = None
 entityTypeId = None
 solutionDescription = None
 creator = None
-dikshaLoginId = None
+elevateProjectLoginId = None
 criteriaName = None
 solutionId = None
 API_log = None
@@ -115,7 +115,7 @@ certificatetemplateid = None
 question_sequence_arr = []
 
 # program creation function 
-def programCreation(accessToken,parentFolder,externalId,pName,pDescription,roles):
+def programCreation(accessToken,parentFolder,externalId,pName,pDescription,roles,userId):
     # accessToken, parentFolder, externalId, pName, pDescription, keywords, entities, roles, orgIds,entitiesPGM,mainRole,rolesPGM
     messageArr = []
     messageArr.append("++++++++++++ Program Creation ++++++++++++")
@@ -136,11 +136,11 @@ def programCreation(accessToken,parentFolder,externalId,pName,pDescription,roles
       ],
       "keywords" : [],
       "concepts" : [],
-      "userId":"",
+      "userId":userId,
       "imageCompression" : {
           "quality" : 10
       },
-      "components" : [ 
+      "components" : [
       ],
        "scope": {
             "entityType": scopeEntityType,
@@ -212,8 +212,8 @@ def programmappingpdpmsheetcreation(MainFilePath,accessToken, program_file,progr
 
             extIdPGM = dictDetailsEnv['Program ID'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Program ID'] else terminatingMessage("\"Program ID\" must not be Empty in \"Program details\" sheet")
 
-            programdesigner = dictDetailsEnv['Diksha username/user id/email id/phone no. of Program Designer'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Program ID'] else terminatingMessage("\"Diksha username/user id/email id/phone no. of Program Designer\" must not be Empty in \"Program details\" sheet")
-            # userDetails = fetchUserDetails(environment, accessToken, programdesigner)
+            programdesigner = dictDetailsEnv['elevateProject username/user id/email id/phone no. of Program Designer'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Program ID'] else terminatingMessage("\"elevateProject username/user id/email id/phone no. of Program Designer\" must not be Empty in \"Program details\" sheet")
+            userDetails = fetchUserDetails(environment, accessToken, programdesigner)
             
             creatorKeyCloakId = userDetails[0]
             creatorName = userDetails[1]
@@ -242,15 +242,15 @@ def programmappingpdpmsheetcreation(MainFilePath,accessToken, program_file,progr
                                   col_index_env in range(detailsEnvSheet.ncols)}
 
                 if str(dictDetailsEnv['Is a SSO user?']).strip() == "YES":
-                    programmanagername2 = dictDetailsEnv['Diksha user id ( profile ID)'] if dictDetailsEnv['Diksha user id ( profile ID)'] else terminatingMessage("\"Diksha user id ( profile ID)\" must not be Empty in \"Program details\" sheet")
+                    programmanagername2 = dictDetailsEnv['elevateProject user id ( profile ID)'] if dictDetailsEnv['elevateProject user id ( profile ID)'] else terminatingMessage("\"elevateProject user id ( profile ID)\" must not be Empty in \"Program details\" sheet")
                 else:
                     try :
-                        programmanagername2 = dictDetailsEnv['Login ID on DIKSHA'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Login ID on DIKSHA'] else terminatingMessage("\"Login ID on DIKSHA\" must not be Empty in \"Program details\" sheet")
-                        # userDetails = fetchUserDetails(environment, accessToken, programmanagername2)
+                        programmanagername2 = dictDetailsEnv['Login ID on elevateProject'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Login ID on elevateProject'] else terminatingMessage("\"Login ID on elevateProject\" must not be Empty in \"Program details\" sheet")
+                        userDetails = fetchUserDetails(environment, accessToken, programmanagername2)
                     except :
-                        programmanagername2 = dictDetailsEnv['Diksha user id ( profile ID)'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Diksha user id ( profile ID)'] else terminatingMessage("\"Diksha user id ( profile ID)\" must not be Empty in \"Program details\" sheet")
-                        # userDetails = fetchUserDetails(environment, accessToken, programmanagername2)
-                # userDetails = fetchUserDetails(environment, accessToken, programmanagername2)
+                        programmanagername2 = dictDetailsEnv['elevateProject user id ( profile ID)'].encode('utf-8').decode('utf-8') if dictDetailsEnv['elevateProject user id ( profile ID)'] else terminatingMessage("\"elevateProject user id ( profile ID)\" must not be Empty in \"Program details\" sheet")
+                        userDetails = fetchUserDetails(environment, accessToken, programmanagername2)
+                        userDetails = fetchUserDetails(environment, accessToken, programmanagername2)
                 creatorKeyCloakId = userDetails[0]
                 creatorName = userDetails[1]
                 if "PROGRAM_MANAGER" in userDetails[3]:
@@ -317,6 +317,7 @@ def check_sequence(arr):
 def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
     program_file = filePathAddPgm
     # open excel file 
+    userDetails = fetchUserDetails(environment, accessToken, 'programdesigneremail@gmail.com')
     wbPgm = xlrd.open_workbook(filePathAddPgm, on_demand=True)
     global programNameInp
     sheetNames = wbPgm.sheet_names()
@@ -404,14 +405,8 @@ def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
                         
                         if "teacher" in mainRole.strip().lower():
                             rolesPGM = str(rolesPGM).strip() + ",TEACHER"
-                        # userDetails = fetchUserDetails(environment, accessToken, dictDetailsEnv['Diksha username/user id/email id/phone no. of Program Designer'])
-                        
-                        userDetails = [""] #mocking this API call as we have to work more in the user service to enable user search
-                        
-                        # OrgName=userDetails[4]
-                        creatorKeyCloakId = userDetails[0]
-                        # creatorName = userDetails[2]
-                        
+                        userDetails = fetchUserDetails(environment, accessToken, dictDetailsEnv['elevateProject username/user id/email id/phone no. of Program Designer'])
+                        userId = userDetails[0]
                         messageArr = []
 
                         scopeEntityType = EntityType
@@ -425,7 +420,7 @@ def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
                         # sys.exit()
 
                         # call function to create program 
-                        programCreation(accessToken,parentFolder,extIdPGM,programNameInp,proDesc,roles)
+                        programCreation(accessToken,parentFolder,extIdPGM,programNameInp,proDesc,roles,userId)
                         # accessToken, parentFolder, extIdPGM, programNameInp, descriptionPGM,keywordsPGM.lstrip().rstrip().split(","),mainRole,rolesPGM
                         # sys.exit()
                         # programmappingpdpmsheetcreation(MainFilePath, accessToken, program_file, extIdPGM,parentFolder)
@@ -437,8 +432,10 @@ def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
                         if getProgramInfo(accessToken, parentFolder, extIdPGM):
                             print("Program Created SuccessFully.")
                     else :
-                        programCreation(accessToken,parentFolder,extIdPGM,programNameInp,proDesc,roles)
-                        getProgramInfo(accessToken, parentFolder, extIdPGM)
+                         userDetails = fetchUserDetails(environment, accessToken, dictDetailsEnv['elevateProject username/user id/email id/phone no. of Program Designer'])
+                         userId = userDetails[0]
+                         programCreation(accessToken,parentFolder,extIdPGM,programNameInp,proDesc,roles,userId)
+                         getProgramInfo(accessToken, parentFolder, extIdPGM)
 
             elif sheetEnv.strip().lower() == 'resource details':
                 # checking Resource details sheet 
@@ -690,38 +687,33 @@ def checkEmailValidation(email):
         return False
 
 # Fetch user details 
-def fetchUserDetails(environment, accessToken, dikshaId):
+def fetchUserDetails(environment, accessToken, elevateProjectId):
     global OrgName
-    url = config.get(environment, 'elevateuserhost') + config.get(environment, 'userInfoApiUrl')
+    url = config.get(environment, 'elevateprojecthost') + config.get(environment, 'userInfoApiUrl')
     messageArr = ["User search API called."]
     headers = {'Content-Type': 'application/json',
                'internal-access-token': config.get(environment, 'internal-access-token'),
                'x-authenticated-user-token': accessToken}
-    isEmail = checkEmailValidation(dikshaId.lstrip().rstrip())
+    isEmail = checkEmailValidation(elevateProjectId.lstrip().rstrip())
     if isEmail:
-        body = "{\n  \"request\": {\n    \"filters\": {\n    \t\"email\": \"" + dikshaId.lstrip().rstrip() + "\"\n    },\n      \"fields\" :[],\n    \"limit\": 1000,\n    \"sort_by\": {\"createdDate\": \"desc\"}\n  }\n}"
+        body = "{\n  \"request\": {\n    \"filters\": {\n    \t\"email\": \"" + elevateProjectId.lstrip().rstrip() + "\"\n    },\n      \"fields\" :[],\n    \"limit\": 1000,\n    \"sort_by\": {\"createdDate\": \"desc\"}\n  }\n}"
     else:
-        body = "{\n  \"request\": {\n    \"filters\": {\n    \t\"userName\": \"" + dikshaId.lstrip().rstrip() + "\"\n    },\n      \"fields\" :[],\n    \"limit\": 1000,\n    \"sort_by\": {\"createdDate\": \"desc\"}\n  }\n}"
-
+        body = "{\n  \"request\": {\n    \"filters\": {\n    \t\"userName\": \"" + elevateProjectId.lstrip().rstrip() + "\"\n    },\n      \"fields\" :[],\n    \"limit\": 1000,\n    \"sort_by\": {\"createdDate\": \"desc\"}\n  }\n}"
     responseUserSearch = requests.request("POST", url, headers=headers, data=body)
+    rootOrgId = 1  # Replace this with the actual value you need
+    OrgName = []
     if responseUserSearch.status_code == 200:
         responseUserSearch = responseUserSearch.json()
-        if responseUserSearch['result']['response']['content']:
-            userKeycloak = responseUserSearch['result']['response']['content'][0]['userId']
-            userName = responseUserSearch['result']['response']['content'][0]['userName']
-            firstName = responseUserSearch['result']['response']['content'][0]['firstName']
-            rootOrgId = responseUserSearch['result']['response']['content'][0]['rootOrgId']
-            for index in responseUserSearch['result']['response']['content'][0]['organisations']:
-                if rootOrgId == index['organisationId']:
-                    roledetails = index['roles']
-                    rootOrgName = index['orgName']
-                    OrgName.append(index['orgName'])
-            print(roledetails)
+        if responseUserSearch['result']:
+            userKeycloak = responseUserSearch['result']['id']
+            userName = responseUserSearch['result']['name']
+            rootOrgName = responseUserSearch['result']['organization']['name']
+            rootOrgId = responseUserSearch['result']['organization']['id']
         else:
-            terminatingMessage("-->Given username/email is not present in DIKSHA platform<--.")
+            terminatingMessage("-->Given username/email is not present in elevateProject platform<--.")
     else:
         terminatingMessage("User fetch API failed. Check logs.")
-    return [userKeycloak, userName, firstName,roledetails,rootOrgName,rootOrgId]
+    return [userKeycloak, userName,rootOrgName,rootOrgId]
 
 # Print message and terminate the program
 def terminatingMessage(msg):
@@ -733,8 +725,8 @@ def fetchEntityId(solutionName_for_folder_path, accessToken, entitiesNameList, s
     urlFetchEntityListApi = config.get(environment, 'elevateentityhost')+config.get(environment, 'searchForLocation')
     headerFetchEntityListApi = {
         'Content-Type': config.get(environment, 'Content-Type'),
-        'X-authenticated-token': accessToken,
-        'internal_access_token': config.get(environment, 'internal-access-token'),
+        # 'X-authenticated-token': accessToken,
+        'internal-access-token': config.get(environment, 'internal-access-token'),
     }
     payload = {
 
@@ -859,7 +851,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
     # 1-with rubrics , 2 - with out rubrics , 3 - survey , 4 - Project 5 - With rubric and IMP
     typeofSolutin = 0
 
-    global environment, observationId, solutionName, pointBasedValue, entityType, allow_multiple_submissions, programName, userEntity, roles, isProgramnamePresent, solutionLanguage, keyWords, entityTypeId, solutionDescription, creator, dikshaLoginId
+    global environment, observationId, solutionName, pointBasedValue, entityType, allow_multiple_submissions, programName, userEntity, roles, isProgramnamePresent, solutionLanguage, keyWords, entityTypeId, solutionDescription, creator, elevateProjectLoginId
 
     if (len(rubrics_sheet_names) == len(sheetNames1)) and ((set(rubrics_sheet_names) == set(sheetNames1))):
         print("--->Observation with rubrics file detected.<---")
@@ -913,7 +905,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
             else:
                 if sheetEnv.strip().lower() == 'details':
                     print("--->Checking details sheet...")
-                    detailsCols = ["observation_solution_name", "observation_solution_description", "Diksha_loginId","Name_of_the_creator", "language", "allow_multiple_submissions", "keywords","scoring_system", "entity_type"]
+                    detailsCols = ["observation_solution_name", "observation_solution_description", "elevateProject_loginId","Name_of_the_creator", "language", "allow_multiple_submissions", "keywords","scoring_system", "entity_type"]
                     detailsEnvSheet = wbObservation1.sheet_by_name(sheetEnv)
                     keysEnv = [detailsEnvSheet.cell(1, col_index_env).value for col_index_env in
                                range(detailsEnvSheet.ncols)]
@@ -923,10 +915,10 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                             col_index_env in range(detailsEnvSheet.ncols)}
                         if set(detailsCols) == set(dictDetailsEnv.keys()):
                             solutionName = dictDetailsEnv['observation_solution_name'].encode('utf-8').decode('utf-8') if dictDetailsEnv['observation_solution_name'] else terminatingMessage("\"observation_solution_name\" must not be Empty in \"details\" sheet")
-                            dikshaLoginId = dictDetailsEnv['Diksha_loginId'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Diksha_loginId'] else terminatingMessage("\"Diksha_loginId\" must not be Empty in \"details\" sheet")
-                            # ccUserDetails = fetchUserDetails(environment, accessToken, dikshaLoginId)
+                            elevateProjectLoginId = dictDetailsEnv['elevateProject_loginId'].encode('utf-8').decode('utf-8') if dictDetailsEnv['elevateProject_loginId'] else terminatingMessage("\"elevateProject_loginId\" must not be Empty in \"details\" sheet")
+                            ccUserDetails = fetchUserDetails(environment, accessToken, elevateProjectLoginId)
                             if not "CONTENT_CREATOR" in ccUserDetails[3]:
-                                terminatingMessage("---> "+dikshaLoginId +" is not a CONTENT_CREATOR in Diksha " + environment)
+                                terminatingMessage("---> "+elevateProjectLoginId +" is not a CONTENT_CREATOR in elevateProject " + environment)
                             ccRootOrgName = ccUserDetails[4]
                             ccRootOrgId = ccUserDetails[5]
                             solutionDescription = dictDetailsEnv['observation_solution_description'].encode('utf-8').decode('utf-8')
@@ -1117,7 +1109,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
         # Point based value set as null by default for observation without rubrics
         pointBasedValue = "null"
         criteria_id_arr = []
-        detailsColNames = ['observation_solution_name', 'observation_solution_description', 'Diksha_loginId','language', 'keywords', 'entity_type', "scope_entity"]
+        detailsColNames = ['observation_solution_name', 'observation_solution_description', 'elevateProject_loginId','language', 'keywords', 'entity_type', "scope_entity"]
         criteriaColNames = ['criteria_id', 'criteria_name']
         questionsColNames = ["criteria_id","question_sequence","question_id","instance_parent_question_id","parent_question_id","show_when_parent_question_value_is","parent_question_value","page","question_number","question_primary_language","question_secondory_language","question_tip","question_hint","instance_identifier","question_response_type","date_auto_capture","response_required","min_number_value","max_number_value","file_upload","show_remarks","response(R1)","response(R1)_hint","response(R2)","response(R2)_hint","response(R3)","response(R3)_hint","response(R4)","response(R4)_hint","response(R5)","response(R5)_hint","response(R6)","response(R6)_hint","response(R7)","response(R7)_hint","response(R8)","response(R8)_hint","response(R9)","response(R9)_hint","response(R10)","response(R10)_hint","response(R11)","response(R11)_hint","response(R12)","response(R12)_hint","response(R13)","response(R13)_hint","response(R14)","response(R14)_hint","response(R15)","response(R15)_hint","response(R16)","response(R16)_hint","response(R17)","response(R17)_hint","response(R18)","response(R18)_hint","response(R19)","response(R19)_hint","response(R20)","response(R20)_hint","question_weightage","section_header"]
         for sheetColCheck in sheetNames1:
@@ -1154,11 +1146,11 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                             col_index_env in range(detailsEnvSheet.ncols)}
                         solutionName = dictDetailsEnv['observation_solution_name'].encode('utf-8').decode('utf-8') if dictDetailsEnv['observation_solution_name'] else terminatingMessage("\"observation_solution_name\" must not be Empty in \"details\" sheet")
                         solutionDescription = dictDetailsEnv['observation_solution_description'].encode('utf-8').decode('utf-8') if dictDetailsEnv['observation_solution_description'] else terminatingMessage("\"observation_solution_description\" must not be Empty in \"details\" sheet")
-                        dikshaLoginId = dictDetailsEnv['Diksha_loginId'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Diksha_loginId'] else terminatingMessage("\"Diksha_loginId\" must not be Empty in \"details\" sheet")
+                        elevateProjectLoginId = dictDetailsEnv['elevateProject_loginId'].encode('utf-8').decode('utf-8') if dictDetailsEnv['elevateProject_loginId'] else terminatingMessage("\"elevateProject_loginId\" must not be Empty in \"details\" sheet")
                         creator = dictDetailsEnv['Name_of_the_creator'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Name_of_the_creator'] else terminatingMessage("\"Name_of_the_creator\" must not be Empty in \"details\" sheet")
-                        # ccUserDetails = fetchUserDetails(environment, accessToken, dikshaLoginId)
+                        ccUserDetails = fetchUserDetails(environment, accessToken, elevateProjectLoginId)
                         if not "CONTENT_CREATOR" in ccUserDetails[3]:
-                            terminatingMessage("---> "+dikshaLoginId +" is not a CONTENT_CREATOR in Diksha " + environment)
+                            terminatingMessage("---> "+elevateProjectLoginId +" is not a CONTENT_CREATOR in elevateProject " + environment)
                         ccRootOrgName = ccUserDetails[4]
                         ccRootOrgId = ccUserDetails[5]
                             
@@ -1274,7 +1266,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                         "\"response_required\" must not be Empty in \"details\" sheet")
     elif typeofSolutin == 4:
         criteria_id_arr = list()
-        projectDetailsCols = ["title", "projectId", "is a SSO user?", "Diksha_loginId", "categories",
+        projectDetailsCols = ["title", "projectId", "is a SSO user?", "elevateProject_loginId", "categories",
                               "objective","duration","keywords"]
         detailsColCheck = wbObservation1.sheet_by_name('Project upload')
         keysColCheckDetai = [detailsColCheck.cell(0, col_index_check).value for col_index_check in
@@ -1334,7 +1326,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                     projectSSOuser = dictDetailsEnv["is a SSO user?"] if dictDetailsEnv[
                         "is a SSO user?"] else terminatingMessage(
                         "\"is a SSO user?\" must not be Empty in \"Project Upload\" sheet")
-                    projectDikshaloginid = dictDetailsEnv["Diksha_loginId"].encode('utf-8').decode('utf-8') if dictDetailsEnv["Diksha_loginId"] else terminatingMessage("\"Diksha_loginId\" must not be Empty in \"Project Upload\" sheet")
+                    projectelevateProjectloginid = dictDetailsEnv["elevateProject_loginId"].encode('utf-8').decode('utf-8') if dictDetailsEnv["elevateProject_loginId"] else terminatingMessage("\"elevateProject_loginId\" must not be Empty in \"Project Upload\" sheet")
                     projectDuration = dictDetailsEnv["duration"].encode('utf-8').decode('utf-8') if dictDetailsEnv[
                         "duration"] else terminatingMessage(
                         "\"duration\" must not be Empty in \"Project Upload\" sheet")
@@ -2504,7 +2496,6 @@ def uploadCriteriaRubrics(solutionName_for_folder_path, wbObservation, millisAdd
                 dictCriteriaRubric = {keys[col_index]: criteriaRubricSheet.cell(row_index, col_index).value for
                                       col_index in range(criteriaRubricSheet.ncols)}
                 criteriaRubricUpload['externalId'] = dictCriteriaRubric['criteriaId'] + "_" + str(millisAddObs)
-                print(criteriaRubricUpload['externalId'])
                 criteriaRubricUpload['name'] = dictSolCritLookUp[criteriaRubricUpload['externalId']][1]
                 criteriaRubricUpload['criteriaId'] = dictSolCritLookUp[criteriaRubricUpload['externalId']][0]
                 if dictCriteriaRubric['weightage']:
@@ -3021,7 +3012,7 @@ def createSurveySolution(parentFolder, wbSurvey, accessToken):
                     sys.exit()
                 else:
                     surveySolutionCreationReqBody['creator'] = dictDetailsEnv['Name_of_the_creator']
-                # userDetails = fetchUserDetails(environment, accessToken, dictDetailsEnv['survey_creator_username'])
+                userDetails = fetchUserDetails(environment, accessToken, dictDetailsEnv['survey_creator_username'])
                 surveySolutionCreationReqBody['author'] = userDetails[0]
                 if dictDetailsEnv["survey_start_date"]:
                     if type(dictDetailsEnv["survey_start_date"]) == str:
@@ -3215,7 +3206,7 @@ def prepareProjectAndTasksSheets(project_inputFile, projectName_for_folder_path,
                     (get_close_matches(cat.strip().lower().replace(" ", ""), categories_list)[0]))
         global projectCreator, projectAuthor
 
-        projectAuthor = str(dictProjectDetails["Diksha_loginId"]).encode('utf-8').decode('utf-8').strip()
+        projectAuthor = str(dictProjectDetails["elevateProject_loginId"]).encode('utf-8').decode('utf-8').strip()
         # recommendedFor = str(dictProjectDetails["recommendedFor"]).encode('utf-8').decode('utf-8').strip()
         objective = str(dictProjectDetails["objective"]).encode('utf-8').decode('utf-8').strip()
         entityType = None
@@ -3234,7 +3225,7 @@ def prepareProjectAndTasksSheets(project_inputFile, projectName_for_folder_path,
                 project_values.append(lr_name)
                 lr_link_id = lr_link.split("/")[-1]
                 project_values.append(lr_link)
-                project_values.append("Diksha")
+                project_values.append("elevateProject")
                 project_values.append(lr_link_id)
                 lr_value_count += 1
         remaining_project_values = ["rationale", "primaryAudience", "taskCreationForm", "duration", "concepts",
@@ -3346,7 +3337,7 @@ def prepareProjectAndTasksSheets(project_inputFile, projectName_for_folder_path,
                    task_values.append(task_lr_name)
                    task_lr_link_id = task_lr_link.split("/")[-1]
                    task_values.append(task_lr_link)
-                   task_values.append("Diksha")
+                   task_values.append("elevateProject")
                    task_values.append(task_lr_link_id)
                    task_lr_value_count += 1
            task_values.append(taskminNoOfSubmissionsRequired)
@@ -4095,9 +4086,9 @@ def solutionCreationAndMapping(projectName_for_folder_path, entityToUpload, list
                 bodySolutionUpdate = {
                     "scope": {"entityType": scopeEntityType, "entities": scopeEntities, "roles": scopeRoles}}
                 solutionUpdate(projectName_for_folder_path, accessToken, solutionId, bodySolutionUpdate)
-                # userDetails = fetchUserDetails(environment, accessToken, projectAuthor)
-                # matchedShikshalokamLoginId = userDetails[0]
-                # projectCreator = userDetails[2]
+                userDetails = fetchUserDetails(environment, accessToken, projectAuthor)
+                matchedShikshalokamLoginId = userDetails[0]
+                projectCreator = userDetails[2]
                 bodySolutionUpdate = {
                     "creator": projectCreator, "author": matchedShikshalokamLoginId}
                 solutionUpdate(projectName_for_folder_path, accessToken, solutionId, bodySolutionUpdate)
@@ -4389,7 +4380,7 @@ def mainFunc(MainFilePath, programFile, addObservationSolution, millisecond, isP
                 print("No program name detected.")
         elif typeofSolution == 2:
             criteriaUpload(parentFolder, wbObservation, millisecond, accessToken, "criteria", False)
-            # userDetails = fetchUserDetails(environment, accessToken, dikshaLoginId)
+            userDetails = fetchUserDetails(environment, accessToken, elevateProjectLoginId)
             matchedShikshalokamLoginId = userDetails[0]
             
             frameworkExternalId = frameWorkUpload(parentFolder, wbObservation, millisecond, accessToken)

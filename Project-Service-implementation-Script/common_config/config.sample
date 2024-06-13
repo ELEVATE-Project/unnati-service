@@ -42,7 +42,7 @@ keyclockapicontent-type = application/x-www-form-urlencoded
 content-type = application/json
 
 # Endpoint for fetching user information
-userinfoapiurl = api/user/v1/account/search
+userinfoapiurl = project/v1/profile/read
 
 # Endpoint for searching locations in the entity management service
 searchforlocation = entity-management/v1/entities/find
@@ -135,7 +135,7 @@ keyclockapicontent-type = application/x-www-form-urlencoded
 content-type = application/json
 
 # Endpoint for fetching user information
-userinfoapiurl = api/user/v1/account/search
+userinfoapiurl = project/v1/profile/read
 
 # Endpoint for searching locations in the entity management service
 searchforlocation = project/v1/programs/create

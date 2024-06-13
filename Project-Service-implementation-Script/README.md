@@ -3,9 +3,8 @@
 Python script to upload a program and add multiple resources like Projects , Surveys , Observations (with and without rubrics) to it and also upload project add multiple resources like task.
 
 ### Resource templates
-- [Programs](https://docs.google.com/spreadsheets/d/1Q4z1d1aUHY5VVrco2TvHPuWEq7314glUjFxB-jYjfiY/edit?usp=share_link)
-- [Projects](https://docs.google.com/spreadsheets/d/1YnWTcHrmvDYVedGktKr2V25G7qBNUmYjwk1huHwGwNc/edit?usp=share_link)
-
+- [Programs](https://docs.google.com/spreadsheets/d/1_pEomGIWxVZYwneQwY606zt26C72p9DU/edit?usp=drive_link&ouid=113799545932705393937&rtpof=true&sd=true)
+- [Projects](https://docs.google.com/spreadsheets/d/11a9HxukXCX0_LPNZh9OVDeStUYwC0Pio/edit?usp=drive_link&ouid=113799545932705393937&rtpof=true&sd=true)
 
 - Pull the code from latest release branch
 - To clone the repository 
