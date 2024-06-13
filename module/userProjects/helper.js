@@ -1769,7 +1769,10 @@ module.exports = class UserProjectsHelper {
 	 * share project and task pdf report.
 	 * @method
 	 * @name share
-	 * @param {String} [projectId] - projectId.
+	 * @param {String} [projectId] 		- projectId.
+	 * @param {Array} [projectId] 		- project task ids.
+	 * @param {String} [userId] 		- UserId.
+	 * @param {String} [appVersion] 	- appVersion.
 	 * @returns {Object} Downloadable pdf url.
 	 */
 
@@ -1960,8 +1963,14 @@ module.exports = class UserProjectsHelper {
 				if (UTILS.revertStatusorNot(appVersion)) {
 					projectDocument.status = UTILS.revertProjectStatus(projectDocument.status)
 				}
+				let response
+				// if projectpdf is requested generate that else project task pdf can be called
+				if (projectPdf) {
+					response = await common_handler.improvementProjectPdfGeneration(projectDocument, userId)
+				} else {
+					response = await common_handler.improvementProjectTaskPdfGeneration(projectDocument, userId)
+				}
 
-				let response = await common_handler.unnatiViewFullReportPdfGeneration(projectDocument, userId)
 				if (response && response.success) {
 					return resolve({
 						success: true,
