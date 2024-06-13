@@ -98,14 +98,14 @@ exports.improvementProjectPdfGeneration = async function (responseData, userId) 
 						optionsHtmlToPdf.formData.marginLeft = 0
 						optionsHtmlToPdf.formData.marginTop = 0
 						optionsHtmlToPdf.formData.marginBottom = 0
-
+						console.log('errorqqq++++++')
 						rp(optionsHtmlToPdf)
 							.then(function (responseHtmlToPdf) {
 								let pdfBuffer = Buffer.from(responseHtmlToPdf.body)
 
 								if (responseHtmlToPdf.statusCode == 200) {
 									let pdfFile = uuidv4() + '.pdf'
-
+									console.log('errorqqq-----')
 									fs.writeFile(dir + '/' + pdfFile, pdfBuffer, 'binary', async function (err) {
 										if (err) {
 											console.log('errorqqq')
@@ -117,6 +117,7 @@ exports.improvementProjectPdfGeneration = async function (responseData, userId) 
 											let uploadFileResponse = await uploadPdfToCloud(pdfFile, userId, dir)
 
 											if (uploadFileResponse.success) {
+												console.log('yeaaherrorqqq')
 												// Get downloadable URL for the uploaded PDF
 												let pdfDownloadableUrl = await filesHelper.getDownloadableUrl(
 													uploadFileResponse.data
