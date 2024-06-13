@@ -29,7 +29,6 @@ exports.improvementProjectPdfGeneration = async function (responseData, userId) 
 
 			// Construct the full local path for the temporary folder
 			var imgPath = path.resolve(__dirname, '../../', currentTempFolder)
-			console.log('++++++++++++++++++++')
 			if (!fs.existsSync(imgPath)) {
 				fs.mkdirSync(imgPath)
 			}
@@ -38,7 +37,6 @@ exports.improvementProjectPdfGeneration = async function (responseData, userId) 
 				path.resolve(__dirname + '/../../public/css/bootstrap.min.css'),
 				imgPath + '/style.css'
 			)
-			console.log('++++++++++++++++++++***')
 
 			let subTasksCount = 0
 			let completedTaskCount = 0
@@ -72,10 +70,8 @@ exports.improvementProjectPdfGeneration = async function (responseData, userId) 
 			if (!fs.existsSync(dir)) {
 				fs.mkdirSync(dir)
 			}
-			console.log('++++++++++++++++++----++')
 
 			fs.writeFile(dir + '/index.html', dataEjsRender, async function (errWriteFile) {
-				console.log('++++++++noww++++++++++----++')
 				if (errWriteFile) {
 					return reject(errWriteFile) // Reject the promise on error
 				} else {
@@ -104,7 +100,6 @@ exports.improvementProjectPdfGeneration = async function (responseData, userId) 
 					optionsHtmlToPdf.formData.marginLeft = 0
 					optionsHtmlToPdf.formData.marginTop = 0
 					optionsHtmlToPdf.formData.marginBottom = 0
-					console.log('++++++++nowdddw++++++++++----++')
 					try {
 						const responseHtmlToPdf = await rp(optionsHtmlToPdf)
 						let pdfBuffer = Buffer.from(responseHtmlToPdf.body)
@@ -124,13 +119,13 @@ exports.improvementProjectPdfGeneration = async function (responseData, userId) 
 
 									if (uploadFileResponse.success) {
 										// Get downloadable URL for the uploaded PDF
-										let pdfDownloadableUrl = await filesHelper.getDownloadableUrl(
-											uploadFileResponse.data
-										)
-										console.log('pdfDownloadableUrl : ', pdfDownloadableUrl)
+										let pdfDownloadableUrl = await filesHelper.getDownloadableUrl([
+											uploadFileResponse.data,
+										])
+
 										if (
-											pdfDownloadableUrl.result &&
-											Object.keys(pdfDownloadableUrl.result).length > 0
+											pdfDownloadableUrl.result[0] &&
+											Object.keys(pdfDownloadableUrl.result[0]).length > 0
 										) {
 											fs.readdir(imgPath, (err, files) => {
 												if (err) reject(err)
@@ -161,7 +156,7 @@ exports.improvementProjectPdfGeneration = async function (responseData, userId) 
 											return resolve({
 												success: CONSTANTS.common.SUCCESS,
 												message: pdfDownloadableUrl.message,
-												pdfUrl: pdfDownloadableUrl.result.url,
+												pdfUrl: pdfDownloadableUrl.result[0].url,
 											})
 										} else {
 											console.log('error')
@@ -174,7 +169,6 @@ exports.improvementProjectPdfGeneration = async function (responseData, userId) 
 											})
 										}
 									} else {
-										console.log('error167s')
 										return resolve({
 											status: CONSTANTS.common.STATUS_FAILURE,
 											message: pdfDownloadableUrl.message
@@ -198,194 +192,15 @@ exports.improvementProjectPdfGeneration = async function (responseData, userId) 
 	})
 }
 
-exports.improvementProjectPdfGeneration = async function (responseData, userId) {
-	return new Promise(async function (resolve, reject) {
-		// construct a temp folder path
-		let currentTempFolder = 'tmp/' + uuidv4() + '--' + Math.floor(Math.random() * (10000 - 10 + 1) + 10)
-
-		// Construct the full local path for the temporary folder
-		var imgPath = path.resolve(__dirname, '../../', currentTempFolder)
-		console.log('++++++++++++++++++++')
-		if (!fs.existsSync(imgPath)) {
-			fs.mkdirSync(imgPath)
-		}
-
-		let bootstrapStream = await copyBootStrapFile(
-			path.resolve(__dirname + '/../../public/css/bootstrap.min.css'),
-			imgPath + '/style.css'
-		)
-		console.log('++++++++++++++++++++***')
-
-		let subTasksCount = 0
-		let completedTaskCount = 0
-		if (responseData.tasks.length > 0) {
-			responseData.tasks.forEach((element) => {
-				subTasksCount = subTasksCount + element.children.length
-				if (element.status == 'completed') {
-					completedTaskCount++
-				}
-			})
-		}
-
-		responseData.completedTaskCount = completedTaskCount
-
-		try {
-			let FormData = []
-
-			let obj = {
-				subTasks: subTasksCount,
-				tasksArray: responseData.tasks,
-				response: responseData,
-			}
-			// find ejs file for html generation
-			ejs.renderFile(path.resolve(__dirname + '/../../views/improvementProjectTemplate.ejs'), {
-				data: obj,
-			}).then(function (dataEjsRender) {
-				var dir = imgPath
-				if (!fs.existsSync(dir)) {
-					fs.mkdirSync(dir)
-				}
-				console.log('++++++++++++++++++----++')
-
-				fs.writeFile(dir + '/index.html', dataEjsRender, function (errWriteFile, dataWriteFile) {
-					if (errWriteFile) {
-						throw errWriteFile
-					} else {
-						// generate pdf from html
-						let optionsHtmlToPdf = GotenbergConnection.getGotenbergConnection()
-
-						optionsHtmlToPdf.formData = {
-							files: [],
-						}
-						FormData.push({
-							value: fs.createReadStream(dir + '/index.html'),
-							options: {
-								filename: 'index.html',
-							},
-						})
-						FormData.push({
-							value: fs.createReadStream(dir + '/style.css'),
-							options: {
-								filename: 'style.css',
-							},
-						})
-						optionsHtmlToPdf.formData.files = FormData
-						optionsHtmlToPdf.formData.paperHeight = 4.2
-						optionsHtmlToPdf.formData.emulatedMediaType = 'screen'
-						optionsHtmlToPdf.formData.marginRight = 0
-						optionsHtmlToPdf.formData.marginLeft = 0
-						optionsHtmlToPdf.formData.marginTop = 0
-						optionsHtmlToPdf.formData.marginBottom = 0
-						console.log('errorqqq++++++')
-						rp(optionsHtmlToPdf)
-							.then(function (responseHtmlToPdf) {
-								let pdfBuffer = Buffer.from(responseHtmlToPdf.body)
-
-								if (responseHtmlToPdf.statusCode == 200) {
-									let pdfFile = uuidv4() + '.pdf'
-									console.log('errorqqq-----')
-									fs.writeFile(dir + '/' + pdfFile, pdfBuffer, 'binary', async function (err) {
-										if (err) {
-											console.log('errorqqq')
-											return console.log(err)
-										} else {
-											//pdfFile :  filename to upload
-											//userId : used to create directory to store the file
-											//dir : local file path to fetch the file
-											let uploadFileResponse = await uploadPdfToCloud(pdfFile, userId, dir)
-
-											if (uploadFileResponse.success) {
-												console.log('yeaaherrorqqq')
-												// Get downloadable URL for the uploaded PDF
-												let pdfDownloadableUrl = await filesHelper.getDownloadableUrl(
-													uploadFileResponse.data
-												)
-												console.log('pdfDownloadableUrl', pdfDownloadableUrl)
-												if (
-													pdfDownloadableUrl.result &&
-													Object.keys(pdfDownloadableUrl.result).length > 0
-												) {
-													fs.readdir(imgPath, (err, files) => {
-														console.log('check 1')
-														if (err) throw err
-														let i = 0
-														console.log('check 2')
-														// Delete all files in the temporary directory
-														for (const file of files) {
-															console.log('check 3')
-															fs.unlink(path.join(imgPath, file), (err) => {
-																if (err) throw err
-															})
-
-															if (i == files.length) {
-																console.log('check 4')
-																fs.unlink('../../' + currentTempFolder, (err) => {
-																	if (err) throw err
-																})
-																console.log(
-																	'path.dirname(filename).split(path.sep).pop()',
-																	path.dirname(file).split(path.sep).pop()
-																)
-															}
-															console.log('check 5')
-															i = i + 1
-														}
-													})
-													rimraf(imgPath, function () {
-														console.log('done')
-													})
-													console.log('check 6')
-													return resolve({
-														success: CONSTANTS.common.SUCCESS,
-														message: pdfDownloadableUrl.message,
-														pdfUrl: pdfDownloadableUrl.result.url,
-													})
-												} else {
-													console.log('error')
-													return resolve({
-														status: CONSTANTS.common.STATUS_FAILURE,
-														message: pdfDownloadableUrl.message
-															? pdfDownloadableUrl.message
-															: CONSTANTS.common.COULD_NOT_GENERATE_PDF,
-														pdfUrl: '',
-													})
-												}
-											} else {
-												console.log('error167s')
-												return resolve({
-													status: CONSTANTS.common.STATUS_FAILURE,
-													message: pdfDownloadableUrl.message
-														? pdfDownloadableUrl.message
-														: CONSTANTS.common.COULD_NOT_GENERATE_PDF,
-													pdfUrl: '',
-												})
-											}
-										}
-									})
-								}
-							})
-							.catch((err) => {
-								console.log('error')
-								resolve(err)
-							})
-					}
-				})
-			})
-		} catch (err) {
-			resolve(err)
-		}
-	})
-}
-
 /**
- * Improvement project taskspdf generation function.
+ * Improvement project tasks pdf generation function.
  * @function
  * @name improvementProjectTaskPdfGeneration
  * @param {Object} responseData 	- Project details
  * @param {String} userId 			- user identification
  * @returns {String} 				- returns pdf uploaded link.
  */
-//Improvement project task pdf generation function
+
 exports.improvementProjectTaskPdfGeneration = async function (responseData, userId) {
 	return new Promise(async function (resolve, reject) {
 		let currentTempFolder = 'tmp/' + uuidv4() + '--' + Math.floor(Math.random() * (10000 - 10 + 1) + 10)
@@ -474,13 +289,13 @@ exports.improvementProjectTaskPdfGeneration = async function (responseData, user
 
 											if (uploadFileResponse.success) {
 												// create downloadable URL
-												let pdfDownloadableUrl = await filesHelper.getDownloadableUrl(
-													uploadFileResponse.data
-												)
+												let pdfDownloadableUrl = await filesHelper.getDownloadableUrl([
+													uploadFileResponse.data,
+												])
 
 												if (
-													pdfDownloadableUrl.result &&
-													Object.keys(pdfDownloadableUrl.result).length > 0
+													pdfDownloadableUrl.result[0] &&
+													Object.keys(pdfDownloadableUrl.result[0]).length > 0
 												) {
 													fs.readdir(imgPath, (err, files) => {
 														if (err) throw err
@@ -511,7 +326,7 @@ exports.improvementProjectTaskPdfGeneration = async function (responseData, user
 													return resolve({
 														success: CONSTANTS.common.SUCCESS,
 														message: pdfDownloadableUrl.message,
-														pdfUrl: pdfDownloadableUrl.result.url,
+														pdfUrl: pdfDownloadableUrl.result[0].url,
 													})
 												} else {
 													return resolve({
