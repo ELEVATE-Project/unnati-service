@@ -212,4 +212,5 @@ module.exports = {
 	FILE_UPLOADED: 'File successfully uploaded to cloud',
 	PROJECT_TEMPLATE_ID_NOT_FOUND: 'Project tempalteId not found',
 	SOLUTION_TYPE_INVALID: 'Invalid solution type',
+	INPUT_IS_NOT_A_VALID_ARRAY: 'Input is not a valid array',
 }

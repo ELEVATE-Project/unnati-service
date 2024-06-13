@@ -108,6 +108,12 @@ module.exports = class FilesHelper {
 							result: {},
 						})
 					}
+					if (Array.isArray(downloadableUrl.result) && downloadableUrl.result.length > 0) {
+						downloadableUrl.result.forEach((currentResoponse) => {
+							currentResoponse['filePath'] = currentResoponse.payload.sourcePath
+							delete currentResoponse.payload
+						})
+					}
 					return resolve({
 						message: CONSTANTS.apiResponses.CLOUD_SERVICE_SUCCESS_MESSAGE,
 						result: downloadableUrl.result,
