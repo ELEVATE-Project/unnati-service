@@ -9,7 +9,7 @@
 const request = require('request')
 const userServiceUrl = process.env.USER_SERVICE_URL
 
-const profile = function (token, userId = '') {
+const profile = function (userId = '') {
 	return new Promise(async (resolve, reject) => {
 		try {
 			let url = userServiceUrl + CONSTANTS.endpoints.USER_READ
@@ -21,11 +21,9 @@ const profile = function (token, userId = '') {
 			const options = {
 				headers: {
 					'content-type': 'application/json',
-					'X-auth-token': 'bearer ' + token,
 					internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
 				},
 			}
-
 			request.get(url, options, userReadCallback)
 			let result = {
 				success: true,
@@ -41,7 +39,6 @@ const profile = function (token, userId = '') {
 						result.success = false
 					}
 				}
-
 				return resolve(result)
 			}
 			setTimeout(function () {

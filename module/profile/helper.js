@@ -1,51 +1,53 @@
 const axios = require('axios')
-const entityFind = require('../../generics/services/entity-management')
-const userServiceUrl = process.env.USER_SERVICE_URL
+// calling entities service for entity-managament
+const entityFind = require(GENERICS_FILES_PATH + '/services/entity-management')
+const profileRead = require(GENERICS_FILES_PATH + '/services/users')
 
 module.exports = class FormsHelper {
 	/**
 	 * @function read
 	 * @description Fetches and processes user profile data, including location details.
-	 * @param {Object} userId - The user details object containing the user's information.
+	 * @param {Object} userId - The userId ccontaining the userId.
 	 * @returns {Promise<Object>} - A promise that resolves with the processed user profile data or an error object.
 	 * @throws {Error} - Throws an error if the user details cannot be fetched or processed.
 	 **/
 	static read(userId) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				// Define headers for the user service request
-				let headers = {
-					internal_access_token: 'internal_access_token',
-					'Content-Type': 'application/json',
-				}
-				// Fetch user details from user service
-				const userResponse = await axios.get(
-					userServiceUrl + CONSTANTS.endpoints.USER_SERVICE_URL + userId.userInformation.userId,
-					{ headers }
-				)
-				// Check if user details were fetched successfully
-				if (userResponse.status !== 200) {
+				// Fetch user profile details using profileRead.profile function
+				const userResponse = await profileRead.profile(userId)
+
+				// Check if the user profile fetch was successful
+				if (!userResponse.success) {
 					throw new Error(CONSTANTS.common.STATUS_FAILURE)
 				}
-				const userDetails = userResponse.data.result
+				// Store the fetched user details
+				const userDetails = userResponse.data
 
-				const locationIds = await this.extractLocationIds(userDetails.meta)
-				// Fetch details of entities based on location IDs
-				const entityDetails = []
-				for (const id of locationIds) {
-					// Use the entityDocuments function to fetch entity details
-					const filterData = { _id: id }
-					const projection = ['_id', 'metaInformation.name']
-
-					// Use the entityDocuments function to fetch entity details
-					const response = await entityFind.entityDocuments(filterData, projection, userId.userToken)
-					// Check if the response is successful and has data
-					if (response.success && response.data.length > 0) {
-						entityDetails.push(response.data[0])
-					}
+				// Fetch location IDs associated with the user
+				const locationIds = await this.userLocationDetails(userDetails.meta)
+				if (locationIds.length < 0) {
+					throw new Error(CONSTANTS.common.STATUS_FAILURE)
 				}
+				// Construct the filter for querying entity documents using the $in operator
+				const filterData = {
+					_id: {
+						$in: locationIds,
+					},
+				}
+				// Define the fields to be projected in the entity documents
+				const projection = ['_id', 'metaInformation.name']
+				// Use the entityDocuments function to fetch entity details
+				const response = await entityFind.entityDocuments(filterData, projection, userId.userToken)
+				// Check if the response is successful and has data
+				const entityDetails = response.data
+				if (entityDetails.length < 0) {
+					throw new Error(CONSTANTS.common.STATUS_FAILURE)
+				}
+
 				// Process the user details to replace meta data with entity details
-				const processedResponse = await this.replaceMetaWithEntities(userDetails, entityDetails)
+				const processedResponse = await this.processUserDetailsResponse(userDetails, entityDetails)
+
 				return resolve(processedResponse)
 			} catch (error) {
 				return resolve({
@@ -61,7 +63,7 @@ module.exports = class FormsHelper {
 	 * @param {Object} meta - Meta information containing location IDs.
 	 * @returns {Array} - An array of location IDs.
 	 */
-	static async extractLocationIds(meta) {
+	static async userLocationDetails(meta) {
 		const locationIds = []
 		for (const key in meta) {
 			if (Array.isArray(meta[key])) {
@@ -81,14 +83,20 @@ module.exports = class FormsHelper {
 	 * @param {Array} entityDetails - Array of entity details.
 	 * @returns {Object} - Updated user details with entity information.
 	 */
-	static async replaceMetaWithEntities(userDetails, entityDetails) {
+	static async processUserDetailsResponse(userDetails, entityDetails) {
+		// Get all keys from the meta object in userDetails
 		const metaKeys = Object.keys(userDetails.meta)
+		// Loop through each key in the meta object
 		for (const key of metaKeys) {
+			// Get the IDs associated with the current meta key
 			const ids = userDetails.meta[key]
+			// Check if the meta value is an array of IDs
 			if (Array.isArray(ids)) {
-				// If the meta value is an array, replace each ID with entity details
+				// Replace each ID in the array with the corresponding entity details
 				userDetails[key] = ids.map((id) => {
+					// Find the entity that matches the current ID
 					const entity = entityDetails.find((entity) => entity._id === id)
+					// Return the formatted entity details or a placeholder if not found
 					return entity
 						? { value: entity._id, label: entity.metaInformation.name }
 						: { value: id, label: 'Unknown' }
@@ -96,6 +104,7 @@ module.exports = class FormsHelper {
 			} else if (typeof ids === 'string') {
 				// If the meta value is a string, replace it with entity details
 				const entity = entityDetails.find((entity) => entity._id === ids)
+				// Update the userDetails with the formatted entity details or a placeholder if not found
 				userDetails[key] = entity
 					? { value: entity._id, label: entity.metaInformation.name }
 					: { value: ids, label: 'Unknown' }

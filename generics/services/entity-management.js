@@ -20,7 +20,7 @@ const entityManagementServiceUrl = process.env.ENTITY_MANAGEMENT_SERVICE_URL
  * @returns {JSON} - List of entity data.
  */
 
-const entityDocuments = function (filterData = 'all', projection = 'all', userToken) {
+const entityDocuments = function (filterData = 'all', projection = 'all') {
 	return new Promise(async (resolve, reject) => {
 		try {
 			const url = entityManagementServiceUrl + CONSTANTS.endpoints.FIND_ENTITY_DOCUMENTS
@@ -28,7 +28,6 @@ const entityDocuments = function (filterData = 'all', projection = 'all', userTo
 				headers: {
 					'content-type': 'application/json',
 					'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
-					'x-authenticated-token': userToken,
 				},
 				json: {
 					query: filterData,

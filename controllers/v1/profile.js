@@ -6,13 +6,13 @@ module.exports = class profile {
 	}
 
 	/**
-	 * @api {post} /project/v1/profile/read
+	 * @api {get} /project/v1/profile/read
 	 * @apiVersion 1.0.0
 	 * @apiName read
 	 * @apiGroup read
 	 * @apiParamExample {json} Request-Body:
 	 * @apiHeader {String} X-authenticated-user-token Authenticity token
-	 * @apiSampleRequest /project/v1/profile/read/1
+	 * @apiSampleRequest /project/v1/profile/read
 	 * @apiUse successBody
 	 * @apiUse errorBody
 	
@@ -178,21 +178,21 @@ module.exports = class profile {
 		return new Promise(async (resolve, reject) => {
 			try {
 				// Call the read function from profileHelper with the user's details
-				const readFormData = await profileHelper.read(req.userDetails)
+				const profileData = await profileHelper.read(req.userDetails.userInformation.userId)
 
 				// If successful, resolve the Promise with a success message and the fetched data
 				return resolve({
 					success: true,
 					message: CONSTANTS.apiResponses.DATA_FETCHED_SUCCESSFULLY,
-					result: readFormData,
+					result: profileData,
 				})
 			} catch (error) {
 				// If an error occurs, return an error response with status, message, and the error object
-				return {
+				return reject({
 					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
 					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
 					errorObject: error,
-				}
+				})
 			}
 		})
 	}
