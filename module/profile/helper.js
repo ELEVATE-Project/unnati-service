@@ -1,5 +1,6 @@
 // calling entities service for entity-managament
 const entityFind = require(GENERICS_FILES_PATH + '/services/entity-management')
+// calling user service api
 const profileRead = require(GENERICS_FILES_PATH + '/services/users')
 
 module.exports = class FormsHelper {
