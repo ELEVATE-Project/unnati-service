@@ -186,8 +186,8 @@ module.exports = function () {
 			enviromentVariables[eachEnvironmentVariable].default != ''
 		) {
 			process.env[eachEnvironmentVariable] = enviromentVariables[eachEnvironmentVariable].default
-			// success = true
-			// keyCheckPass = true
+			success = true
+			keyCheckPass = true
 		}
 
 		if (!keyCheckPass) {

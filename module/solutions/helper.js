@@ -2232,7 +2232,7 @@ module.exports = class SolutionsHelper {
 	 * @returns {Object} List of library projects.
 	 */
 
-	static projects(query, searchQuery, fieldsArray, groupBy = '') {
+	static projects(query, searchQuery, fieldsArray, pageNo, pageSize, groupBy = '') {
 		return new Promise(async (resolve, reject) => {
 			try {
 				let matchQuery = {
@@ -2269,8 +2269,12 @@ module.exports = class SolutionsHelper {
 						$facet: {
 							totalCount: [{ $count: 'count' }],
 							data: [
-								{ $skip: CONSTANTS.common.DEFAULT_PAGE_SIZE * (CONSTANTS.common.DEFAULT_PAGE_NO - 1) },
-								{ $limit: CONSTANTS.common.DEFAULT_PAGE_SIZE },
+								{
+									$skip:
+										(pageSize == '' ? CONSTANTS.common.DEFAULT_PAGE_SIZE : pageSize) *
+										((pageNo == '' ? CONSTANTS.common.DEFAULT_PAGE_NO : pageNo) - 1),
+								},
+								{ $limit: pageSize == '' ? CONSTANTS.common.DEFAULT_PAGE_SIZE : pageSize },
 							],
 						},
 					},
@@ -2354,7 +2358,7 @@ module.exports = class SolutionsHelper {
 	 * @returns {Object}
 	 */
 
-	static assignedProjects(userId, search, filter) {
+	static assignedProjects(userId, search, filter, pageNo, pageSize) {
 		return new Promise(async (resolve, reject) => {
 			try {
 				let query = {
@@ -2382,21 +2386,27 @@ module.exports = class SolutionsHelper {
 						query['referenceFrom'] = CONSTANTS.common.LINK
 					}
 				}
-				let projects = await this.projects(query, searchQuery, [
-					'name',
-					'title',
-					'description',
-					'solutionId',
-					'programId',
-					'programInformation.name',
-					'projectTemplateId',
-					'solutionExternalId',
-					'lastDownloadedAt',
-					'hasAcceptedTAndC',
-					'referenceFrom',
-					'status',
-					'certificate',
-				])
+				let projects = await this.projects(
+					query,
+					searchQuery,
+					[
+						'name',
+						'title',
+						'description',
+						'solutionId',
+						'programId',
+						'programInformation.name',
+						'projectTemplateId',
+						'solutionExternalId',
+						'lastDownloadedAt',
+						'hasAcceptedTAndC',
+						'referenceFrom',
+						'status',
+						'certificate',
+					],
+					pageNo,
+					pageSize
+				)
 
 				let totalCount = 0
 				let data = []
@@ -2497,12 +2507,12 @@ module.exports = class SolutionsHelper {
 	 * @returns {Object} - Details of the solution.
 	 */
 
-	static assignedUserSolutions(solutionType, userId, search, filter) {
+	static assignedUserSolutions(solutionType, userId, search, filter, pageNo, pageSize) {
 		return new Promise(async (resolve, reject) => {
 			try {
 				let userAssignedSolutions = {}
 				if (solutionType === CONSTANTS.common.IMPROVEMENT_PROJECT) {
-					userAssignedSolutions = await this.assignedProjects(userId, search, filter)
+					userAssignedSolutions = await this.assignedProjects(userId, search, filter, pageNo, pageSize)
 				} else {
 					throw {
 						status: HTTP_STATUS_CODE.bad_request.status,
@@ -2541,7 +2551,7 @@ module.exports = class SolutionsHelper {
 	) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				let assignedSolutions = await this.assignedUserSolutions(solutionType, userId, search, filter)
+				let assignedSolutions = await this.assignedUserSolutions(solutionType, userId, search, filter, '', '')
 				if (!assignedSolutions.success) {
 					throw {
 						status: HTTP_STATUS_CODE.bad_request.status,
