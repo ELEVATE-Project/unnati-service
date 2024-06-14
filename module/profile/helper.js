@@ -66,10 +66,7 @@ module.exports = class FormsHelper {
 
 					return resolve(processedResponse)
 				} else {
-					throw {
-						message: CONSTANTS.common.STATUS_FAILURE,
-						status: HTTP_STATUS_CODE.bad_request.status,
-					}
+					return resolve(userDetails)
 				}
 			} catch (error) {
 				return resolve({
