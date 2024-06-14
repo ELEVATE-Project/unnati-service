@@ -1,7 +1,7 @@
 // calling entities service for entity-managament
-const entityFind = require(GENERICS_FILES_PATH + '/services/entity-management')
+const entityManagementService = require(GENERICS_FILES_PATH + '/services/entity-management')
 // calling user service api
-const profileRead = require(GENERICS_FILES_PATH + '/services/users')
+const userService = require(GENERICS_FILES_PATH + '/services/users')
 
 module.exports = class FormsHelper {
 	/**
@@ -14,20 +14,31 @@ module.exports = class FormsHelper {
 	static read(userId) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				// Fetch user profile details using profileRead.profile function
-				const userResponse = await profileRead.profile(userId)
+				// Fetch user profile details using userService.profile function
+				const userResponse = await userService.profile(userId)
 
 				// Check if the user profile fetch was successful
 				if (!userResponse.success) {
-					throw new Error(CONSTANTS.common.STATUS_FAILURE)
+					throw {
+						message: CONSTANTS.common.STATUS_FAILURE,
+						status: HTTP_STATUS_CODE.bad_request.status,
+					}
 				}
 				// Store the fetched user details
 				const userDetails = userResponse.data
-
+				if (!userDetails.meta) {
+					throw {
+						message: CONSTANTS.common.STATUS_FAILURE,
+						status: HTTP_STATUS_CODE.bad_request.status,
+					}
+				}
 				// Fetch location IDs associated with the user
-				const locationIds = await this.userLocationDetails(userDetails.meta)
+				const locationIds = await this.extractLocationIdsFromMeta(userDetails.meta)
 				if (locationIds.length < 0) {
-					throw new Error(CONSTANTS.common.STATUS_FAILURE)
+					throw {
+						message: CONSTANTS.common.STATUS_FAILURE,
+						status: HTTP_STATUS_CODE.bad_request.status,
+					}
 				}
 				// Construct the filter for querying entity documents using the $in operator
 				const filterData = {
@@ -38,11 +49,14 @@ module.exports = class FormsHelper {
 				// Define the fields to be projected in the entity documents
 				const projection = ['_id', 'metaInformation.name']
 				// Use the entityDocuments function to fetch entity details
-				const response = await entityFind.entityDocuments(filterData, projection, userId.userToken)
+				const response = await entityManagementService.entityDocuments(filterData, projection)
 				// Check if the response is successful and has data
 				const entityDetails = response.data
 				if (entityDetails.length < 0) {
-					throw new Error(CONSTANTS.common.STATUS_FAILURE)
+					throw {
+						message: CONSTANTS.common.STATUS_FAILURE,
+						status: HTTP_STATUS_CODE.bad_request.status,
+					}
 				}
 
 				// Process the user details to replace meta data with entity details
@@ -51,8 +65,10 @@ module.exports = class FormsHelper {
 				return resolve(processedResponse)
 			} catch (error) {
 				return resolve({
-					message: error,
+					status: error.status ? error.status : HTTP_STATUS_CODE.internal_server_error.status,
 					success: false,
+					message: error.message,
+					data: {},
 				})
 			}
 		})
@@ -63,7 +79,7 @@ module.exports = class FormsHelper {
 	 * @param {Object} meta - Meta information containing location IDs.
 	 * @returns {Array} - An array of location IDs.
 	 */
-	static async userLocationDetails(meta) {
+	static async extractLocationIdsFromMeta(meta) {
 		const locationIds = []
 		for (const key in meta) {
 			if (Array.isArray(meta[key])) {

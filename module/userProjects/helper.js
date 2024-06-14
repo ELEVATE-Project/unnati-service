@@ -203,7 +203,7 @@ module.exports = class UserProjectsHelper {
 				}
 
 				if (addOrUpdateEntityToProject) {
-					let entityInformation = await entitiesService.entityDocuments({ _id: entityId }, 'all', userToken)
+					let entityInformation = await entitiesService.entityDocuments({ _id: entityId }, 'all')
 
 					if (!entityInformation.success) {
 						return resolve(entityInformation)
@@ -1323,8 +1323,7 @@ module.exports = class UserProjectsHelper {
 							if (solutionDetails.entityType && bodyData[solutionDetails.entityType]) {
 								let entityInformation = await entitiesService.entityTypeDocuments(
 									{ name: bodyData[solutionDetails.entityType] },
-									'all',
-									userToken
+									'all'
 								)
 
 								// if( !entityInformation.success ) {
@@ -1382,7 +1381,7 @@ module.exports = class UserProjectsHelper {
 						//     } else {
 						//         //Fetch user profile information by calling sunbird's user read api.
 
-						//         let userProfile = await userService.profile(userToken, userId);
+						//         let userProfile = await userService.profile( userId);
 						//         if ( userProfile.success &&
 						//              userProfile.data &&
 						//              userProfile.data.response
@@ -1395,7 +1394,7 @@ module.exports = class UserProjectsHelper {
 						// } else {
 						//     //Fetch user profile information by calling sunbird's user read api.
 
-						//     let userProfileData = await userService.profile(userToken, userId);
+						//     let userProfileData = await userService.profile( userId);
 						//     if ( userProfileData.success &&
 						//          userProfileData.data &&
 						//          userProfileData.data.response
@@ -1418,7 +1417,7 @@ module.exports = class UserProjectsHelper {
 							//     projectCreation.data.userProfile,
 							//     userRoleInformation
 							// );
-							let updatedUserProfile = userService.profile(userToken, userId)
+							let updatedUserProfile = userService.profile(userId)
 
 							if (
 								updatedUserProfile &&
@@ -1600,7 +1599,7 @@ module.exports = class UserProjectsHelper {
 
 				//Fetch user profile information by calling sunbird's user read api.
 
-				let userProfile = await userService.profile(userToken, userId)
+				let userProfile = await userService.profile(userId)
 				if (userProfile.success && userProfile.data) {
 					createProject.userProfile = userProfile.data
 				}
@@ -1621,7 +1620,7 @@ module.exports = class UserProjectsHelper {
 
 				if (data.entityId) {
 					// let entityInformation = await entitiesService.entityDocuments({"_id" : data.entityId},"all",userToken)
-					let entityInformation = await _entitiesInformation([data.entityId], userToken)
+					let entityInformation = await _entitiesInformation([data.entityId])
 
 					if (!entityInformation.success) {
 						return resolve(entityInformation)
@@ -2274,8 +2273,7 @@ module.exports = class UserProjectsHelper {
 				if (requestedData.entityId && requestedData.entityId !== '') {
 					let entityInformation = await entitiesService.entityDocuments(
 						{ _id: requestedData.entityId },
-						'all',
-						userToken
+						'all'
 					)
 
 					if (!entityInformation.success) {
@@ -2351,7 +2349,7 @@ module.exports = class UserProjectsHelper {
 
 				//Fetch user profile information by calling sunbird's user read api.
 				let addReportInfoToSolution = false
-				let userProfile = await userService.profile(userToken, userId)
+				let userProfile = await userService.profile(userId)
 				if (userProfile.success && userProfile.data && userProfile.data.response) {
 					libraryProjects.data.userProfile = userProfile.data.response
 					addReportInfoToSolution = true
@@ -3303,7 +3301,7 @@ function _projectCategories(categories) {
  * @returns {Object} Project entity information.
  */
 
-function _entitiesInformation(entityIds, userToken) {
+function _entitiesInformation(entityIds) {
 	return new Promise(async (resolve, reject) => {
 		try {
 			let locationIds = []
@@ -3322,7 +3320,7 @@ function _entitiesInformation(entityIds, userToken) {
 					'registryDetails.locationId': { $in: locationIds },
 					_id: { $in: locationIds },
 				}
-				let entityData = await entitiesService.entityDocuments(queryData, 'all', userToken)
+				let entityData = await entitiesService.entityDocuments(queryData, 'all')
 				if (entityData.success) {
 					entityInformations = entityData.data
 				}
