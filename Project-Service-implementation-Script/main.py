@@ -250,7 +250,6 @@ def programmappingpdpmsheetcreation(MainFilePath,accessToken, program_file,progr
                     except :
                         programmanagername2 = dictDetailsEnv['elevateProject user id ( profile ID)'].encode('utf-8').decode('utf-8') if dictDetailsEnv['elevateProject user id ( profile ID)'] else terminatingMessage("\"elevateProject user id ( profile ID)\" must not be Empty in \"Program details\" sheet")
                         userDetails = fetchUserDetails(environment, accessToken, programmanagername2)
-                        userDetails = fetchUserDetails(environment, accessToken, programmanagername2)
                 creatorKeyCloakId = userDetails[0]
                 creatorName = userDetails[1]
                 if "PROGRAM_MANAGER" in userDetails[3]:
@@ -917,10 +916,10 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                             solutionName = dictDetailsEnv['observation_solution_name'].encode('utf-8').decode('utf-8') if dictDetailsEnv['observation_solution_name'] else terminatingMessage("\"observation_solution_name\" must not be Empty in \"details\" sheet")
                             elevateProjectLoginId = dictDetailsEnv['elevateProject_loginId'].encode('utf-8').decode('utf-8') if dictDetailsEnv['elevateProject_loginId'] else terminatingMessage("\"elevateProject_loginId\" must not be Empty in \"details\" sheet")
                             ccUserDetails = fetchUserDetails(environment, accessToken, elevateProjectLoginId)
-                            if not "CONTENT_CREATOR" in ccUserDetails[3]:
+                            if not "CONTENT_CREATOR" in ccUserDetails[1]:
                                 terminatingMessage("---> "+elevateProjectLoginId +" is not a CONTENT_CREATOR in elevateProject " + environment)
-                            ccRootOrgName = ccUserDetails[4]
-                            ccRootOrgId = ccUserDetails[5]
+                            ccRootOrgName = ccUserDetails[3]
+                            ccRootOrgId = ccUserDetails[4]
                             solutionDescription = dictDetailsEnv['observation_solution_description'].encode('utf-8').decode('utf-8')
                             pointBasedValue = str(dictDetailsEnv['scoring_system']).encode('utf-8').decode('utf-8') if dictDetailsEnv['scoring_system'] else terminatingMessage("\"scoring_system\" must not be Empty in \"details\" sheet")
                             entityType = dictDetailsEnv['entity_type'].encode('utf-8').decode('utf-8') if dictDetailsEnv['entity_type'] else terminatingMessage("\"entity_type\" must not be Empty in \"details\" sheet")
@@ -1149,10 +1148,10 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                         elevateProjectLoginId = dictDetailsEnv['elevateProject_loginId'].encode('utf-8').decode('utf-8') if dictDetailsEnv['elevateProject_loginId'] else terminatingMessage("\"elevateProject_loginId\" must not be Empty in \"details\" sheet")
                         creator = dictDetailsEnv['Name_of_the_creator'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Name_of_the_creator'] else terminatingMessage("\"Name_of_the_creator\" must not be Empty in \"details\" sheet")
                         ccUserDetails = fetchUserDetails(environment, accessToken, elevateProjectLoginId)
-                        if not "CONTENT_CREATOR" in ccUserDetails[3]:
+                        if not "CONTENT_CREATOR" in ccUserDetails[1]:
                             terminatingMessage("---> "+elevateProjectLoginId +" is not a CONTENT_CREATOR in elevateProject " + environment)
-                        ccRootOrgName = ccUserDetails[4]
-                        ccRootOrgId = ccUserDetails[5]
+                        ccRootOrgName = ccUserDetails[2]
+                        ccRootOrgId = ccUserDetails[3]
                             
                         entityType = dictDetailsEnv['entity_type'].encode('utf-8').decode('utf-8') if dictDetailsEnv['entity_type'] else terminatingMessage("\"entity_type\" must not be Empty in \"details\" sheet")
                         solutionLanguage = dictDetailsEnv['language'].encode('utf-8').decode('utf-8').split(",") if dictDetailsEnv['language'] else [""]
@@ -4088,7 +4087,7 @@ def solutionCreationAndMapping(projectName_for_folder_path, entityToUpload, list
                 solutionUpdate(projectName_for_folder_path, accessToken, solutionId, bodySolutionUpdate)
                 userDetails = fetchUserDetails(environment, accessToken, projectAuthor)
                 matchedShikshalokamLoginId = userDetails[0]
-                projectCreator = userDetails[2]
+                projectCreator = userDetails[1]
                 bodySolutionUpdate = {
                     "creator": projectCreator, "author": matchedShikshalokamLoginId}
                 solutionUpdate(projectName_for_folder_path, accessToken, solutionId, bodySolutionUpdate)
