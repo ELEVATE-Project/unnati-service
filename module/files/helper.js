@@ -30,6 +30,13 @@ module.exports = class FilesHelper {
 	static getDownloadableUrl(filePath, bucketName, storageName = '', expireIn = '') {
 		return new Promise(async (resolve, reject) => {
 			try {
+				// Throw error if filePath is not an array
+				if (!Array.isArray(filePath) || filePath.length < 1) {
+					throw {
+						status: HTTP_STATUS_CODE.bad_request.status,
+						message: CONSTANTS.apiResponses.INPUT_IS_NOT_A_VALID_ARRAY,
+					}
+				}
 				// Override cloud storage provider name if provided explicitly.
 				if (storageName !== '') {
 					cloudStorage = storageName
@@ -71,11 +78,12 @@ module.exports = class FilesHelper {
 						expireIn // Link Expire time
 					)
 
-					let response = {
-						filePath: filePath,
-						url: result,
-						cloudStorage: cloudStorage,
-					}
+					let response = [
+						{
+							filePath: filePath,
+							url: result,
+						},
+					]
 					return resolve({
 						success: true,
 						message: CONSTANTS.apiResponses.URL_GENERATED,
@@ -115,7 +123,10 @@ module.exports = class FilesHelper {
 			try {
 				let actionPermission = CONSTANTS.common.WRITE_PERMISSION
 				if (!Array.isArray(fileNames) || fileNames.length < 1) {
-					throw new Error('File names not given.')
+					throw {
+						status: HTTP_STATUS_CODE.bad_request.status,
+						message: CONSTANTS.apiResponses.INPUT_IS_NOT_A_VALID_ARRAY,
+					}
 				}
 
 				// Override cloud storage provider name if provided explicitly.
