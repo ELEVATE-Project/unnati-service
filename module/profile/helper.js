@@ -26,43 +26,51 @@ module.exports = class FormsHelper {
 				}
 				// Store the fetched user details
 				const userDetails = userResponse.data
-				if (!userDetails.meta) {
-					throw {
-						message: CONSTANTS.common.STATUS_FAILURE,
-						status: HTTP_STATUS_CODE.bad_request.status,
-					}
-				}
+				// if (!userDetails.meta) {
+				// 	throw {
+				// 		message: CONSTANTS.common.STATUS_FAILURE,
+				// 		status: HTTP_STATUS_CODE.bad_request.status,
+				// 	}
+				// }
 				// Fetch location IDs associated with the user
-				const locationIds = await this.extractLocationIdsFromMeta(userDetails.meta)
-				if (locationIds.length < 0) {
+
+				if (userDetails.meta) {
+					const locationIds = await this.extractLocationIdsFromMeta(userDetails.meta)
+					if (locationIds.length < 0) {
+						throw {
+							message: CONSTANTS.common.STATUS_FAILURE,
+							status: HTTP_STATUS_CODE.bad_request.status,
+						}
+					}
+					// Construct the filter for querying entity documents using the $in operator
+					const filterData = {
+						_id: {
+							$in: locationIds,
+						},
+					}
+					// Define the fields to be projected in the entity documents
+					const projection = ['_id', 'metaInformation.name']
+					// Use the entityDocuments function to fetch entity details
+					const response = await entityManagementService.entityDocuments(filterData, projection)
+					// Check if the response is successful and has data
+					const entityDetails = response.data
+					if (entityDetails.length < 0) {
+						throw {
+							message: CONSTANTS.common.STATUS_FAILURE,
+							status: HTTP_STATUS_CODE.bad_request.status,
+						}
+					}
+
+					// Process the user details to replace meta data with entity details
+					const processedResponse = await this.processUserDetailsResponse(userDetails, entityDetails)
+
+					return resolve(processedResponse)
+				} else {
 					throw {
 						message: CONSTANTS.common.STATUS_FAILURE,
 						status: HTTP_STATUS_CODE.bad_request.status,
 					}
 				}
-				// Construct the filter for querying entity documents using the $in operator
-				const filterData = {
-					_id: {
-						$in: locationIds,
-					},
-				}
-				// Define the fields to be projected in the entity documents
-				const projection = ['_id', 'metaInformation.name']
-				// Use the entityDocuments function to fetch entity details
-				const response = await entityManagementService.entityDocuments(filterData, projection)
-				// Check if the response is successful and has data
-				const entityDetails = response.data
-				if (entityDetails.length < 0) {
-					throw {
-						message: CONSTANTS.common.STATUS_FAILURE,
-						status: HTTP_STATUS_CODE.bad_request.status,
-					}
-				}
-
-				// Process the user details to replace meta data with entity details
-				const processedResponse = await this.processUserDetailsResponse(userDetails, entityDetails)
-
-				return resolve(processedResponse)
 			} catch (error) {
 				return resolve({
 					status: error.status ? error.status : HTTP_STATUS_CODE.internal_server_error.status,
