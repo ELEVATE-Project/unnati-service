@@ -160,7 +160,10 @@ module.exports = function () {
 		if (enviromentVariables[eachEnvironmentVariable].optional === false) {
 			if (!process.env[eachEnvironmentVariable] || process.env[eachEnvironmentVariable] == '') {
 				keyCheckPass = false
-				if (enviromentVariables[eachEnvironmentVariable].default) {
+				if (
+					enviromentVariables[eachEnvironmentVariable].default &&
+					enviromentVariables[eachEnvironmentVariable].default != ''
+				) {
 					process.env[eachEnvironmentVariable] = enviromentVariables[eachEnvironmentVariable].default
 					keyCheckPass = true
 				} else {
