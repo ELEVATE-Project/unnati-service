@@ -26,15 +26,9 @@ module.exports = class FormsHelper {
 				}
 				// Store the fetched user details
 				const userDetails = userResponse.data
-				// if (!userDetails.meta) {
-				// 	throw {
-				// 		message: CONSTANTS.common.STATUS_FAILURE,
-				// 		status: HTTP_STATUS_CODE.bad_request.status,
-				// 	}
-				// }
-				// Fetch location IDs associated with the user
 
-				if (userDetails.meta) {
+				// Check if meta is present and not empty
+				if (userDetails.meta && Object.keys(userDetails.meta).length > 0) {
 					const locationIds = await this.extractLocationIdsFromMeta(userDetails.meta)
 					if (locationIds.length < 0) {
 						throw {
@@ -66,6 +60,7 @@ module.exports = class FormsHelper {
 
 					return resolve(processedResponse)
 				} else {
+					delete userDetails.location // Remove location key from userDetails
 					return resolve(userDetails)
 				}
 			} catch (error) {
