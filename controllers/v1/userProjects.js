@@ -6,36 +6,35 @@
  */
 
 // Dependencies
-const userProjectsHelper = require(MODULES_BASE_PATH + "/userProjects/helper");
+const userProjectsHelper = require(MODULES_BASE_PATH + '/userProjects/helper')
 
- /**
-    * UserProjects
-    * @class
-*/
+/**
+ * UserProjects
+ * @class
+ */
 
 module.exports = class UserProjects extends Abstract {
+	/**
+	 * @apiDefine errorBody
+	 * @apiError {String} status 4XX,5XX
+	 * @apiError {String} message Error
+	 */
 
-    /**
-     * @apiDefine errorBody
-     * @apiError {String} status 4XX,5XX
-     * @apiError {String} message Error
-     */
+	/**
+	 * @apiDefine successBody
+	 *  @apiSuccess {String} status 200
+	 * @apiSuccess {String} result Data
+	 */
 
-    /**
-     * @apiDefine successBody
-     *  @apiSuccess {String} status 200
-     * @apiSuccess {String} result Data
-     */
-    
-    constructor() {
-        super("projects");
-    }
+	constructor() {
+		super('projects')
+	}
 
-    static get name() {
-        return "userProjects";
-    }
+	static get name() {
+		return 'userProjects'
+	}
 
-     /**
+	/**
     * @api {post} /project/v1/userProjects/sync/:projectId?lastDownloadedAt=:epochTime 
     * Sync project.
     * @apiVersion 1.0.0
@@ -51,7 +50,7 @@ module.exports = class UserProjects extends Abstract {
                 "name": "Task 1",
                 "description": "Task 1 description",
                 "status": "notStarted/inProgress/completed",
-                "isACustomTask": false,
+                "isACustomTask": false
                 "startDate": "2020-09-29T09:08:41.667Z",
                 "endDate": "2020-09-29T09:08:41.667Z",
                 "lastModifiedAt": "2020-09-29T09:08:41.667Z",
@@ -114,44 +113,43 @@ module.exports = class UserProjects extends Abstract {
     * @apiUse errorBody
     */
 
-    /**
-      * Sync projects.
-      * @method
-      * @name sync
-      * @param {Object} req - request data.
-      * @param {String} req.params._id - Project id.
-      * @returns {JSON} Create Self projects.
-     */
+	/**
+	 * Sync projects.
+	 * @method
+	 * @name sync
+	 * @param {Object} req - request data.
+	 * @param {String} req.params._id - Project id.
+	 * @returns {JSON} Create Self projects.
+	 */
 
-    async sync(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                let createdProject = await userProjectsHelper.sync(
-                    req.params._id,
-                    req.query.lastDownloadedAt,
-                    req.body,
-                    req.userDetails.userInformation.userId,
-                    req.userDetails.userToken,
-                    req.headers["x-app-id"]  ? 
-                    req.headers["x-app-id"]  : 
-                    req.headers.appname ? req.headers.appname : "",
-                    req.headers["x-app-ver"] ? 
-                    req.headers["x-app-ver"] : 
-                    req.headers.appversion ? req.headers.appversion : ""
-                );
-                return resolve(createdProject);
+	async sync(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let createdProject = await userProjectsHelper.sync(
+					req.params._id,
+					req.query.lastDownloadedAt,
+					req.body,
+					req.userDetails.userInformation.userId,
+					req.userDetails.userToken,
+					req.headers['x-app-id'] ? req.headers['x-app-id'] : req.headers.appname ? req.headers.appname : '',
+					req.headers['x-app-ver']
+						? req.headers['x-app-ver']
+						: req.headers.appversion
+						? req.headers.appversion
+						: ''
+				)
+				return resolve(createdProject)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-            } catch (error) {
-                return reject({
-                    status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-                    message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
-
-    /**
+	/**
     * @api {post} /project/v1/userProjects/details/:projectId?programId=&solutionId=&templateId=TSCSLHAR02-1710148664591
     * Project Details.
     * @apiVersion 2.0.0
@@ -262,48 +260,45 @@ module.exports = class UserProjects extends Abstract {
     * @apiUse errorBody
     */
 
-    /**
-      * Project details
-      * @method
-      * @name details
-      * @param {Object} req - request data.
-      * @param {String} req.params._id - Project id.
-      * @returns {JSON} Create Self projects.
-     */
+	/**
+	 * Project details
+	 * @method
+	 * @name details
+	 * @param {Object} req - request data.
+	 * @param {String} req.params._id - Project id.
+	 * @returns {JSON} Create Self projects.
+	 */
 
-    async details(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
+	async details(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let projectDetails = await userProjectsHelper.detailsV2(
+					req.params._id ? req.params._id : '',
+					req.query.solutionId,
+					req.userDetails.userInformation.userId,
+					req.userDetails.userToken,
+					req.body,
+					req.headers['x-app-id'] ? req.headers['x-app-id'] : req.headers.appname ? req.headers.appname : '',
+					req.headers['x-app-ver']
+						? req.headers['x-app-ver']
+						: req.headers.appversion
+						? req.headers.appversion
+						: '',
+					req.query.templateId
+				)
 
-                let projectDetails = 
-                await userProjectsHelper.detailsV2(
-                    req.params._id ? req.params._id : "",
-                    req.query.solutionId,
-                    req.userDetails.userInformation.userId,
-                    req.userDetails.userToken,
-                    req.body,
-                    req.headers["x-app-id"]  ? 
-                    req.headers["x-app-id"]  : 
-                    req.headers.appname ? req.headers.appname : "",
-                    req.headers["x-app-ver"] ? 
-                    req.headers["x-app-ver"] : 
-                    req.headers.appversion ? req.headers.appversion : "",
-                    req.query.templateId
-                );
+				return resolve(projectDetails)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-                return resolve(projectDetails);
-
-            } catch (error) {
-                return reject({
-                    status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-                    message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
-
-   /**
+	/**
     * @api {post} /project/v1/userProjects/tasksStatus/:projectId
     * User Project tasks status
     * @apiVersion 1.0.0
@@ -338,39 +333,34 @@ module.exports = class UserProjects extends Abstract {
     * @apiUse errorBody
     */
 
-    /**
-      * Tasks status
-      * @method
-      * @name tasksStatus
-      * @param {Object} req - request data.
-      * @param {String} req.params._id - Project id.
-      * @returns {JSON} status of tasks
-     */
-    
-    async tasksStatus(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
+	/**
+	 * Tasks status
+	 * @method
+	 * @name tasksStatus
+	 * @param {Object} req - request data.
+	 * @param {String} req.params._id - Project id.
+	 * @returns {JSON} status of tasks
+	 */
 
-                let taskStatus = await userProjectsHelper.tasksStatus(
-                    req.params._id,
-                    req.body.taskIds
-                );
+	async tasksStatus(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let taskStatus = await userProjectsHelper.tasksStatus(req.params._id, req.body.taskIds)
 
-                taskStatus.result = taskStatus.data;
-                
-                return resolve(taskStatus);
+				taskStatus.result = taskStatus.data
 
-            } catch (error) {
-                return reject({
-                    status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-                    message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
+				return resolve(taskStatus)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-     /**
+	/**
     * @api {post} /project/v1/userProjects/solutionDetails/:projectId?taskId=:taskId
     * User project solution details
     * @apiVersion 1.0.0
@@ -412,42 +402,40 @@ module.exports = class UserProjects extends Abstract {
     * @apiUse errorBody
     */
 
-    /**
-      * Solutions details information.
-      * @method
-      * @name status
-      * @param {Object} req - request data.
-      * @param {String} req.params._id - Project id.
-      * @param {String} req.query.taskId - task id.
-      * @returns {JSON} Solutions details
-     */
-    
-    async solutionDetails(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
+	/**
+	 * Solutions details information.
+	 * @method
+	 * @name status
+	 * @param {Object} req - request data.
+	 * @param {String} req.params._id - Project id.
+	 * @param {String} req.query.taskId - task id.
+	 * @returns {JSON} Solutions details
+	 */
 
-                let solutionDetails = await userProjectsHelper.solutionDetails(
-                    req.userDetails.userToken,
-                    req.params._id,
-                    req.query.taskId,
-                    req.body
-                );
+	async solutionDetails(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let solutionDetails = await userProjectsHelper.solutionDetails(
+					req.userDetails.userToken,
+					req.params._id,
+					req.query.taskId,
+					req.body
+				)
 
-                solutionDetails.result = solutionDetails.data;
-                
-                return resolve(solutionDetails);
+				solutionDetails.result = solutionDetails.data
 
-            } catch (error) {
-                return reject({
-                    status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-                    message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
-    
-    /**
+				return resolve(solutionDetails)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
+
+	/**
     * @api {post} /project/v1/userProjects/add
     * Add project.
     * @apiVersion 1.0.0
@@ -524,43 +512,41 @@ module.exports = class UserProjects extends Abstract {
     * @apiUse errorBody
     */
 
-    /**
-      * Add projects.
-      * @method
-      * @name add
-      * @param {Object} req - request data.
-      * @returns {JSON} Create Self projects.
-     */
+	/**
+	 * Add projects.
+	 * @method
+	 * @name add
+	 * @param {Object} req - request data.
+	 * @returns {JSON} Create Self projects.
+	 */
 
-     async add(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
+	async add(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let createdProject = await userProjectsHelper.add(
+					req.body,
+					req.userDetails.userInformation.userId,
+					req.userDetails.userToken,
+					req.headers['x-app-id'] ? req.headers['x-app-id'] : req.headers.appname ? req.headers.appname : '',
+					req.headers['x-app-ver']
+						? req.headers['x-app-ver']
+						: req.headers.appversion
+						? req.headers.appversion
+						: ''
+				)
 
-                let createdProject = await userProjectsHelper.add(
-                    req.body,
-                    req.userDetails.userInformation.userId,
-                    req.userDetails.userToken,
-                    req.headers["x-app-id"]  ? 
-                    req.headers["x-app-id"]  : 
-                    req.headers.appname ? req.headers.appname : "",
-                    req.headers["x-app-ver"] ? 
-                    req.headers["x-app-ver"] : 
-                    req.headers.appversion ? req.headers.appversion : ""
-                );
+				return resolve(createdProject)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-                return resolve(createdProject);
-
-            } catch (error) {
-                return reject({
-                    status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-                    message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
-
-      /**
+	/**
     * @api {get} /project/v1/userProjects/userAssigned?page=:page&limit=:limit&search=:search&filter=:assignedToMe
     * List of user assigned project.
     * @apiVersion 1.0.0
@@ -592,89 +578,83 @@ module.exports = class UserProjects extends Abstract {
       * @param {Object} req - request data.
       * @returns {JSON} List of user assigned projects.
      */
-    
-     async userAssigned(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
 
-                let projects = await userProjectsHelper.userAssigned(
-                    req.userDetails.userInformation.userId,
-                    req.pageSize,
-                    req.pageNo,
-                    req.searchText,
-                    req.query.filter
-                );
+	async userAssigned(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let projects = await userProjectsHelper.userAssigned(
+					req.userDetails.userInformation.userId,
+					req.pageSize,
+					req.pageNo,
+					req.searchText,
+					req.query.filter
+				)
 
-                projects.result = projects.data;
-                
-                return resolve(projects);
-            } catch (error) {
-                    return reject({
-                        status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-                        message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-                        errorObject: error
-                    });
-                }
-            })
-    }
+				projects.result = projects.data
 
-     /**
-    * @api {get} /project/v1/userProjects/share/:projectId?tasks=:taskId1,:taskId2
-    * Share project and task pdf report.
-    * @apiVersion 1.0.0
-    * @apiGroup User Projects
-    * @apiSampleRequest /project/v1/userProjects/share/6065ced7e9259b7f0b1f5d66?tasks=4d074de7-7059-4d99-9da9-452b0d32e081
-     * @apiParamExample {json} Response:
-    * {
-    * "message": "Report generated succesfully",
-    * "status": 200,
-    * "result" : {
-    *   "data" : {
-    *      "downloadUrl": "http://localhost:4700/dhiti/api/v1/observations/pdfReportsUrl?id=dG1wLzVhNzZjMTY5LTA5YjAtNGU3Zi04ZmNhLTg0NDc5ZmI2YTNiNC0tODUyOA=="
-    * }
-    * }
-    * }
-    * @apiUse successBody
-    * @apiUse errorBody
-    */
+				return resolve(projects)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-    /*
-    * Share project and task pdf report.
-      * @method
-      * @name share
-      * @param {Object} req - request data.
-      * @param {String} req.params._id - projectId 
-      * @returns {JSON} Downloadable pdf url.
-     */
+	/**
+	 * @api {get} /project/v1/userProjects/share/:projectId?tasks=:taskId1,:taskId2
+	 * Share project and task pdf report.
+	 * @apiVersion 1.0.0
+	 * @apiGroup User Projects
+	 * @apiSampleRequest /project/v1/userProjects/share/6065ced7e9259b7f0b1f5d66?tasks=4d074de7-7059-4d99-9da9-452b0d32e081
+	 * @apiParamExample {json} Response:
+	 * {
+	 * "message": "Report generated succesfully",
+	 * "status": 200,
+	 * "result" : {
+	 *   "data" : {
+	 *      "downloadUrl": "http://localhost:4700/dhiti/api/v1/observations/pdfReportsUrl?id=dG1wLzVhNzZjMTY5LTA5YjAtNGU3Zi04ZmNhLTg0NDc5ZmI2YTNiNC0tODUyOA=="
+	 * }
+	 * }
+	 * }
+	 * @apiUse successBody
+	 * @apiUse errorBody
+	 */
 
-    async share(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
+	/*
+	 * Share project and task pdf report.
+	 * @method
+	 * @name share
+	 * @param {Object} req - request data.
+	 * @param {String} req.params._id - projectId
+	 * @returns {JSON} Downloadable pdf url.
+	 */
 
-                let taskIds = req.query.tasks ? req.query.tasks.split(",") : [];
+	async share(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let taskIds = req.query.tasks ? req.query.tasks.split(',') : []
 
-                let report = await userProjectsHelper.share(
-                    req.params._id,
-                    taskIds,
-                    req.userDetails.userToken,
-                    req.headers['x-app-ver']
-                );
-                return resolve({
-                    message: report.message,
-                    result: report.data
-                });
+				let report = await userProjectsHelper.share(
+					req.params._id,
+					taskIds,
+					req.userDetails.userInformation.userId,
+					req.headers['x-app-ver']
+				)
+				return resolve(report)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-            } catch (error) {
-                return reject({
-                    status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-                    message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
-
-       /**
+	/**
     * @api {get} /project/v1/userProjects/importedProjects/:programId
     * @apiVersion 1.0.0
     * @apiGroup Lists of User Imported Projects
@@ -707,37 +687,35 @@ module.exports = class UserProjects extends Abstract {
     * @apiUse errorBody
     */
 
-    /*
-    * List of user imported projects
-    * @method
-    * @name importedProjects
-    * @returns {JSON} List of imported projects.
-     */
+	/*
+	 * List of user imported projects
+	 * @method
+	 * @name importedProjects
+	 * @returns {JSON} List of imported projects.
+	 */
 
-    async importedProjects(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
+	async importedProjects(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let importedProjects = await userProjectsHelper.importedProjects(
+					req.userDetails.userInformation.userId,
+					req.params._id ? req.params._id : ''
+				)
 
-                let importedProjects = await userProjectsHelper.importedProjects(
-                    req.userDetails.userInformation.userId,
-                    req.params._id ? req.params._id : ""
-                );
+				importedProjects['result'] = importedProjects['data']
 
-                importedProjects["result"] = importedProjects["data"];
+				return resolve(importedProjects)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-                return resolve(importedProjects);
-
-            } catch (error) {
-                return reject({
-                    status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-                    message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
-
-    /**
+	/**
    * @api {post} /project/v1/userProjects/list?page=1&limit=3&search=&filter=createdByMe
    * Lists of projects.
    * @apiVersion 0.0.1
@@ -845,39 +823,35 @@ module.exports = class UserProjects extends Abstract {
     }   
     */
 
-    /**
-     * Lists of projects.
-     * @method
-     * @name list
-     * @returns {JSON} List projects.
-    */
+	/**
+	 * Lists of projects.
+	 * @method
+	 * @name list
+	 * @returns {JSON} List projects.
+	 */
 
-    async list(req) {
-        return new Promise(async (resolve, reject) => {
-        try {
+	async list(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let projects = await userProjectsHelper.list(
+					req.userDetails.userInformation.userId,
+					req.pageNo,
+					req.pageSize,
+					req.searchText,
+					req.query.filter
+				)
+				return resolve(projects)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-            let projects = await userProjectsHelper.list(
-                req.userDetails.userInformation.userId,
-                req.pageNo,
-                req.pageSize,
-                req.searchText,
-                req.query.filter
-            );
-            return resolve(projects);
-
-        } catch (error) {
-            return reject({
-            status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-            message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-            errorObject: error
-            });
-        }
-        });
-    }
-
-
-
-    /**
+	/**
     * @api {post} /project/v1/userProjects/importFromLibrary/:projectTemplateId&isATargetedSolution=false
     * Import project from library.
     * @apiVersion 1.0.0
@@ -1020,44 +994,42 @@ module.exports = class UserProjects extends Abstract {
     * @apiUse errorBody
     */
 
-    /**
-      * Import project from library.
-      * @method
-      * @name importFromLibrary
-      * @param {Object} req - request data.
-      * @param {String} req.params._id - project Template Id.
-      * @returns {JSON} import project from library.
-     */
+	/**
+	 * Import project from library.
+	 * @method
+	 * @name importFromLibrary
+	 * @param {Object} req - request data.
+	 * @param {String} req.params._id - project Template Id.
+	 * @returns {JSON} import project from library.
+	 */
 
-    async importFromLibrary(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
-  
-                const createdProject = await userProjectsHelper.importFromLibrary(
-                    req.params._id,
-                    req.body,
-                    req.userDetails.userToken,
-                    req.userDetails.userInformation.userId,
-                    req.query.isATargetedSolution ? req.query.isATargetedSolution : ""
-                );
+	async importFromLibrary(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				const createdProject = await userProjectsHelper.importFromLibrary(
+					req.params._id,
+					req.body,
+					req.userDetails.userToken,
+					req.userDetails.userInformation.userId,
+					req.query.isATargetedSolution ? req.query.isATargetedSolution : ''
+				)
 
-                return resolve({
-                    status: createdProject.status,
-                    message: createdProject.message,
-                    result: createdProject.data
-                });
+				return resolve({
+					status: createdProject.status,
+					message: createdProject.message,
+					result: createdProject.data,
+				})
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-            } catch (error) {
-                return reject({
-                    status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-                    message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
-
-    /**
+	/**
     * @api {post} /project/v1/userProjects/certificateCallback
     * Project certificate callback
     * @apiVersion 1.0.0
@@ -1095,27 +1067,30 @@ module.exports = class UserProjects extends Abstract {
      * @returns {JSON} certificate details.
     */
 
-    async certificateCallback(req) {
-    return new Promise(async (resolve, reject) => {
-            try {
-                //console request body to check if callback is coming or not and to check any structural change is there or not 
-                console.log("-------------callback request body------------",JSON.stringify(req.body))
-                let certificateDetails = await userProjectsHelper.certificateCallback( req.body.data.transactionId, req.body.data.osid );
-                    return resolve({
-                        message: certificateDetails.message,
-                        result: certificateDetails.data
-                    });
-            } catch (error) {
-                return reject({
-                    status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-                    message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-                    errorObject: error
-                });
-            }
-        })
-    }
+	async certificateCallback(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				//console request body to check if callback is coming or not and to check any structural change is there or not
+				console.log('-------------callback request body------------', JSON.stringify(req.body))
+				let certificateDetails = await userProjectsHelper.certificateCallback(
+					req.body.data.transactionId,
+					req.body.data.osid
+				)
+				return resolve({
+					message: certificateDetails.message,
+					result: certificateDetails.data,
+				})
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-    /**
+	/**
     * @api {get} /project/v1/userProjects/certificates
     * List of user project with certificate
     * @apiVersion 1.0.0
@@ -1162,27 +1137,26 @@ module.exports = class UserProjects extends Abstract {
      * @returns {JSON} User project detaills with certificate
     */
 
-    async certificates(req) {
-        return new Promise(async (resolve, reject) => {
-                try {
-                    // fetch projects data of user, whish has certificate on completion
-                    let projectDetails = await userProjectsHelper.certificates( req.userDetails.userInformation.userId );
-                    return resolve({
-                        message: projectDetails.message,
-                        result: projectDetails.data
-                    });
-                    
-                } catch (error) {
-                    return reject({
-                        status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-                        message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-                        errorObject: error
-                    });
-                }
-        })
-    }
+	async certificates(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				// fetch projects data of user, whish has certificate on completion
+				let projectDetails = await userProjectsHelper.certificates(req.userDetails.userInformation.userId)
+				return resolve({
+					message: projectDetails.message,
+					result: projectDetails.data,
+				})
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
 
-    /**
+	/**
     * @api {post} /project/v1/userProjects/certificateReIssue
     * ReIssue project certificate (admin api)
     * @apiVersion 1.0.0
@@ -1203,28 +1177,24 @@ module.exports = class UserProjects extends Abstract {
      * @returns {JSON} Reissued details
     */
 
-     async certificateReIssue(req) {
-        return new Promise(async (resolve, reject) => {
-                try {
-                    // ReIssue certificate of given project : projectId is passed as param 
-                    // This console has to be removed- adding to check the Issuer kid value in case rancher doesn't display console while deployment
-                    console.log("+++++CERTIFICATE_ISSUER_KID+++++ : ",CERTIFICATE_ISSUER_KID)
-                    let projectDetails = await userProjectsHelper.certificateReIssue(
-                        req.params._id,
-                    );
-                    return resolve({
-                        message: projectDetails.message,
-                        result: projectDetails.data
-                    });
-                    
-                } catch (error) {
-                    return reject({
-                        status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
-                        message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
-                        errorObject: error
-                    });
-                }
-        })
-    }
-
-};
+	async certificateReIssue(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				// ReIssue certificate of given project : projectId is passed as param
+				// This console has to be removed- adding to check the Issuer kid value in case rancher doesn't display console while deployment
+				console.log('+++++CERTIFICATE_ISSUER_KID+++++ : ', CERTIFICATE_ISSUER_KID)
+				let projectDetails = await userProjectsHelper.certificateReIssue(req.params._id)
+				return resolve({
+					message: projectDetails.message,
+					result: projectDetails.data,
+				})
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
+}

@@ -6,7 +6,6 @@
  */
 // Dependencies
 const solutionsHelper = require(MODULES_BASE_PATH + '/solutions/helper')
-
 module.exports = class Solutions extends Abstract {
 	constructor() {
 		super('solutions')
@@ -1002,6 +1001,131 @@ module.exports = class Solutions extends Abstract {
 
 				solutionData['result'] = solutionData.data
 
+				return resolve(solutionData)
+			} catch (error) {
+				return reject({
+					status: error.status || HTTP_STATUS_CODE.internal_server_error.status,
+					message: error.message || HTTP_STATUS_CODE.internal_server_error.message,
+					errorObject: error,
+				})
+			}
+		})
+	}
+
+	/**
+     * @api {post} /project/v1/solutions/details/:solutionId
+     * @apiVersion 1.0.0
+     * @apiName Get Project Template or Solution Questions
+     * @apiGroup Solutions
+     * @apiSampleRequest /project/v1/solutions/details/5ff9d50f9259097d48017bbb
+     * @apiHeader {String} X-authenticated-user-token Authenticity token  
+     * @apiUse successBody
+     * @apiUse errorBody
+     * @apiParamExample {json} Request:
+        {
+            "entityType" : "block",
+            "entityTypeId" : "5f32d8228e0dc8312404056e",
+            "entities" : [
+                "5fd1b52ab53a6416aaeefc80",
+                "5fd098e2e049735a86b748ac",
+                "5fd1b52ab53a6416aaeefc83",
+                "5fd1b52ab53a6416aaeefb20"
+            ],
+            "role" : "BEO,HM"
+        }
+    * @apiParamExample {json} Response:
+    * {
+        "message": "Successfully fetched details",
+        "status": 200,
+        "result": {
+            "_id": "5f97d2f6bf3a3b1c0116c80a",
+            "status": "published",
+            "isDeleted": false,
+            "categories": [
+                {
+                    "_id": "5f102331665bee6a740714e8",
+                    "name": "Teachers",
+                    "externalId": "teachers"
+                },
+                {
+                    "name": "newCategory",
+                    "externalId": "",
+                    "_id": ""
+                }
+            ],
+            "tasks": [
+                {
+                    "_id": "289d9558-b98f-41cf-81d3-92486f114a49",
+                    "name": "Task 1",
+                    "description": "Task 1 description",
+                    "status": "notStarted",
+                    "isACustomTask": false,
+                    "startDate": "2020-09-29T09:08:41.667Z",
+                    "endDate": "2020-09-29T09:08:41.667Z",
+                    "lastModifiedAt": "2020-09-29T09:08:41.667Z",
+                    "type": "single",
+                    "isDeleted": false,
+                    "attachments": [
+                        {
+                            "name": "download(2).jpeg",
+                            "type": "image/jpeg",
+                            "sourcePath": "projectId/userId/imageName"
+                        }
+                    ],
+                    "remarks": "Tasks completed",
+                    "assignee": "Aman",
+                    "children": [
+                        {
+                            "_id": "289d9558-b98f-41cf-81d3-92486f114a50",
+                            "name": "Task 2",
+                            "description": "Task 2 description",
+                            "status": "notStarted",
+                            "children": [],
+                            "isACustomTask": false,
+                            "startDate": "2020-09-29T09:08:41.667Z",
+                            "endDate": "2020-09-29T09:08:41.667Z",
+                            "lastModifiedAt": "2020-09-29T09:08:41.667Z",
+                            "type": "single",
+                            "isDeleted": false,
+                            "externalId": "task 2",
+                            "isDeleteable": false,
+                            "createdAt": "2020-10-28T05:58:24.907Z",
+                            "updatedAt": "2020-10-28T05:58:24.907Z",
+                            "isImportedFromLibrary": false
+                        }
+                    ],
+                    "externalId": "task 1",
+                    "isDeleteable": false,
+                    "createdAt": "2020-10-28T05:58:24.907Z",
+                    "updatedAt": "2020-10-28T05:58:24.907Z",
+                    "isImportedFromLibrary": false
+                }
+            ],
+            "resources": [],
+            "deleted": false,
+            "__v": 0,
+            "description": "Project 1 description"
+        }
+    } */
+
+	/**
+	 * get solution details
+	 * @method
+	 * @name details
+	 * @param {String} req.params._id - solution Id
+	 * @param {Object} req.body - requested data.
+	 * @param {String} req.userDetails.userInformation.userId - User Id.
+	 * @returns {Object} result.
+	 */
+
+	async details(req) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let solutionData = await solutionsHelper.details(
+					req.params._id,
+					req.body,
+					req.userDetails.userInformation.userId
+				)
 				return resolve(solutionData)
 			} catch (error) {
 				return reject({

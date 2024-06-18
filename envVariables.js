@@ -29,18 +29,26 @@ let enviromentVariables = {
 		message: 'Required internal access token',
 		optional: false,
 	},
+	GOTENBERG_URL: {
+		message: 'Gotenberg url required',
+		optional: false,
+	},
 	KAFKA_COMMUNICATIONS_ON_OFF: {
 		message: 'Enable/Disable kafka communications',
+		optional: false,
+	},
+	ENTITY_MANAGEMENT_SERVICE_URL: {
+		message: 'Elevate-entity service base URL is required',
 		optional: false,
 	},
 	// "KAFKA_URL" : {
 	//   "message" : "Required",
 	//   "optional" : false
 	// },
-	// "USER_SERVICE_URL" : {
-	//   "message" : "Required user service base url",
-	//   "optional" : false
-	// },
+	USER_SERVICE_URL: {
+		message: 'Required user service base url',
+		optional: false,
+	},
 	SERVICE_NAME: {
 		message: 'current service name',
 		optional: true,
@@ -94,6 +102,16 @@ let enviromentVariables = {
 		optional: true,
 		default: 300,
 	},
+	// default organisation code
+	DEFAULT_ORGANISATION_CODE: {
+		message: 'Default Organization Id/Code is required',
+		optional: false,
+	},
+	APP_PORTAL_BASE_URL: {
+		message: 'App Portal base url required',
+		optional: false,
+		default: 'https://dev.elevate.org',
+	},
 }
 
 let success = true
@@ -141,8 +159,16 @@ module.exports = function () {
 
 		if (enviromentVariables[eachEnvironmentVariable].optional === false) {
 			if (!process.env[eachEnvironmentVariable] || process.env[eachEnvironmentVariable] == '') {
-				success = false
 				keyCheckPass = false
+				if (
+					enviromentVariables[eachEnvironmentVariable].default &&
+					enviromentVariables[eachEnvironmentVariable].default != ''
+				) {
+					process.env[eachEnvironmentVariable] = enviromentVariables[eachEnvironmentVariable].default
+					keyCheckPass = true
+				} else {
+					success = false
+				}
 			} else if (
 				enviromentVariables[eachEnvironmentVariable].possibleValues &&
 				Array.isArray(enviromentVariables[eachEnvironmentVariable].possibleValues) &&
@@ -160,16 +186,6 @@ module.exports = function () {
 					].possibleValues.join(', ')}`
 				}
 			}
-		}
-
-		if (
-			(!process.env[eachEnvironmentVariable] || process.env[eachEnvironmentVariable] == '') &&
-			enviromentVariables[eachEnvironmentVariable].default &&
-			enviromentVariables[eachEnvironmentVariable].default != ''
-		) {
-			process.env[eachEnvironmentVariable] = enviromentVariables[eachEnvironmentVariable].default
-			success = true
-			keyCheckPass = true
 		}
 
 		if (!keyCheckPass) {
