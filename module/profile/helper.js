@@ -3,7 +3,7 @@ const entityManagementService = require(GENERICS_FILES_PATH + '/services/entity-
 // calling user service api
 const userService = require(GENERICS_FILES_PATH + '/services/users')
 
-module.exports = class FormsHelper {
+module.exports = class ProfileHelper {
 	/**
 	 * @function read
 	 * @description Fetches and processes user profile data, including location details.
