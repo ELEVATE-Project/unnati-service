@@ -1110,7 +1110,7 @@ module.exports = class UserProjectsHelper {
 					if (projectDetails.length > 0) {
 						projectId = projectDetails[0]._id
 					} else {
-						let isAPrivateSolution = targetedSolutionId.data.isATargetedSolution === false ? true : false
+						let isAPrivateSolution = targetedSolutionId.result.isATargetedSolution === false ? true : false
 						let solutionDetails = {}
 
 						if (templateId === '') {
