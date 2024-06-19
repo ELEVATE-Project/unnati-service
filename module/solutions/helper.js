@@ -949,13 +949,11 @@ module.exports = class SolutionsHelper {
 							message: CONSTANTS.apiResponses.NO_LOCATION_ID_FOUND_IN_DATA,
 						}
 					}
-
 					if (!data.role) {
 						throw {
 							message: CONSTANTS.apiResponses.USER_ROLES_NOT_FOUND,
 						}
 					}
-
 					filterQuery['scope.roles'] = {
 						$in: [CONSTANTS.common.ALL_ROLES, ...data.role.split(',')],
 					}
@@ -998,7 +996,6 @@ module.exports = class SolutionsHelper {
 
 						delete data.filter.skipSolutions
 					}
-
 					filterQuery = _.merge(filterQuery, data.filter)
 				}
 
@@ -1058,7 +1055,6 @@ module.exports = class SolutionsHelper {
 					'programId',
 					'name',
 				])
-
 				if (!Array.isArray(solutionData) || solutionData.length < 1) {
 					return resolve({
 						success: true,

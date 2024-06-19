@@ -1096,7 +1096,6 @@ module.exports = class UserProjectsHelper {
 					solutionId = templateDocuments[0].solutionId ? templateDocuments[0].solutionId : solutionId
 					solutionExternalId = templateDocuments[0].solutionExternalId
 				}
-
 				let userRoleInformation = _.omit(bodyData, ['referenceFrom', 'submissions', 'hasAcceptedTAndC'])
 
 				if (projectId === '') {
@@ -1114,7 +1113,7 @@ module.exports = class UserProjectsHelper {
 					if (projectDetails.length > 0) {
 						projectId = projectDetails[0]._id
 					} else {
-						let isAPrivateSolution = targetedSolutionId.data.isATargetedSolution === false ? true : false
+						let isAPrivateSolution = targetedSolutionId.result.isATargetedSolution === false ? true : false
 						let solutionDetails = {}
 
 						if (templateId === '') {
@@ -1195,7 +1194,6 @@ module.exports = class UserProjectsHelper {
 						let queryData = {}
 						queryData['_id'] = solutionDetails.programId
 						let programDetails = await programsQueries.programsDocument(queryData, ['requestForPIIConsent'])
-
 						// if requestForPIIConsent not there do not call program join
 						if (
 							Object.keys(solutionDetails).length > 0 &&
@@ -1233,9 +1231,7 @@ module.exports = class UserProjectsHelper {
 								}
 							}
 						}
-
 						let projectCreation = await this.userAssignedProjectCreation(templateDocuments[0]._id, userId)
-
 						if (!projectCreation.success) {
 							return resolve(projectCreation)
 						}
