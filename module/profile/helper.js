@@ -16,7 +16,7 @@ module.exports = class ProfileHelper {
 			try {
 				// Fetch user profile details using userService.profile function
 				const userResponse = await userService.profile(userId)
-				console.log('userResponse : ', userResponse)
+
 				// Check if the user profile fetch was successful
 				if (!userResponse.success) {
 					throw {
@@ -30,8 +30,7 @@ module.exports = class ProfileHelper {
 				// Check if meta is present and not empty
 				if (userDetails.meta && Object.keys(userDetails.meta).length > 0) {
 					const locationIds = await this.extractLocationIdsFromMeta(userDetails.meta)
-					console.log('debug consoles')
-					console.log('debug consoles', locationIds)
+
 					if (locationIds.length < 0) {
 						throw {
 							message: CONSTANTS.common.STATUS_FAILURE,
@@ -48,10 +47,10 @@ module.exports = class ProfileHelper {
 					const projection = ['_id', 'metaInformation.name']
 					// Use the entityDocuments function to fetch entity details
 					const response = await entityManagementService.entityDocuments(filterData, projection)
-					console.log('response line 51:', response)
+
 					// Check if the response is successful and has data
 					const entityDetails = response.data
-					if (entityDetails.length < 0) {
+					if (!entityDetails || entityDetails.length < 0) {
 						throw {
 							message: CONSTANTS.common.STATUS_FAILURE,
 							status: HTTP_STATUS_CODE.bad_request.status,
