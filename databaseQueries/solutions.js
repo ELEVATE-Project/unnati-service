@@ -40,6 +40,7 @@ module.exports = class Solutions {
 					})
 				}
 				let solutionsDoc = await database.models.solutions.find(queryObject, projection).lean()
+
 				return resolve(solutionsDoc)
 			} catch (error) {
 				return reject(error)
