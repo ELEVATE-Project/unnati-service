@@ -1107,7 +1107,7 @@ module.exports = class UserProjectsHelper {
 						{
 							solutionId: solutionId,
 							userId: userId,
-							isAPrivateProgram: targetedSolutionId.data.isATargetedSolution ? false : true,
+							isAPrivateProgram: targetedSolutionId.result.isATargetedSolution ? false : true,
 						},
 						['_id']
 					)
