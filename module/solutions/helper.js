@@ -984,7 +984,6 @@ module.exports = class SolutionsHelper {
 
 				filterQuery.status = CONSTANTS.common.ACTIVE_STATUS
 				filterQuery.type = type
-
 				if (data.filter && Object.keys(data.filter).length > 0) {
 					let solutionsSkipped = []
 
@@ -1046,8 +1045,7 @@ module.exports = class SolutionsHelper {
 					isATargetedSolution: false,
 					_id: solutionId,
 				}
-
-				let queryData = await this.queryBasedOnRoleAndLocation(bodyData)
+				let queryData = await this.queryBasedOnRoleAndLocation(bodyData, bodyData.type)
 				if (!queryData.success) {
 					return resolve(queryData)
 				}
