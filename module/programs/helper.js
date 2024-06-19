@@ -468,8 +468,7 @@ module.exports = class ProgramsHelper {
 						_id: { $in: entities },
 						entityType: programData[0].scope.entityType,
 					},
-					['_id'],
-					userToken
+					['_id']
 				)
 
 				if (!entitiesData.success) {
