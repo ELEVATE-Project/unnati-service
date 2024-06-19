@@ -527,14 +527,12 @@ module.exports = class UserProjectsHelper {
 						'__v',
 					]
 				)
-
 				if (!projectDetails.length > 0) {
 					throw {
 						status: HTTP_STATUS_CODE.bad_request.status,
 						message: CONSTANTS.apiResponses.PROJECT_NOT_FOUND,
 					}
 				}
-
 				if (Object.keys(userRoleInformation).length > 0) {
 					if (
 						!projectDetails[0].userRoleInformation ||
@@ -1085,7 +1083,6 @@ module.exports = class UserProjectsHelper {
 						isReusable: false,
 						// solutionId: { $exists: true },
 					})
-
 					if (!templateDocuments.length > 0) {
 						throw {
 							message: CONSTANTS.apiResponses.PROJECT_TEMPLATE_NOT_FOUND,
@@ -1096,7 +1093,6 @@ module.exports = class UserProjectsHelper {
 					solutionId = templateDocuments[0].solutionId ? templateDocuments[0].solutionId : solutionId
 					solutionExternalId = templateDocuments[0].solutionExternalId
 				}
-
 				let userRoleInformation = _.omit(bodyData, ['referenceFrom', 'submissions', 'hasAcceptedTAndC'])
 
 				if (projectId === '') {
@@ -1107,7 +1103,7 @@ module.exports = class UserProjectsHelper {
 						{
 							solutionId: solutionId,
 							userId: userId,
-							isAPrivateProgram: targetedSolutionId.data.isATargetedSolution ? false : true,
+							isAPrivateProgram: targetedSolutionId.result.isATargetedSolution ? false : true,
 						},
 						['_id']
 					)
@@ -2949,6 +2945,7 @@ module.exports = class UserProjectsHelper {
  */
 
 function _projectInformation(project) {
+	console.log(project, 'line no 888')
 	return new Promise(async (resolve, reject) => {
 		try {
 			if (project.entityInformation) {

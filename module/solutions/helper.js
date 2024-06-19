@@ -941,7 +941,6 @@ module.exports = class SolutionsHelper {
 					isReusable: false,
 					isDeleted: false,
 				}
-
 				if (validateEntity !== CONSTANTS.common.OFF) {
 					Object.keys(_.omit(data, ['filter', 'role'])).forEach((requestedDataKey) => {
 						if (requestedDataKey == 'entities') entities.push(...data[requestedDataKey])
@@ -984,10 +983,8 @@ module.exports = class SolutionsHelper {
 				// } else {
 				//   filterQuery.status = CONSTANTS.common.ACTIVE_STATUS;
 				// }
-
 				filterQuery.status = CONSTANTS.common.ACTIVE_STATUS
-				filterQuery.type = type
-
+				filterQuery.type = data.type
 				if (data.filter && Object.keys(data.filter).length > 0) {
 					let solutionsSkipped = []
 
@@ -1049,7 +1046,6 @@ module.exports = class SolutionsHelper {
 					isATargetedSolution: false,
 					_id: solutionId,
 				}
-
 				let queryData = await this.queryBasedOnRoleAndLocation(bodyData)
 				if (!queryData.success) {
 					return resolve(queryData)
@@ -1063,7 +1059,6 @@ module.exports = class SolutionsHelper {
 					'programId',
 					'name',
 				])
-
 				if (!Array.isArray(solutionData) || solutionData.length < 1) {
 					return resolve({
 						success: true,
