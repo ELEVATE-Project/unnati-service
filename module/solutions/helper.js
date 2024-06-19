@@ -332,7 +332,7 @@ module.exports = class SolutionsHelper {
 						let bodyData = {
 							id: locationData.ids,
 						}
-						let entityData = await entitiesService.entityDocuments(bodyData, 'all', userToken)
+						let entityData = await entitiesService.entityDocuments(bodyData, 'all')
 						if (entityData.success) {
 							entityData.data.forEach((entity) => {
 								entityIds.push(entity._id)
@@ -984,7 +984,6 @@ module.exports = class SolutionsHelper {
 
 				filterQuery.status = CONSTANTS.common.ACTIVE_STATUS
 				filterQuery.type = type
-
 				if (data.filter && Object.keys(data.filter).length > 0) {
 					let solutionsSkipped = []
 
@@ -1046,8 +1045,7 @@ module.exports = class SolutionsHelper {
 					isATargetedSolution: false,
 					_id: solutionId,
 				}
-
-				let queryData = await this.queryBasedOnRoleAndLocation(bodyData)
+				let queryData = await this.queryBasedOnRoleAndLocation(bodyData, bodyData.type)
 				if (!queryData.success) {
 					return resolve(queryData)
 				}
@@ -1256,7 +1254,7 @@ module.exports = class SolutionsHelper {
 						bodyData = {
 							id: locationData.ids,
 						}
-						let entityData = await entitiesService.entityDocuments(bodyData, 'all', userToken)
+						let entityData = await entitiesService.entityDocuments(bodyData, 'all')
 
 						if (!entityData.success) {
 							return resolve({
@@ -1277,7 +1275,7 @@ module.exports = class SolutionsHelper {
 						let filterData = {
 							'registryDetails.code': { $in: locationData.codes },
 						}
-						let entityDetails = await entitiesService.entityDocuments(filterData, 'all', userToken)
+						let entityDetails = await entitiesService.entityDocuments(filterData, 'all')
 						if (!entityDetails.success || !entityDetails.data || !entityDetails.data.length > 0) {
 							return resolve({
 								status: HTTP_STATUS_CODE.bad_request.status,
@@ -1708,8 +1706,7 @@ module.exports = class SolutionsHelper {
 							_id: programData[0].scope.entities,
 							[`groups.${solutionData[0].scope.entityType}`]: entities,
 						},
-						['_id'],
-						usertoken
+						['_id']
 					)
 
 					if (!checkEntityInParent.success) {
@@ -1724,8 +1721,7 @@ module.exports = class SolutionsHelper {
 						_id: { $in: entities },
 						entityType: solutionData[0].scope.entityType,
 					},
-					['_id'],
-					usertoken
+					['_id']
 				)
 
 				if (!entitiesData.success) {
@@ -1804,8 +1800,7 @@ module.exports = class SolutionsHelper {
 						_id: { $in: entities },
 						entityType: solutionData[0].scope.entityType,
 					},
-					['_id'],
-					userToken
+					['_id']
 				)
 
 				if (!entitiesData.success || !entitiesData.data.length > 0) {

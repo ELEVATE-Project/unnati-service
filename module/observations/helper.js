@@ -26,8 +26,7 @@ module.exports = class observationsHelper {
 						{
 							_id: { $in: observationDocument[0].entities },
 						},
-						'all',
-						userToken
+						'all'
 					)
 
 					observationDocument[0]['count'] = entitiesDocument.length
