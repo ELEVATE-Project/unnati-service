@@ -1,6 +1,6 @@
 # Python scripts for elevate-project implementation
 
-Python script to upload a program and add multiple resources like Projects , Surveys , Observations (with and without rubrics) to it and also upload project add multiple resources like task.
+Python script to upload a program and add multiple resources like Projects and also upload multiple resources like task.
 
 ### Resource templates
 - [Programs](https://docs.google.com/spreadsheets/d/1_pEomGIWxVZYwneQwY606zt26C72p9DU/edit?usp=drive_link&ouid=113799545932705393937&rtpof=true&sd=true)

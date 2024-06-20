@@ -214,16 +214,15 @@ def programmappingpdpmsheetcreation(MainFilePath,accessToken, program_file,progr
 
             programdesigner = dictDetailsEnv['elevateProject username/user id/email id/phone no. of Program Designer'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Program ID'] else terminatingMessage("\"elevateProject username/user id/email id/phone no. of Program Designer\" must not be Empty in \"Program details\" sheet")
             userDetails = fetchUserDetails(environment, accessToken, programdesigner)
-            
             creatorKeyCloakId = userDetails[0]
             creatorName = userDetails[1]
-            if "PROGRAM_DESIGNER" in userDetails[3]:
+            if "program_desiginer" in userDetails[4]:
                 creatorKeyCloakId = userDetails[0]
                 creatorName = userDetails[1]
             else :
                 terminatingMessage("user does't have program designer role")
 
-            pdpmcolo1 = [creatorName, " ", " ", " ", creatorKeyCloakId, " ", " ","ADD","PROGRAM_DESIGNER", extIdPGM, "programs"]
+            pdpmcolo1 = [creatorName, " ", " ", " ", creatorKeyCloakId, " ", " ","ADD","program_desiginer", extIdPGM, "programs"]
             with open(pdpmsheet + 'mapping.csv', 'a',encoding='utf-8') as file:
                 writer = csv.writer(file, quoting=csv.QUOTE_NONNUMERIC, delimiter=',',lineterminator='\n')
                 writer.writerows([pdpmcolo1])
@@ -252,13 +251,13 @@ def programmappingpdpmsheetcreation(MainFilePath,accessToken, program_file,progr
                         userDetails = fetchUserDetails(environment, accessToken, programmanagername2)
                 creatorKeyCloakId = userDetails[0]
                 creatorName = userDetails[1]
-                if "PROGRAM_MANAGER" in userDetails[3]:
+                if "program_desiginer" in userDetails[4]:
                     creatorKeyCloakId = userDetails[0]
                     creatorName = userDetails[1]
                 else:
                     terminatingMessage("user does't have program manager role")
 
-                pdpmcolo1 = [creatorName, " ", " ", " ", creatorKeyCloakId, " ", " ","ADD","PROGRAM_MANAGER", extIdPGM, "programs"]
+                pdpmcolo1 = [creatorName, " ", " ", " ", creatorKeyCloakId, " ", " ","ADD","program_desiginer", extIdPGM, "programs"]
 
                 with open(pdpmsheet + 'mapping.csv', 'a',encoding='utf-8') as file:
                     writer = csv.writer(file, quoting=csv.QUOTE_NONNUMERIC, delimiter=',',lineterminator='\n')
@@ -316,7 +315,6 @@ def check_sequence(arr):
 def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
     program_file = filePathAddPgm
     # open excel file 
-    userDetails = fetchUserDetails(environment, accessToken, 'programdesigneremail@gmail.com')
     wbPgm = xlrd.open_workbook(filePathAddPgm, on_demand=True)
     global programNameInp
     sheetNames = wbPgm.sheet_names()
@@ -422,7 +420,7 @@ def programsFileCheck(filePathAddPgm, accessToken, parentFolder, MainFilePath):
                         programCreation(accessToken,parentFolder,extIdPGM,programNameInp,proDesc,roles,userId)
                         # accessToken, parentFolder, extIdPGM, programNameInp, descriptionPGM,keywordsPGM.lstrip().rstrip().split(","),mainRole,rolesPGM
                         # sys.exit()
-                        # programmappingpdpmsheetcreation(MainFilePath, accessToken, program_file, extIdPGM,parentFolder)
+                        programmappingpdpmsheetcreation(MainFilePath, accessToken, program_file, extIdPGM,parentFolder)
 
                         # map PM / PD to the program 
                         # Programmappingapicall(MainFilePath, accessToken, program_file,parentFolder)
@@ -693,12 +691,7 @@ def fetchUserDetails(environment, accessToken, elevateProjectId):
     headers = {'Content-Type': 'application/json',
                'internal-access-token': config.get(environment, 'internal-access-token'),
                'x-authenticated-user-token': accessToken}
-    isEmail = checkEmailValidation(elevateProjectId.lstrip().rstrip())
-    if isEmail:
-        body = "{\n  \"request\": {\n    \"filters\": {\n    \t\"email\": \"" + elevateProjectId.lstrip().rstrip() + "\"\n    },\n      \"fields\" :[],\n    \"limit\": 1000,\n    \"sort_by\": {\"createdDate\": \"desc\"}\n  }\n}"
-    else:
-        body = "{\n  \"request\": {\n    \"filters\": {\n    \t\"userName\": \"" + elevateProjectId.lstrip().rstrip() + "\"\n    },\n      \"fields\" :[],\n    \"limit\": 1000,\n    \"sort_by\": {\"createdDate\": \"desc\"}\n  }\n}"
-    responseUserSearch = requests.request("POST", url, headers=headers, data=body)
+    responseUserSearch = requests.request("GET", url, headers=headers)
     rootOrgId = 1  # Replace this with the actual value you need
     OrgName = []
     if responseUserSearch.status_code == 200:
@@ -708,11 +701,12 @@ def fetchUserDetails(environment, accessToken, elevateProjectId):
             userName = responseUserSearch['result']['name']
             rootOrgName = responseUserSearch['result']['organization']['name']
             rootOrgId = responseUserSearch['result']['organization']['id']
+            roledetails = [role['title'] for role in responseUserSearch['result']['user_roles']]
         else:
             terminatingMessage("-->Given username/email is not present in elevateProject platform<--.")
     else:
         terminatingMessage("User fetch API failed. Check logs.")
-    return [userKeycloak, userName,rootOrgName,rootOrgId]
+    return [userKeycloak, userName,rootOrgName,rootOrgId,roledetails]
 
 # Print message and terminate the program
 def terminatingMessage(msg):
@@ -916,10 +910,10 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                             solutionName = dictDetailsEnv['observation_solution_name'].encode('utf-8').decode('utf-8') if dictDetailsEnv['observation_solution_name'] else terminatingMessage("\"observation_solution_name\" must not be Empty in \"details\" sheet")
                             elevateProjectLoginId = dictDetailsEnv['elevateProject_loginId'].encode('utf-8').decode('utf-8') if dictDetailsEnv['elevateProject_loginId'] else terminatingMessage("\"elevateProject_loginId\" must not be Empty in \"details\" sheet")
                             ccUserDetails = fetchUserDetails(environment, accessToken, elevateProjectLoginId)
-                            if not "CONTENT_CREATOR" in ccUserDetails[1]:
+                            if not "CONTENT_CREATOR" in ccUserDetails[4]:
                                 terminatingMessage("---> "+elevateProjectLoginId +" is not a CONTENT_CREATOR in elevateProject " + environment)
-                            ccRootOrgName = ccUserDetails[3]
-                            ccRootOrgId = ccUserDetails[4]
+                            ccRootOrgName = ccUserDetails[2]
+                            ccRootOrgId = ccUserDetails[3]
                             solutionDescription = dictDetailsEnv['observation_solution_description'].encode('utf-8').decode('utf-8')
                             pointBasedValue = str(dictDetailsEnv['scoring_system']).encode('utf-8').decode('utf-8') if dictDetailsEnv['scoring_system'] else terminatingMessage("\"scoring_system\" must not be Empty in \"details\" sheet")
                             entityType = dictDetailsEnv['entity_type'].encode('utf-8').decode('utf-8') if dictDetailsEnv['entity_type'] else terminatingMessage("\"entity_type\" must not be Empty in \"details\" sheet")
@@ -1148,7 +1142,7 @@ def validateSheets(filePathAddObs, accessToken, parentFolder):
                         elevateProjectLoginId = dictDetailsEnv['elevateProject_loginId'].encode('utf-8').decode('utf-8') if dictDetailsEnv['elevateProject_loginId'] else terminatingMessage("\"elevateProject_loginId\" must not be Empty in \"details\" sheet")
                         creator = dictDetailsEnv['Name_of_the_creator'].encode('utf-8').decode('utf-8') if dictDetailsEnv['Name_of_the_creator'] else terminatingMessage("\"Name_of_the_creator\" must not be Empty in \"details\" sheet")
                         ccUserDetails = fetchUserDetails(environment, accessToken, elevateProjectLoginId)
-                        if not "CONTENT_CREATOR" in ccUserDetails[1]:
+                        if not "CONTENT_CREATOR" in ccUserDetails[4]:
                             terminatingMessage("---> "+elevateProjectLoginId +" is not a CONTENT_CREATOR in elevateProject " + environment)
                         ccRootOrgName = ccUserDetails[2]
                         ccRootOrgId = ccUserDetails[3]
