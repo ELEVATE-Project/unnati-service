@@ -1075,6 +1075,7 @@ module.exports = class UserProjectsHelper {
 	) {
 		return new Promise(async (resolve, reject) => {
 			try {
+				console.log('in the helper function : ', solutionId, templateId)
 				let solutionExternalId = ''
 				let templateDocuments
 
@@ -1100,6 +1101,7 @@ module.exports = class UserProjectsHelper {
 					// This will check wether the user user is targeted to solution or not based on his userRoleInformation
 					const targetedSolutionId = await solutionsHelper.isTargetedBasedOnUserProfile(solutionId, bodyData)
 					//based on above api will check for projects wether its is private project or public project
+					console.log('Line 1104 : ', targetedSolutionId)
 					const projectDetails = await projectQueries.projectDocument(
 						{
 							solutionId: solutionId,
@@ -1113,7 +1115,7 @@ module.exports = class UserProjectsHelper {
 					} else {
 						let isAPrivateSolution = targetedSolutionId.result.isATargetedSolution === false ? true : false
 						let solutionDetails = {}
-
+						console.log('line 1118')
 						if (templateId === '') {
 							// If solution Id of a private program is passed, fetch solution details
 							if (isAPrivateSolution && solutionId != '') {
@@ -1178,6 +1180,7 @@ module.exports = class UserProjectsHelper {
 								}
 							}
 						} else {
+							console.log('line 1183')
 							solutionDetails = await solutionsQueries.solutionsDocument(solutionId)
 							// if( !solutionDetails.success ) {
 							//     throw {
@@ -1192,7 +1195,7 @@ module.exports = class UserProjectsHelper {
 						let queryData = {}
 						queryData['_id'] = solutionDetails.programId
 						let programDetails = await programsQueries.programsDocument(queryData, ['requestForPIIConsent'])
-
+						console.log('line 1198', programDetails)
 						// if requestForPIIConsent not there do not call program join
 						if (
 							Object.keys(solutionDetails).length > 0 &&
@@ -1232,7 +1235,7 @@ module.exports = class UserProjectsHelper {
 						}
 
 						let projectCreation = await this.userAssignedProjectCreation(templateDocuments[0]._id, userId)
-
+						console.log('line 1238', programDetails)
 						if (!projectCreation.success) {
 							return resolve(projectCreation)
 						}
