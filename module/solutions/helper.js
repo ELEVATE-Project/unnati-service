@@ -2553,6 +2553,7 @@ module.exports = class SolutionsHelper {
 						message: assignedSolutions.message,
 					}
 				}
+				console.log('assignedSolutions : ', assignedSolutions)
 				let totalCount = 0
 				let mergedData = []
 				let solutionIds = []
@@ -2647,6 +2648,7 @@ module.exports = class SolutionsHelper {
 						// }
 					}
 				}
+				console.log('mergedData : ', mergedData)
 				if (mergedData.length > 0) {
 					let startIndex = pageSize * (pageNo - 1)
 					let endIndex = startIndex + pageSize
