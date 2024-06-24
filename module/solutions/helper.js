@@ -3047,37 +3047,37 @@ module.exports = class SolutionsHelper {
 						result: {},
 					}
 				}
+				// commented for drop 1 of elevate-project
+				// if (solutionData.programId) {
+				// 	// add ["rootOrganisations","requestForPIIConsent","programJoined"] values to response. Based on these values front end calls PII consent
+				// 	let programData = await programQueries.programsDocument(
+				// 		{
+				// 			_id: solutionData.programId,
+				// 		},
+				// 		['rootOrganisations', 'requestForPIIConsent', 'name']
+				// 	)
+				// 	programData = programData[0]
+				// 	templateOrQuestionDetails.data.rootOrganisations = programData.rootOrganisations
+				// 		? programData.rootOrganisations
+				// 		: ''
+				// 	if (programData.hasOwnProperty('requestForPIIConsent')) {
+				// 		templateOrQuestionDetails.data.requestForPIIConsent = programData.requestForPIIConsent
+				// 	}
+				// 	// We are passing programId and programName with the response because front end require these values to show program join pop-up in case of survey link flow
+				// 	// In 6.0.0 release these values only used for solutions of  type survey in front-end side. But Backend is not adding any restrictions based on solution type.
+				// 	// If solution have programId then we will pass below values with the response, irrespective of solution type
+				// 	templateOrQuestionDetails.data.programId = solutionData.programId
+				// 	templateOrQuestionDetails.data.programName = programData.name
+				// }
 
-				if (solutionData.programId) {
-					// add ["rootOrganisations","requestForPIIConsent","programJoined"] values to response. Based on these values front end calls PII consent
-					let programData = await programQueries.programsDocument(
-						{
-							_id: solutionData.programId,
-						},
-						['rootOrganisations', 'requestForPIIConsent', 'name']
-					)
-					programData = programData[0]
-					templateOrQuestionDetails.data.rootOrganisations = programData.rootOrganisations
-						? programData.rootOrganisations
-						: ''
-					if (programData.hasOwnProperty('requestForPIIConsent')) {
-						templateOrQuestionDetails.data.requestForPIIConsent = programData.requestForPIIConsent
-					}
-					// We are passing programId and programName with the response because front end require these values to show program join pop-up in case of survey link flow
-					// In 6.0.0 release these values only used for solutions of  type survey in front-end side. But Backend is not adding any restrictions based on solution type.
-					// If solution have programId then we will pass below values with the response, irrespective of solution type
-					templateOrQuestionDetails.data.programId = solutionData.programId
-					templateOrQuestionDetails.data.programName = programData.name
-				}
-
-				//Check data present in programUsers collection.
-				//checkForUserJoinedProgramAndConsentShared will returns an object which contain joinProgram and consentShared status
-				let programJoinStatus = await programUsersHelper.checkForUserJoinedProgramAndConsentShared(
-					solutionData.programId,
-					userId
-				)
-				templateOrQuestionDetails.data.programJoined = programJoinStatus.joinProgram
-				templateOrQuestionDetails.data.consentShared = programJoinStatus.consentShared
+				// //Check data present in programUsers collection.
+				// //checkForUserJoinedProgramAndConsentShared will returns an object which contain joinProgram and consentShared status
+				// let programJoinStatus = await programUsersHelper.checkForUserJoinedProgramAndConsentShared(
+				// 	solutionData.programId,
+				// 	userId
+				// )
+				// templateOrQuestionDetails.data.programJoined = programJoinStatus.joinProgram
+				// templateOrQuestionDetails.data.consentShared = programJoinStatus.consentShared
 
 				return resolve({
 					success: true,
