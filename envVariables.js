@@ -186,6 +186,15 @@ module.exports = function () {
 					].possibleValues.join(', ')}`
 				}
 			}
+		} else {
+			if (!process.env[eachEnvironmentVariable] || process.env[eachEnvironmentVariable] == '') {
+				if (
+					enviromentVariables[eachEnvironmentVariable].default &&
+					enviromentVariables[eachEnvironmentVariable].default != ''
+				) {
+					process.env[eachEnvironmentVariable] = enviromentVariables[eachEnvironmentVariable].default
+				}
+			}
 		}
 
 		if (!keyCheckPass) {
