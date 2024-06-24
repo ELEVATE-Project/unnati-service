@@ -1235,7 +1235,7 @@ module.exports = class UserProjectsHelper {
 						}
 
 						let projectCreation = await this.userAssignedProjectCreation(templateDocuments[0]._id, userId)
-						console.log('line 1238', programDetails)
+						console.log('line 1238', projectCreation)
 						if (!projectCreation.success) {
 							return resolve(projectCreation)
 						}
@@ -1441,7 +1441,7 @@ module.exports = class UserProjectsHelper {
 						projectId = project._id
 					}
 				}
-
+				console.log('Line 1444')
 				let projectDetails = await this.details(projectId, userId, userRoleInformation)
 
 				// let revertStatusorNot = UTILS.revertStatusorNot(appVersion);
@@ -1495,6 +1495,7 @@ module.exports = class UserProjectsHelper {
 	static userAssignedProjectCreation(templateId, userId) {
 		return new Promise(async (resolve, reject) => {
 			try {
+				console.log(templateId, userId, 'yeahhhh++++')
 				const projectTemplateData = await projectTemplateQueries.templateDocument(
 					{
 						status: CONSTANTS.common.PUBLISHED,
