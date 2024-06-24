@@ -94,12 +94,12 @@ let enviromentVariables = {
 	// signedUrl and downloadAble url expiry durations
 	DOWNLOADABLE_URL_EXPIRY_IN_SECONDS: {
 		message: 'Required downloadable url expiration time',
-		optional: true,
+		optional: false,
 		default: 300,
 	},
 	PRESIGNED_URL_EXPIRY_IN_SECONDS: {
 		message: 'Required presigned url expiration time',
-		optional: true,
+		optional: false,
 		default: 300,
 	},
 	// default organisation code
@@ -184,15 +184,6 @@ module.exports = function () {
 					enviromentVariables[eachEnvironmentVariable].message += ` Valid values - ${enviromentVariables[
 						eachEnvironmentVariable
 					].possibleValues.join(', ')}`
-				}
-			}
-		} else {
-			if (!process.env[eachEnvironmentVariable] || process.env[eachEnvironmentVariable] == '') {
-				if (
-					enviromentVariables[eachEnvironmentVariable].default &&
-					enviromentVariables[eachEnvironmentVariable].default != ''
-				) {
-					process.env[eachEnvironmentVariable] = enviromentVariables[eachEnvironmentVariable].default
 				}
 			}
 		}
