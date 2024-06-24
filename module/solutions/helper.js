@@ -2620,6 +2620,7 @@ module.exports = class SolutionsHelper {
 				surveyReportPage = UTILS.convertStringToBoolean(surveyReportPage)
 
 				if (!surveyReportPage) {
+					console.log('inside this')
 					targetedSolutions = await this.forUserRoleAndLocation(
 						requestedData,
 						solutionType,
@@ -2630,7 +2631,9 @@ module.exports = class SolutionsHelper {
 						search
 					)
 				}
+				console.log('targetedSolutions : ', targetedSolutions)
 				if (targetedSolutions.success) {
+					console.log('targetedSolutions.data.data :', targetedSolutions.data.data)
 					if (targetedSolutions.data.data && targetedSolutions.data.data.length > 0) {
 						totalCount += targetedSolutions.data.count
 
