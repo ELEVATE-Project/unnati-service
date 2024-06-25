@@ -639,7 +639,6 @@ module.exports = class SolutionsHelper {
 						$arrayElemAt: ['$totalCount.count', 0],
 					},
 				}
-				console.log('+++matchQuery : ', matchQuery)
 				let solutionDocuments = await solutionsQueries.getAggregate([
 					{ $match: matchQuery },
 					{
@@ -2554,7 +2553,6 @@ module.exports = class SolutionsHelper {
 						message: assignedSolutions.message,
 					}
 				}
-				console.log('assignedSolutions : ', assignedSolutions)
 				let totalCount = 0
 				let mergedData = []
 				let solutionIds = []
@@ -2621,7 +2619,6 @@ module.exports = class SolutionsHelper {
 				surveyReportPage = UTILS.convertStringToBoolean(surveyReportPage)
 
 				if (!surveyReportPage) {
-					console.log('inside this')
 					targetedSolutions = await this.forUserRoleAndLocation(
 						requestedData,
 						solutionType,
@@ -2632,9 +2629,8 @@ module.exports = class SolutionsHelper {
 						search
 					)
 				}
-				console.log('targetedSolutions : ', targetedSolutions)
+
 				if (targetedSolutions.success) {
-					console.log('targetedSolutions.data.data :', targetedSolutions.data.data)
 					if (targetedSolutions.data.data && targetedSolutions.data.data.length > 0) {
 						totalCount += targetedSolutions.data.count
 
@@ -2652,7 +2648,6 @@ module.exports = class SolutionsHelper {
 						// }
 					}
 				}
-				console.log('mergedData : ', mergedData)
 				if (mergedData.length > 0) {
 					let startIndex = pageSize * (pageNo - 1)
 					let endIndex = startIndex + pageSize

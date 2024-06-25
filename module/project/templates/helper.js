@@ -491,20 +491,12 @@ module.exports = class ProjectTemplatesHelper {
 	static importProjectTemplate(templateId, userId, userToken, solutionId = '', updateData = {}) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				console.log(
-					'templateId,userId,userToken,solutionId,updateData :;',
-					templateId,
-					userId,
-					userToken,
-					solutionId,
-					updateData
-				)
 				let projectTemplateData = await projectTemplateQueries.templateDocument({
 					status: CONSTANTS.common.PUBLISHED,
 					externalId: templateId,
 					isReusable: true,
 				})
-				console.log('projectTemplateData : ', projectTemplateData)
+
 				if (!projectTemplateData.length > 0) {
 					throw new Error(CONSTANTS.apiResponses.PROJECT_TEMPLATE_NOT_FOUND)
 				}
