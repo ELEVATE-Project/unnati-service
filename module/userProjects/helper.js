@@ -1500,7 +1500,7 @@ module.exports = class UserProjectsHelper {
 					{
 						status: CONSTANTS.common.PUBLISHED,
 						_id: templateId,
-						isReusable: true,
+						isReusable: false,
 					},
 					'all',
 					['ratings', 'noOfRatings', 'averageRating']
