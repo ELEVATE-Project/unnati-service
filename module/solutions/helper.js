@@ -983,7 +983,9 @@ module.exports = class SolutionsHelper {
 				// }
 
 				filterQuery.status = CONSTANTS.common.ACTIVE_STATUS
-				filterQuery.type = type
+				if (type != '') {
+					filterQuery.type = type
+				}
 				if (data.filter && Object.keys(data.filter).length > 0) {
 					let solutionsSkipped = []
 

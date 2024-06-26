@@ -1100,7 +1100,6 @@ module.exports = class UserProjectsHelper {
 					// This will check wether the user user is targeted to solution or not based on his userRoleInformation
 					const targetedSolutionId = await solutionsHelper.isTargetedBasedOnUserProfile(solutionId, bodyData)
 					//based on above api will check for projects wether its is private project or public project
-
 					const projectDetails = await projectQueries.projectDocument(
 						{
 							solutionId: solutionId,
@@ -1180,6 +1179,7 @@ module.exports = class UserProjectsHelper {
 							}
 						} else {
 							solutionDetails = await solutionsQueries.solutionsDocument(solutionId)
+							solutionDetails = solutionDetails[0]
 							// if( !solutionDetails.success ) {
 							//     throw {
 							//         message : CONSTANTS.apiResponses.SOLUTION_NOT_FOUND,
@@ -1189,55 +1189,56 @@ module.exports = class UserProjectsHelper {
 
 							// solutionDetails = solutionDetails.data[0];
 						}
+
+						// program join is not implemented in this for drop 1
+
 						// check for requestForPIIConsent data
-						let queryData = {}
-						queryData['_id'] = solutionDetails.programId
-						let programDetails = await programsQueries.programsDocument(queryData, ['requestForPIIConsent'])
+						// let queryData = {}
+						// queryData['_id'] = solutionDetails.programId
+						// let programDetails = await programsQueries.programsDocument(queryData, ['requestForPIIConsent'])
 
-						// if requestForPIIConsent not there do not call program join
-						if (
-							Object.keys(solutionDetails).length > 0 &&
-							programDetails.length > 0 &&
-							programDetails[0].hasOwnProperty('requestForPIIConsent')
-						) {
-							// program join API call it will increment the noOfResourcesStarted counter and will make user join program
-							// before creating any project this api has to called
-							let programUsers = await programUsersQueries.programUsersDocument(
-								{
-									userId: userId,
-									programId: solutionDetails.programId,
-								},
-								['_id', 'resourcesStarted']
-							)
+						// // if requestForPIIConsent not there do not call program join
+						// if (
+						// 	Object.keys(solutionDetails).length > 0 &&
+						// 	programDetails.length > 0 &&
+						// 	programDetails[0].hasOwnProperty('requestForPIIConsent')
+						// ) {
+						// 	// program join API call it will increment the noOfResourcesStarted counter and will make user join program
+						// 	// before creating any project this api has to called
+						// 	let programUsers = await programUsersQueries.programUsersDocument(
+						// 		{
+						// 			userId: userId,
+						// 			programId: solutionDetails.programId,
+						// 		},
+						// 		['_id', 'resourcesStarted']
+						// 	)
 
-							if (
-								!programUsers.length > 0 ||
-								(programUsers.length > 0 && programUsers[0].resourcesStarted == false)
-							) {
-								let programJoinBody = {}
-								programJoinBody.userRoleInformation = userRoleInformation
-								programJoinBody.isResource = true
-								programJoinBody.consentShared = true
-								let joinProgramData = await programsHelper.join(
-									solutionDetails.programId,
-									programJoinBody,
-									userId
-								)
-								if (!joinProgramData.success) {
-									return resolve({
-										status: HTTP_STATUS_CODE.bad_request.status,
-										message: CONSTANTS.apiResponses.PROGRAM_JOIN_FAILED,
-									})
-								}
-							}
-						}
-
+						// 	if (
+						// 		!programUsers.length > 0 ||
+						// 		(programUsers.length > 0 && programUsers[0].resourcesStarted == false)
+						// 	) {
+						// 		let programJoinBody = {}
+						// 		programJoinBody.userRoleInformation = userRoleInformation
+						// 		programJoinBody.isResource = true
+						// 		programJoinBody.consentShared = true
+						// 		let joinProgramData = await programsHelper.join(
+						// 			solutionDetails.programId,
+						// 			programJoinBody,
+						// 			userId
+						// 		)
+						// 		if (!joinProgramData.success) {
+						// 			return resolve({
+						// 				status: HTTP_STATUS_CODE.bad_request.status,
+						// 				message: CONSTANTS.apiResponses.PROGRAM_JOIN_FAILED,
+						// 			})
+						// 		}
+						// 	}
+						// }
 						let projectCreation = await this.userAssignedProjectCreation(templateDocuments[0]._id, userId)
 
 						if (!projectCreation.success) {
 							return resolve(projectCreation)
 						}
-
 						projectCreation.data['isAPrivateProgram'] = solutionDetails.isAPrivateProgram
 
 						if (Object.keys(solutionDetails).length > 0) {
@@ -1392,14 +1393,11 @@ module.exports = class UserProjectsHelper {
 						// } else {
 						//     //Fetch user profile information by calling sunbird's user read api.
 
-						//     let userProfileData = await userService.profile( userId);
-						//     if ( userProfileData.success &&
-						//          userProfileData.data &&
-						//          userProfileData.data.response
-						//     ) {
-						//             projectCreation.data.userProfile = userProfileData.data.response;
-						//             addReportInfoToSolution = true;
-						//     }
+						let userProfileData = await userService.profile(userId)
+						if (userProfileData.success && userProfileData.data) {
+							projectCreation.data.userProfile = userProfileData.data
+							// addReportInfoToSolution = true;
+						}
 						// }
 
 						projectCreation.data.userRoleInformation = userRoleInformation
