@@ -41,7 +41,7 @@ module.exports = async function (req, res, next, token = '') {
 		delete req.headers[e]
 	})
 
-	var token = req.headers['x-authenticated-user-token']
+	var token = req.headers['x-auth-token']
 	if (!req.rspObj) req.rspObj = {}
 	var rspObj = req.rspObj
 
