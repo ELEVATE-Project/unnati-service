@@ -18,13 +18,14 @@ const libraryCategoriesHelper = require(MODULES_BASE_PATH + '/library/categories
 const coreService = require(GENERICS_FILES_PATH + '/services/core')
 // const kafkaProducersHelper = require(GENERICS_FILES_PATH + "/kafka/producers");
 const learningResourcesHelper = require(MODULES_BASE_PATH + '/learningResources/helper')
-const surveyService = require(GENERICS_FILES_PATH + '/services/survey')
+
 const projectTemplateQueries = require(DB_QUERY_BASE_PATH + '/projectTemplates')
 const projectTemplateTaskQueries = require(DB_QUERY_BASE_PATH + '/projectTemplateTask')
 const projectQueries = require(DB_QUERY_BASE_PATH + '/projects')
 const projectCategoriesQueries = require(DB_QUERY_BASE_PATH + '/projectCategories')
 const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions')
 const certificateTemplateQueries = require(DB_QUERY_BASE_PATH + '/certificateTemplates')
+const programQueries = require(DB_QUERY_BASE_PATH + '/programs')
 
 module.exports = class ProjectTemplatesHelper {
 	/**
@@ -490,20 +491,12 @@ module.exports = class ProjectTemplatesHelper {
 	static importProjectTemplate(templateId, userId, userToken, solutionId = '', updateData = {}) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				console.log(
-					'templateId,userId,userToken,solutionId,updateData :;',
-					templateId,
-					userId,
-					userToken,
-					solutionId,
-					updateData
-				)
 				let projectTemplateData = await projectTemplateQueries.templateDocument({
 					status: CONSTANTS.common.PUBLISHED,
 					externalId: templateId,
 					isReusable: true,
 				})
-				console.log('projectTemplateData : ', projectTemplateData)
+
 				if (!projectTemplateData.length > 0) {
 					throw new Error(CONSTANTS.apiResponses.PROJECT_TEMPLATE_NOT_FOUND)
 				}
@@ -1226,9 +1219,14 @@ function _templateInformation(project) {
 	return new Promise(async (resolve, reject) => {
 		try {
 			if (project.programId) {
-				let programs = await surveyService.listProgramsBasedOnIds([project.programId])
+				let programs = await programQueries.programsDocument(
+					{
+						_id: project.programId,
+					},
+					['name']
+				)
 
-				if (!programs.success) {
+				if (!programs.length > 0) {
 					throw {
 						message: CONSTANTS.apiResponses.PROGRAM_NOT_FOUND,
 						status: HTTP_STATUS_CODE.bad_request.status,
@@ -1237,7 +1235,7 @@ function _templateInformation(project) {
 
 				project.programInformation = {
 					programId: project.programId,
-					programName: programs.data[0].name,
+					programName: programs[0].name,
 				}
 
 				delete project.programId

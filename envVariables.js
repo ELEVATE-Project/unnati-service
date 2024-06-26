@@ -94,12 +94,12 @@ let enviromentVariables = {
 	// signedUrl and downloadAble url expiry durations
 	DOWNLOADABLE_URL_EXPIRY_IN_SECONDS: {
 		message: 'Required downloadable url expiration time',
-		optional: true,
+		optional: false,
 		default: 300,
 	},
 	PRESIGNED_URL_EXPIRY_IN_SECONDS: {
 		message: 'Required presigned url expiration time',
-		optional: true,
+		optional: false,
 		default: 300,
 	},
 	// default organisation code

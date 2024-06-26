@@ -28,6 +28,7 @@ const solutionsQueries = require(DB_QUERY_BASE_PATH + '/solutions')
 const programQueries = require(DB_QUERY_BASE_PATH + '/programs')
 const entitiesService = require(GENERICS_FILES_PATH + '/services/entity-management')
 const common_handler = require(GENERICS_FILES_PATH + '/helpers/common_handler')
+const cloudServicesHelper = require(MODULES_BASE_PATH + '/cloud-services/files/helper')
 /**
  * UserProjectsHelper
  * @class
@@ -1099,6 +1100,7 @@ module.exports = class UserProjectsHelper {
 					// This will check wether the user user is targeted to solution or not based on his userRoleInformation
 					const targetedSolutionId = await solutionsHelper.isTargetedBasedOnUserProfile(solutionId, bodyData)
 					//based on above api will check for projects wether its is private project or public project
+
 					const projectDetails = await projectQueries.projectDocument(
 						{
 							solutionId: solutionId,
@@ -1110,7 +1112,7 @@ module.exports = class UserProjectsHelper {
 					if (projectDetails.length > 0) {
 						projectId = projectDetails[0]._id
 					} else {
-						let isAPrivateSolution = targetedSolutionId.data.isATargetedSolution === false ? true : false
+						let isAPrivateSolution = targetedSolutionId.result.isATargetedSolution === false ? true : false
 						let solutionDetails = {}
 
 						if (templateId === '') {
@@ -1437,7 +1439,6 @@ module.exports = class UserProjectsHelper {
 						projectId = project._id
 					}
 				}
-
 				let projectDetails = await this.details(projectId, userId, userRoleInformation)
 
 				// let revertStatusorNot = UTILS.revertStatusorNot(appVersion);
@@ -1495,7 +1496,7 @@ module.exports = class UserProjectsHelper {
 					{
 						status: CONSTANTS.common.PUBLISHED,
 						_id: templateId,
-						isReusable: true,
+						isReusable: false,
 					},
 					'all',
 					['ratings', 'noOfRatings', 'averageRating']
@@ -1961,7 +1962,6 @@ module.exports = class UserProjectsHelper {
 				let response
 				// if projectpdf is requested generate that else project task pdf can be called
 				if (projectPdf) {
-					console.log('inside this function : ')
 					response = await common_handler.improvementProjectPdfGeneration(projectDocument, userId)
 				} else {
 					response = await common_handler.improvementProjectTaskPdfGeneration(projectDocument, userId)
@@ -2955,7 +2955,6 @@ module.exports = class UserProjectsHelper {
  */
 
 function _projectInformation(project) {
-	console.log(project, 'line no 888')
 	return new Promise(async (resolve, reject) => {
 		try {
 			if (project.entityInformation) {
@@ -2985,11 +2984,15 @@ function _projectInformation(project) {
 						projectAttachments.push(currentProjectAttachment.sourcePath)
 					}
 				}
-
-				// let projectAttachmentsUrl = await _attachmentInformation(projectAttachments, projectLinkAttachments, project.attachments, CONSTANTS.common.PROJECT_ATTACHMENT);
-				// if ( projectAttachmentsUrl.data && projectAttachmentsUrl.data.length > 0 ) {
-				//     project.attachments = projectAttachmentsUrl.data;
-				// }
+				let projectAttachmentsUrl = await _attachmentInformation(
+					projectAttachments,
+					projectLinkAttachments,
+					project.attachments,
+					CONSTANTS.common.PROJECT_ATTACHMENT
+				)
+				if (projectAttachmentsUrl.data && projectAttachmentsUrl.data.length > 0) {
+					project.attachments = projectAttachmentsUrl.data
+				}
 			}
 
 			//task attachments
@@ -3033,11 +3036,17 @@ function _projectInformation(project) {
 						}
 					}
 				}
-
-				// let taskAttachmentsUrl = await _attachmentInformation(attachments, mapLinkAttachment, [], CONSTANTS.common.TASK_ATTACHMENT, mapTaskIdToAttachment, project.tasks);
-				// if ( taskAttachmentsUrl.data && taskAttachmentsUrl.data.length > 0 ) {
-				//     project.tasks = taskAttachmentsUrl.data;
-				// }
+				let taskAttachmentsUrl = await _attachmentInformation(
+					attachments,
+					mapLinkAttachment,
+					[],
+					CONSTANTS.common.TASK_ATTACHMENT,
+					mapTaskIdToAttachment,
+					project.tasks
+				)
+				if (taskAttachmentsUrl.data && taskAttachmentsUrl.data.length > 0) {
+					project.tasks = taskAttachmentsUrl.data
+				}
 			}
 
 			project.status = project.status ? project.status : CONSTANTS.common.NOT_STARTED_STATUS
@@ -3093,22 +3102,18 @@ function _attachmentInformation(
 	return new Promise(async (resolve, reject) => {
 		try {
 			let attachmentOrTask = []
-
 			if (attachmentWithSourcePath && attachmentWithSourcePath.length > 0) {
-				let attachmentsUrl = await coreService.getDownloadableUrl({
-					filePaths: attachmentWithSourcePath,
-				})
-
-				if (!attachmentsUrl.success) {
+				let attachmentsUrl = await cloudServicesHelper.getDownloadableUrl(attachmentWithSourcePath)
+				if (!attachmentsUrl || !attachmentsUrl.result.length > 0) {
 					throw {
 						status: HTTP_STATUS_CODE.bad_request.status,
 						message: CONSTANTS.apiResponses.ATTACHMENTS_URL_NOT_FOUND,
 					}
 				}
 
-				if (attachmentsUrl.data && attachmentsUrl.data.length > 0) {
+				if (attachmentsUrl.result && attachmentsUrl.result.length > 0) {
 					if (type === CONSTANTS.common.PROJECT_ATTACHMENT) {
-						attachmentsUrl.data.forEach((eachAttachment) => {
+						attachmentsUrl.result.forEach((eachAttachment) => {
 							let projectAttachmentIndex = attachments.findIndex(
 								(attachmentData) => attachmentData.sourcePath == eachAttachment.filePath
 							)
@@ -3118,7 +3123,7 @@ function _attachmentInformation(
 							}
 						})
 					} else {
-						attachmentsUrl.data.forEach((taskAttachments) => {
+						attachmentsUrl.result.forEach((taskAttachments) => {
 							let taskIndex = tasks.findIndex(
 								(task) => task._id === mapTaskIdToAttachment[taskAttachments.filePath].taskId
 							)
