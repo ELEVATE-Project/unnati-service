@@ -231,12 +231,8 @@ module.exports = class ProgramsHelper {
 				return resolve({
 					success: true,
 					message: CONSTANTS.apiResponses.PROGRAMS_CREATED,
-					data: {
-						_id: program._id,
-					},
-					result: {
-						_id: program._id,
-					},
+					data: program,
+					result: program,
 				})
 			} catch (error) {
 				return reject(error)

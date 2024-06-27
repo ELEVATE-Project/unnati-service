@@ -1234,7 +1234,14 @@ module.exports = class UserProjectsHelper {
 						// 		}
 						// 	}
 						// }
-						let projectCreation = await this.userAssignedProjectCreation(templateDocuments[0]._id, userId)
+						let projectTemplateId
+						if (templateId != '' && templateDocuments && templateDocuments.length > 0) {
+							projectTemplateId = templateDocuments[0]._id
+						} else {
+							projectTemplateId = solutionDetails.projectTemplateId
+						}
+
+						let projectCreation = await this.userAssignedProjectCreation(projectTemplateId, userId)
 
 						if (!projectCreation.success) {
 							return resolve(projectCreation)
