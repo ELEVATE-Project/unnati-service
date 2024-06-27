@@ -1187,7 +1187,7 @@ module.exports = class SolutionsHelper {
 
 					if (createADuplicateSolution === true) {
 						let duplicateProgram = checkforProgramExist[0]
-						duplicateProgram = await _createProgramData(
+						duplicateProgram = await this._createProgramData(
 							duplicateProgram.name,
 							duplicateProgram.externalId
 								? duplicateProgram.externalId + '-' + dateFormat
@@ -1209,6 +1209,7 @@ module.exports = class SolutionsHelper {
 						userPrivateProgram = await programsHelper.create(
 							_.omit(duplicateProgram, ['_id', 'components', 'scope'])
 						)
+						userPrivateProgram = userPrivateProgram.result
 					} else {
 						userPrivateProgram = checkforProgramExist[0]
 					}
@@ -1328,7 +1329,7 @@ module.exports = class SolutionsHelper {
 
 					if (createADuplicateSolution === true) {
 						let duplicateSolution = solutionData[0]
-						let solutionCreationData = await _createSolutionData(
+						let solutionCreationData = await this._createSolutionData(
 							duplicateSolution.name,
 							duplicateSolution.externalId
 								? duplicateSolution.externalId + '-' + dateFormat
@@ -1348,7 +1349,7 @@ module.exports = class SolutionsHelper {
 						_.merge(duplicateSolution, solutionCreationData)
 						_.merge(duplicateSolution, solutionDataToBeUpdated)
 
-						solution = await this.create(_.omit(duplicateSolution, ['_id', 'link']))
+						solution = await solutionsQueries.createSolution(_.omit(duplicateSolution, ['_id', 'link']))
 						parentSolutionInformation.solutionId = duplicateSolution._id
 						parentSolutionInformation.link = duplicateSolution.link
 					} else {
@@ -1384,7 +1385,7 @@ module.exports = class SolutionsHelper {
 						description = userPrivateProgram.programDescription
 					}
 
-					let createSolutionData = await _createSolutionData(
+					let createSolutionData = await this._createSolutionData(
 						data.solutionName ? data.solutionName : userPrivateProgram.programName,
 						externalId,
 						userPrivateProgram.isAPrivateProgram,
@@ -1398,7 +1399,7 @@ module.exports = class SolutionsHelper {
 						data.subType ? data.subType : CONSTANTS.common.INSTITUTIONAL
 					)
 					_.merge(solutionDataToBeUpdated, createSolutionData)
-					solution = await this.create(solutionDataToBeUpdated)
+					solution = await solutionsQueries.createSolution(solutionDataToBeUpdated)
 				}
 
 				if (solution && solution._id) {
@@ -2765,6 +2766,7 @@ module.exports = class SolutionsHelper {
 	static verifyLink(link = '', bodyData = {}, userId = '', userToken = '', createProject = true) {
 		return new Promise(async (resolve, reject) => {
 			try {
+				let verifySolution = await this.verifySolutionDetails(link, userId, userToken)
 				let checkForTargetedSolution = await this.checkForTargetedSolution(link, bodyData, userId, userToken)
 
 				if (!checkForTargetedSolution || Object.keys(checkForTargetedSolution.result).length <= 0) {
@@ -2893,11 +2895,9 @@ module.exports = class SolutionsHelper {
 							referenceFrom: CONSTANTS.common.LINK,
 							link: link,
 						}
-						let checkForProjectExist = await projectQueries.projectDocument(
-							userToken,
-							checkIfUserProjectExistsQuery,
-							['_id']
-						)
+						let checkForProjectExist = await projectQueries.projectDocument(checkIfUserProjectExistsQuery, [
+							'_id',
+						])
 						if (
 							checkForProjectExist &&
 							checkForProjectExist.length > 0 &&
