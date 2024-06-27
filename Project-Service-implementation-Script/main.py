@@ -151,7 +151,7 @@ def programCreation(accessToken,parentFolder,externalId,pName,pDescription,roles
 }
 )
     messageArr.append("Body : " + str(payload))
-    headers = {'X-authenticated-user-token': accessToken,
+    headers = {'X-auth-token': accessToken,
                'internal-access-token': config.get(environment, 'internal-access-token'),
                'Content-Type': 'application/json',
                'Authorization':config.get(environment, 'Authorization')}
@@ -274,7 +274,7 @@ def Programmappingapicall(MainFilePath,accessToken, program_file,parentFolder):
     urlpdpmapi = config.get(environment, 'INTERNAL_KONG_IP') + config.get(environment, 'Pdpmurl')
     headerpdpmApi = {
         'Authorization': config.get(environment, 'Authorization'),
-        'X-authenticated-user-token': accessToken,
+        'X-auth-token': accessToken,
         'X-Channel-id': config.get(environment, 'X-Channel-id'),
         'internal-access-token': config.get(environment, 'internal-access-token')
     }
@@ -575,7 +575,7 @@ def getProgramInfo(accessTokenUser, solutionName_for_folder_path, programNameInp
 
     
     headersProgramSearch = {'Authorization': config.get(environment, 'Authorization'),
-                            'Content-Type': 'application/json', 'X-authenticated-user-token': accessTokenUser,
+                            'Content-Type': 'application/json', 'X-auth-token': accessTokenUser,
                             'internal-access-token': config.get(environment, 'internal-access-token')}
     responseProgramSearch = requests.get(url=programUrl, headers=headersProgramSearch)
     messageArr = []
@@ -690,7 +690,7 @@ def fetchUserDetails(environment, accessToken, elevateProjectId):
     messageArr = ["User search API called."]
     headers = {'Content-Type': 'application/json',
                'internal-access-token': config.get(environment, 'internal-access-token'),
-               'x-authenticated-user-token': accessToken}
+               'X-auth-token': accessToken}
     responseUserSearch = requests.request("GET", url, headers=headers)
     rootOrgId = 1  # Replace this with the actual value you need
     OrgName = []
@@ -718,7 +718,6 @@ def fetchEntityId(solutionName_for_folder_path, accessToken, entitiesNameList, s
     urlFetchEntityListApi = config.get(environment, 'elevateentityhost')+config.get(environment, 'searchForLocation')
     headerFetchEntityListApi = {
         'Content-Type': config.get(environment, 'Content-Type'),
-        # 'X-authenticated-token': accessToken,
         'internal-access-token': config.get(environment, 'internal-access-token'),
     }
     payload = {
@@ -732,7 +731,6 @@ def fetchEntityId(solutionName_for_folder_path, accessToken, entitiesNameList, s
     ]
     }
     data=json.dumps(payload)
-    
     responseFetchEntityListApi = requests.post(url=urlFetchEntityListApi, headers=headerFetchEntityListApi,data=json.dumps(payload))
     messageArr = ["Entities List Fetch API executed.", "URL  : " + str(urlFetchEntityListApi),
                   "Status : " + str(responseFetchEntityListApi.status_code)]
@@ -774,7 +772,7 @@ def fetchScopeRole(solutionName_for_folder_path, accessToken, roleNameList):
     headerFetchRolesListApi = {
         'Content-Type': config.get(environment, 'Content-Type'),
         'Authorization': config.get(environment, 'Authorization'),
-        'X-authenticated-user-token': accessToken,
+        'X-auth-token': accessToken,
         'X-Channel-id': config.get(environment, 'X-Channel-id'),
     }
     responseFetchRolesListApi = requests.post(url=urlFetchRolesListApi, headers=headerFetchRolesListApi)
@@ -1499,7 +1497,7 @@ def criteriaUpload(solutionName_for_folder_path, wbObservation, millisAddObs, ac
     urlCriteriaUploadApi = config.get(environment, 'INTERNAL_KONG_IP')+config.get(environment, 'criteriaUploadApiUrl')
     headerCriteriaUploadApi = {
         'Authorization': config.get(environment, 'Authorization'),
-        'X-authenticated-user-token': accessToken,
+        'X-auth-token': accessToken,
         'X-Channel-id': config.get(environment, 'X-Channel-id')
     }
     filesCriteria = {
@@ -1662,7 +1660,7 @@ def frameWorkUpload(solutionName_for_folder_path, wbObservation, millisAddObs, a
     with open(frameworkFilePath + "uploadFile.json", "w",encoding='utf-8') as outfile:
         json.dump(frameworkDocInsertObj, outfile)
     headerFrameworkUploadApi = {'Authorization': config.get(environment, 'Authorization'),
-                                'X-authenticated-user-token': accessToken,
+                                'X-auth-token': accessToken,
                                 'X-Channel-id': config.get(environment, 'X-Channel-id')}
     filesFramework = {'framework': open(solutionName_for_folder_path + '/framework/uploadFile.json', 'rb')}
 
@@ -1689,7 +1687,7 @@ def solutionUpdate(solutionName_for_folder_path, accessToken, solutionId, bodySo
     headerUpdateSolutionApi = {
         'Content-Type': 'application/json',
         'Authorization': config.get(environment, 'Authorization'),
-        'X-authenticated-user-token': accessToken,
+        'X-auth-token': accessToken,
         'X-Channel-id': config.get(environment, 'X-Channel-id'),
         "internal-access-token": config.get(environment, 'internal-access-token')
         }
@@ -2423,7 +2421,7 @@ def questionUpload(filePathAddObs, solutionName_for_folder_path, frameworkExtern
 
     urlQuestionsUploadApi = config.get(environment, 'INTERNAL_KONG_IP') + config.get(environment, 'questionUploadApiUrl')
     headerQuestionUploadApi = {'Authorization': config.get(environment, 'Authorization'),
-                               'X-authenticated-user-token': accessToken,
+                               'X-auth-token': accessToken,
                                'X-Channel-id': config.get(environment, 'X-Channel-id')}
     filesQuestion = {
         'questions': open(solutionName_for_folder_path + '/questionUpload/uploadSheet.csv', 'rb')
@@ -2521,7 +2519,7 @@ def uploadCriteriaRubrics(solutionName_for_folder_path, wbObservation, millisAdd
     urlCriteriaRubricUploadApi = config.get(environment, 'INTERNAL_KONG_IP') + config.get(environment,'criteriaRubricUploadApiUrl') + frameworkExternalId + "-OBSERVATION-TEMPLATE"
     headerCriteriaRubricUploadApi = {
         'Authorization': config.get(environment, 'Authorization'),
-        'X-authenticated-user-token': accessToken,
+        'X-auth-token': accessToken,
         'X-Channel-id': config.get(environment, 'X-Channel-id')
     }
     filesCriteriaRubric = {
@@ -2599,7 +2597,7 @@ def uploadThemeRubrics(solutionName_for_folder_path, wbObservation, accessToken,
     urlThemeRubricUploadApi = config.get(environment, 'INTERNAL_KONG_IP') + config.get(environment,'themeRubricUploadApiUrl') + frameworkExternalId + "-OBSERVATION-TEMPLATE"
     headerThemeRubricUploadApi = {
         'Authorization': config.get(environment, 'Authorization'),
-        'X-authenticated-user-token': accessToken,
+        'X-auth-token': accessToken,
         'X-Channel-id': config.get(environment, 'X-Channel-id')
     }
     filesThemeRubric = {
@@ -2628,7 +2626,7 @@ def fetchSolutionDetailsFromProgramSheet(solutionName_for_folder_path, programFi
     headerFetchSolutionApi = {
         'Content-Type': 'application/json',
         'Authorization': config.get(environment, 'Authorization'),
-        'X-authenticated-user-token': accessToken,
+        'X-auth-token': accessToken,
         'X-Channel-id': config.get(environment, 'X-Channel-id'),
         'internal-access-token': config.get(environment, 'internal-access-token')
     }
@@ -2668,7 +2666,7 @@ def prepareProgramSuccessSheet(MainFilePath, solutionName_for_folder_path, progr
     urlFetchSolutionApi = config.get(environment, 'elevateprojecthost') + config.get(environment, 'fetchSolutionDoc') + solutionId
     headerFetchSolutionApi = {
         'Authorization': config.get(environment, 'Authorization'),
-        'X-authenticated-user-token': accessToken,
+        'X-auth-token': accessToken,
         'X-Channel-id': config.get(environment, 'X-Channel-id'),
         'internal-access-token': config.get(environment, 'internal-access-token')
     }
@@ -2689,7 +2687,7 @@ def prepareProgramSuccessSheet(MainFilePath, solutionName_for_folder_path, progr
     urlFetchSolutionLinkApi = config.get(environment, 'elevateprojecthost') + config.get(environment, 'fetchLink') + solutionId
     headerFetchSolutionLinkApi = {
         'Authorization': config.get(environment, 'Authorization'),
-        'X-authenticated-user-token': accessToken,
+        'X-auth-token': accessToken,
         'X-Channel-id': config.get(environment, 'X-Channel-id'),
         'internal-access-token': config.get(environment, 'internal-access-token')
     }
@@ -2774,7 +2772,7 @@ def prepareProgramSuccessSheetcsv(MainFilePath, solutionName_for_folder_path, pr
     urlFetchSolutionApi = config.get(environment, 'elevateprojecthost') + config.get(environment, 'fetchSolutionDoc') + solutionId
     headerFetchSolutionApi = {
         'Authorization': config.get(environment, 'Authorization'),
-        'X-authenticated-user-token': accessToken,
+        'X-auth-token': accessToken,
         'X-Channel-id': config.get(environment, 'X-Channel-id'),
         'internal-access-token': config.get(environment, 'internal-access-token')
     }
@@ -2795,7 +2793,7 @@ def prepareProgramSuccessSheetcsv(MainFilePath, solutionName_for_folder_path, pr
     urlFetchSolutionLinkApi = config.get(environment, 'elevateprojecthost') + config.get(environment, 'fetchLink') + solutionId
     headerFetchSolutionLinkApi = {
         'Authorization': config.get(environment, 'Authorization'),
-        'X-authenticated-user-token': accessToken,
+        'X-auth-token': accessToken,
         'X-Channel-id': config.get(environment, 'X-Channel-id'),
         'internal-access-token': config.get(environment, 'internal-access-token')
     }
@@ -3037,7 +3035,7 @@ def createSurveySolution(parentFolder, wbSurvey, accessToken):
                         headerCreateSolutionApi = {
                             'Content-Type': config.get(environment, 'Content-Type'),
                             'Authorization': config.get(environment, 'Authorization'),
-                            'X-authenticated-user-token': accessToken,
+                            'X-auth-token': accessToken,
                             'X-Channel-id': config.get(environment, 'X-Channel-id'),
                             'appName': config.get(environment, 'appName')
                         }
@@ -3085,7 +3083,7 @@ def checkEntityOfSolution(projectName_for_folder_path, solutionNameOrId, accessT
 
     searchSolutionpayload = {}
     searchSolutionheaders = {
-        'X-authenticated-user-token': accessToken,
+        'X-auth-token': accessToken,
         'internal-access-token': config.get(environment, 'internal-access-token'),
         'Authorization': config.get(environment, 'Authorization')
     }
@@ -3108,7 +3106,7 @@ def checkEntityOfSolution(projectName_for_folder_path, solutionNameOrId, accessT
             solutionDetailsurl = config.get(environment, 'elevateprojecthost') + config.get(environment, 'fetchSolutionDoc') + solution_id
             solutionDetailspayload = {}
             solutionDetailsheaders = {
-                'X-authenticated-user-token': accessToken,
+                'X-auth-token': accessToken,
                 'internal-access-token': config.get(environment, 'internal-access-token'),
                 'Authorization': config.get(environment, 'Authorization')
             }
@@ -3347,7 +3345,7 @@ def projectUpload(projectFile, projectName_for_folder_path, accessToken):
     urlProjectUploadApi = config.get(environment, 'elevateprojecthost') + config.get(environment, 'projectUploadApi')
     headerProjectUploadApi = {
         'Authorization': config.get(environment, 'Authorization'),
-        'X-authenticated-user-token': accessToken,
+        'X-auth-token': accessToken,
         'X-Channel-id': config.get(environment, 'X-Channel-id'),
         'internal-access-token': config.get(environment, 'internal-access-token')
     }
@@ -3383,7 +3381,7 @@ def taskUpload(projectFile, projectName_for_folder_path, accessToken):
             fetchProjectIdApi = config.get(environment, 'elevateprojecthost') + config.get(environment, 'FetchProjectList')
             headerfetchProjectIdApi = {
                 'Authorization': config.get(environment, 'Authorization'),
-                'X-authenticated-user-token': accessToken,
+                'X-auth-token': accessToken,
                 'X-Channel-id': config.get(environment, 'X-Channel-id'),
                 'internal-access-token': config.get(environment, 'internal-access-token')
             }
@@ -3412,7 +3410,7 @@ def taskUpload(projectFile, projectName_for_folder_path, accessToken):
         urlTasksUploadApi = config.get(environment, 'elevateprojecthost') + config.get(environment, 'taskUploadApi') + project_id
         headerTasksUploadApi = {
             'Authorization': config.get(environment, 'Authorization'),
-            'X-authenticated-user-token': accessToken,
+            'X-auth-token': accessToken,
             'X-Channel-id': config.get(environment, 'X-Channel-id'),
             'internal-access-token': config.get(environment, 'internal-access-token')
         }
@@ -3462,7 +3460,7 @@ def fetchCertificateBaseTemplate(filePathAddProject,accessToken,projectName_for_
     urldbFind = config.get(environment, 'INTERNAL_KONG_IP') + config.get(environment, 'dbfindapi')
     headerdbFindApi = {
         'Authorization': config.get(environment, 'Authorization'),
-        'X-authenticated-user-token': accessToken,
+        'X-auth-token': accessToken,
         'X-Channel-id': config.get(environment, 'X-Channel-id'),
         'internal-access-token': config.get(environment, 'internal-access-token'),
         'Content-Type': 'application/json'
@@ -3516,7 +3514,7 @@ def prepareaddingcertificatetemp(filePathAddProject, projectName_for_folder_path
     urldbFind = config.get(environment, 'INTERNAL_KONG_IP') + config.get(environment, 'dbfindapi')
     headerdbFindApi = {
         'Authorization': config.get(environment, 'Authorization'),
-        'X-authenticated-user-token': accessToken,
+        'X-auth-token': accessToken,
         'X-Channel-id': config.get(environment, 'X-Channel-id'),
         'internal-access-token': config.get(environment, 'internal-access-token'),
         'Content-Type': 'application/json'
@@ -3619,7 +3617,7 @@ def prepareaddingcertificatetemp(filePathAddProject, projectName_for_folder_path
     urladdcertificate = config.get(environment, 'INTERNAL_KONG_IP') + config.get(environment, 'Addcertificatetemplate')
     headeraddcertificateApi = {
         'Authorization': config.get(environment, 'Authorization'),
-        'X-authenticated-user-token': accessToken,
+        'X-auth-token': accessToken,
         'X-Channel-id': config.get(environment, 'X-Channel-id'),
         'internal-access-token': config.get(environment, 'internal-access-token'),
         'Content-Type': 'application/json'
@@ -3799,7 +3797,7 @@ def prepareaddingcertificatetemp(filePathAddProject, projectName_for_folder_path
 
     headeruploadcertificateApi = {
         'Authorization': config.get(environment, 'Authorization'),
-        'X-authenticated-user-token': accessToken,
+        'X-auth-token': accessToken,
         'X-Channel-id': config.get(environment, 'X-Channel-id'),
         'internal-access-token': config.get(environment, 'internal-access-token')
     }
@@ -3820,7 +3818,7 @@ def prepareaddingcertificatetemp(filePathAddProject, projectName_for_folder_path
 
         headersolutionupdateApi = {
             'Authorization': config.get(environment, 'Authorization'),
-            'X-authenticated-user-token': accessToken,
+            'X-auth-token': accessToken,
             'X-Channel-id': config.get(environment, 'X-Channel-id'),
             'internal-access-token': config.get(environment, 'internal-access-token'),
             'Content-Type': 'application/json'
@@ -3844,7 +3842,7 @@ def prepareaddingcertificatetemp(filePathAddProject, projectName_for_folder_path
         urlprojecttemplateapi = config.get(environment, 'INTERNAL_KONG_IP')+config.get(environment, 'updateprojecttemplate') + projectTemplateId
         headerprojectrtemplateupdateApi = {
             'Authorization': config.get(environment, 'Authorization'),
-            'X-authenticated-user-token': accessToken,
+            'X-auth-token': accessToken,
             'X-Channel-id': config.get(environment, 'X-Channel-id'),
             'internal-access-token': config.get(environment, 'internal-access-token'),
             'Content-Type': 'application/json'
@@ -3968,7 +3966,7 @@ def editsvg(accessToken,filePathAddProject,projectName_for_folder_path,baseTempl
                 urleditnigsvgApi = config.get(environment, 'INTERNAL_KONG_IP') + config.get(environment, 'editsvgtemp') + baseTemplateId
                 headereditingsvgApi = {
                     'Authorization': config.get(environment, 'Authorization'),
-                    'X-authenticated-user-token': accessToken,
+                    'X-auth-token': accessToken,
                     'X-Channel-id': config.get(environment, 'X-Channel-id'),
                     'internal-access-token': config.get(environment, 'internal-access-token')
 
@@ -4016,7 +4014,7 @@ def solutionCreationAndMapping(projectName_for_folder_path, entityToUpload, list
         headerCreateSolutionApi = {
             'Content-Type': config.get(environment, 'Content-Type'),
             'Authorization': config.get(environment, 'Authorization'),
-            'X-authenticated-user-token': accessToken,
+            'X-auth-token': accessToken,
             'X-Channel-id': config.get(environment, 'X-Channel-id')
         }
         sol_payload = {
@@ -4044,7 +4042,7 @@ def solutionCreationAndMapping(projectName_for_folder_path, entityToUpload, list
             headerMapSolutionProject = {
                 'Content-Type': config.get(environment, 'Content-Type'),
                 'Authorization': config.get(environment, 'Authorization'),
-                'X-authenticated-user-token': accessToken,
+                'X-auth-token': accessToken,
                 'X-Channel-id': config.get(environment, 'X-Channel-id')
             }
             payloadMapSolutionProject = {
