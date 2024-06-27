@@ -206,9 +206,8 @@ exports.unnatiViewFullReportPdfGeneration = async function (responseData, userId
 	return new Promise(async function (resolve, reject) {
 		// Generate a unique temporary folder path
 		var currentTempFolder = 'tmp/' + uuidv4() + '--' + Math.floor(Math.random() * (10000 - 10 + 1) + 10)
-
 		// Construct the full local path for the temporary folder
-		var imgPath = __dirname + '/../' + currentTempFolder
+		let imgPath = path.resolve(__dirname, '../../', currentTempFolder)
 
 		// Create the temporary folder if it does not exist
 		if (!fs.existsSync(imgPath)) {
