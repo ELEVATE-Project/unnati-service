@@ -2242,12 +2242,15 @@ module.exports = class UserProjectsHelper {
 			try {
 				isATargetedSolution = UTILS.convertStringToBoolean(isATargetedSolution)
 
+				// Fetch project template details based on thr projectTemplate ID
+				// Will fetch matched projectTemplate if isDeleted = false && status = published
 				let libraryProjects = await libraryCategoriesHelper.projectDetails(
 					projectTemplateId,
 					'',
 					isATargetedSolution
 				)
 
+				// If template data is not found throw error
 				if (libraryProjects.data && !Object.keys(libraryProjects.data).length > 0) {
 					throw {
 						message: CONSTANTS.apiResponses.PROJECT_TEMPLATE_NOT_FOUND,
@@ -2257,6 +2260,7 @@ module.exports = class UserProjectsHelper {
 
 				let taskReport = {}
 
+				// If template contains project task process the task data
 				if (libraryProjects.data.tasks && libraryProjects.data.tasks.length > 0) {
 					libraryProjects.data.tasks = await _projectTask(
 						libraryProjects.data.tasks,
@@ -2281,6 +2285,9 @@ module.exports = class UserProjectsHelper {
 					libraryProjects.data['taskReport'] = taskReport
 				}
 
+				// If an entityId is passed in body data. we need to varify if it is a valid entity
+				// If not a valid entity throw error
+				// If it is valid make sure we add those data to newly creating projects
 				if (requestedData.entityId && requestedData.entityId !== '') {
 					let entityInformation = await entitiesService.entityDocuments(
 						{ _id: requestedData.entityId },
@@ -2358,12 +2365,13 @@ module.exports = class UserProjectsHelper {
 				//     delete  libraryProjects.data.certificateTemplateId;
 				// }
 
-				//Fetch user profile information by calling sunbird's user read api.
+				//Fetch user profile information.
 				let addReportInfoToSolution = false
 				let userProfile = await userService.profile(userId)
-				if (userProfile.success && userProfile.data && userProfile.data.response) {
-					libraryProjects.data.userProfile = userProfile.data.response
-					addReportInfoToSolution = true
+
+				if (userProfile.success && userProfile.data) {
+					libraryProjects.data.userProfile = userProfile.data
+					// addReportInfoToSolution = true
 				}
 
 				libraryProjects.data.userId = libraryProjects.data.updatedBy = libraryProjects.data.createdBy = userId
@@ -2387,12 +2395,12 @@ module.exports = class UserProjectsHelper {
 
 				let projectCreation = await projectQueries.createProject(_.omit(libraryProjects.data, ['_id']))
 
-				if (addReportInfoToSolution && projectCreation._doc.solutionId) {
-					let updateSolution = await solutionsHelper.addReportInformationInSolution(
-						projectCreation._doc.solutionId,
-						projectCreation._doc.userProfile
-					)
-				}
+				// if (addReportInfoToSolution && projectCreation._doc.solutionId) {
+				// 	let updateSolution = await solutionsHelper.addReportInformationInSolution(
+				// 		projectCreation._doc.solutionId,
+				// 		projectCreation._doc.userProfile
+				// 	)
+				// }
 
 				await kafkaProducersHelper.pushProjectToKafka(projectCreation)
 
