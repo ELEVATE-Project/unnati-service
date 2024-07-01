@@ -1401,6 +1401,13 @@ module.exports = class UserProjectsHelper {
 						//     //Fetch user profile information by calling sunbird's user read api.
 
 						let userProfileData = await userService.profile(userId)
+						// Check if the user profile fetch was successful
+						if (!userProfileData.success) {
+							throw {
+								message: CONSTANTS.apiResponses.USER_DATA_FETCH_UNSUCCESSFUL,
+								status: HTTP_STATUS_CODE.bad_request.status,
+							}
+						}
 						if (userProfileData.success && userProfileData.data) {
 							projectCreation.data.userProfile = userProfileData.data
 							// addReportInfoToSolution = true;
@@ -1420,14 +1427,21 @@ module.exports = class UserProjectsHelper {
 							//     projectCreation.data.userProfile,
 							//     userRoleInformation
 							// );
-							let updatedUserProfile = userService.profile(userId)
+							let updatedUserProfile = await userService.profile(userId)
 
+							// Check if the user profile fetch was successful
+							if (!updatedUserProfile.success) {
+								throw {
+									message: CONSTANTS.apiResponses.USER_DATA_FETCH_UNSUCCESSFUL,
+									status: HTTP_STATUS_CODE.bad_request.status,
+								}
+							}
 							if (
 								updatedUserProfile &&
 								updatedUserProfile.success &&
-								updatedUserProfile.data.length > 0
+								Object.keys(updatedUserProfile.data).length > 0
 							) {
-								projectCreation.data.userProfile = updatedUserProfile.data[0]
+								projectCreation.data.userProfile = updatedUserProfile.data
 							}
 						}
 						let project = await projectQueries.createProject(projectCreation.data)
@@ -1602,6 +1616,13 @@ module.exports = class UserProjectsHelper {
 				//Fetch user profile information by calling sunbird's user read api.
 
 				let userProfile = await userService.profile(userId)
+				// Check if the user profile fetch was successful
+				if (!userProfile.success) {
+					throw {
+						message: CONSTANTS.apiResponses.USER_DATA_FETCH_UNSUCCESSFUL,
+						status: HTTP_STATUS_CODE.bad_request.status,
+					}
+				}
 				if (userProfile.success && userProfile.data) {
 					createProject.userProfile = userProfile.data
 				}
@@ -2368,6 +2389,13 @@ module.exports = class UserProjectsHelper {
 				//Fetch user profile information.
 				let addReportInfoToSolution = false
 				let userProfile = await userService.profile(userId)
+				// Check if the user profile fetch was successful
+				if (!userProfile.success) {
+					throw {
+						message: CONSTANTS.apiResponses.USER_DATA_FETCH_UNSUCCESSFUL,
+						status: HTTP_STATUS_CODE.bad_request.status,
+					}
+				}
 
 				if (userProfile.success && userProfile.data) {
 					libraryProjects.data.userProfile = userProfile.data
