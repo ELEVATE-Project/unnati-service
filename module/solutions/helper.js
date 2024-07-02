@@ -938,9 +938,9 @@ module.exports = class SolutionsHelper {
 					isReusable: false,
 					isDeleted: false,
 				}
-
+				// If validate entity set to ON . strict scoping should be applied
 				if (validateEntity !== CONSTANTS.common.OFF) {
-					Object.keys(_.omit(data, ['filter', 'role'])).forEach((requestedDataKey) => {
+					Object.keys(_.omit(data, ['filter', 'role', 'factors'])).forEach((requestedDataKey) => {
 						if (requestedDataKey == 'entities') entities.push(...data[requestedDataKey])
 						if (requestedDataKey == 'entityType') entityTypes.push(data[requestedDataKey])
 					})
@@ -962,11 +962,46 @@ module.exports = class SolutionsHelper {
 					filterQuery['scope.entities'] = { $in: entities }
 					filterQuery['scope.entityType'] = { $in: entityTypes }
 				} else {
-					let userRoleInfo = _.omit(data, ['filter'])
+					// Obtain userInfo
+					let userRoleInfo = _.omit(data, ['filter', 'factors', 'role'])
 					let userRoleKeys = Object.keys(userRoleInfo)
-					userRoleKeys.forEach((entities) => {
-						filterQuery['scope.' + entities] = { $in: userRoleInfo[entities].split(',') }
-					})
+					let queryFilter = []
+
+					// if factors are passed or query has to be build based on the keys passed
+					if (data.hasOwnProperty('factors') && data.factors.length > 0) {
+						let factors = data.factors
+						// Build query based on each key
+						factors.forEach((factor) => {
+							let scope = 'scope.' + factor
+							let values = userRoleInfo[factor]
+							if (factor === 'role') {
+								queryFilter.push({
+									['scope.roles']: { $in: [CONSTANTS.common.ALL_ROLES, ...data.role.split(',')] },
+								})
+							} else if (!Array.isArray(values)) {
+								queryFilter.push({ [scope]: { $in: [values] } })
+							} else {
+								queryFilter.push({ [scope]: { $in: [...values] } })
+							}
+						})
+						// append query filter
+						filterQuery['$or'] = queryFilter
+					} else {
+						userRoleKeys.forEach((key) => {
+							let scope = 'scope.' + key
+							let values = userRoleInfo[key]
+							if (!Array.isArray(values)) {
+								queryFilter.push({ [scope]: { $in: [values] } })
+							} else {
+								queryFilter.push({ [scope]: { $in: [...values] } })
+							}
+						})
+						if (data.role) {
+							queryFilter.push({
+								['scope.roles']: { $in: [CONSTANTS.common.ALL_ROLES, ...data.role.split(',')] },
+							})
+						}
+					}
 				}
 
 				// if (type === CONSTANTS.common.SURVEY) {
