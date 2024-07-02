@@ -71,9 +71,9 @@ module.exports = class ReportsHelper {
 				const projectDetails = await projectQueries.projectDocument(
 					query,
 					[
-						//"programId",
-						// "programInformation.name",
-						// "entityInformation.name",
+						'programId',
+						'programInformation.name',
+						'entityInformation.name',
 						'taskReport',
 						'status',
 						'tasks',
